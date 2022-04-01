@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:otp_text_field/otp_field.dart';
 import 'package:otp_text_field/otp_field_style.dart';
 import 'package:otp_text_field/style.dart';
+import 'package:supply_app/components/screen/deliver/components/manager_list.dart';
 import 'package:supply_app/constants.dart';
 
 class PhoneAuth extends StatefulWidget {
@@ -57,9 +58,12 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           icon: SvgPicture.asset("assets/icons/envoyer.svg"),
                           onPressed: () {
                             startTimer();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ManagerList()));
                           }),
                     )),
-                //  hintText: "",
               ),
             ),
             SizedBox(

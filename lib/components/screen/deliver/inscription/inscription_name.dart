@@ -72,8 +72,9 @@ class _InscriptionNameState extends State<InscriptionName> {
               );
             }).toList(),
           ),
+          // ignore: prefer_const_constructors
           SizedBox(
-            height: size.height * 0.12,
+            height: 50,
           ),
           FlatButton(
             minWidth: size.width,
@@ -93,4 +94,13 @@ class _InscriptionNameState extends State<InscriptionName> {
       ),
     );
   }
+}
+
+AppBar buildAppBar() {
+  return AppBar(
+    title: const Text('Mon application',
+        style: TextStyle(
+            fontFamily: 'DayRoman', fontWeight: FontWeight.bold, fontSize: 24)),
+    centerTitle: true,
+  );
 }

@@ -2,8 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supply_app/components/screen/manager/components/command_page.dart';
+import 'package:supply_app/components/screen/manager/components/edit_command.dart';
+import '../../../../constants.dart';
+import '../menu_content/nav_bar.dart';
 import 'deliver_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DeliverList extends StatefulWidget {
   const DeliverList({Key? key}) : super(key: key);
@@ -13,28 +18,80 @@ class DeliverList extends StatefulWidget {
 }
 
 class _DeliverListState extends State<DeliverList> {
+  bool isSearching = false;
   List<Deliver> delivers = [
-    Deliver(1, "romeo", "voiture", 10, "assets/images/avatarlist.svg"),
-    Deliver(2, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(3, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(4, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(5, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(6, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(7, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(8, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(9, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(10, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(11, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(12, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(13, "leo", "voiture", 8, "assets/images/avatarlist.svg"),
-    Deliver(14, "Luc", "Moto", 1, "assets/images/avatarlist.svg"),
-    Deliver(15, "leo", "voiture", 8, "assets/images/avatarlist.svg")
+    Deliver(1, "romeo", "voiture", 10, "assets/images/avar.svg"),
+    Deliver(2, "Luc", "Moto", 1, "assets/images/avar.svg"),
+    Deliver(3, "leo", "voiture", 8, "assets/images/avar.svg"),
+    Deliver(4, "Luc", "Moto", 1, "assets/images/avar.svg"),
+    Deliver(5, "leo", "voiture", 8, "assets/images/avar.svg"),
+    Deliver(6, "Luc", "Moto", 1, "assets/images/avar.svg"),
+    Deliver(7, "leo", "voiture", 8, "assets/images/avar.svg"),
+    Deliver(8, "Luc", "Moto", 1, "assets/images/avar.svg"),
+    Deliver(9, "leo", "voiture", 8, "assets/images/avar.svg"),
+    Deliver(10, "Luc", "Moto", 1, "assets/images/avar.svg"),
+    Deliver(11, "leo", "voiture", 8, "assets/images/avar.svg"),
+    Deliver(12, "Luc", "Moto", 1, "assets/images/avar.svg"),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(),
+      drawer: Visibility(visible: isVisible(), child: NavBar()),
+      appBar: AppBar(
+          backgroundColor: kPrimaryColor,
+          title: !isSearching
+              ? Text(
+                  'Mon application',
+                  style: GoogleFonts.philosopher(fontSize: 20),
+                )
+              : TextField(
+                  decoration: InputDecoration(
+                      icon: Icon(
+                        Icons.search,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                      hintText: "Rechercher un livreur",
+                      hintStyle: TextStyle(color: Colors.white70),
+                      fillColor: kPrimaryColor),
+                ),
+          actions: <Widget>[
+            // !isSearching ?
+            Visibility(
+              visible: isVisible(),
+              child: Padding(
+                  padding: EdgeInsets.only(right: 10.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.search,
+                      size: 26,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        this.isSearching = !this.isSearching;
+                      });
+                    },
+                  )
+                  /* GestureDetector(
+                onTap: () {},
+                child: Icon(
+                  Icons.search,
+                  size: 26.0,
+                ),
+              )*/
+                  ),
+            ),
+            Visibility(
+              visible: isVisible(),
+              child: Padding(
+                  padding: EdgeInsets.only(right: 10.0),
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Icon(Icons.more_vert),
+                  )),
+            ),
+          ]),
       body: ListView.builder(
         itemCount: delivers.length,
         itemBuilder: (BuildContext context, int index) {
@@ -42,25 +99,24 @@ class _DeliverListState extends State<DeliverList> {
             child: Card(
               child: ListTile(
                 leading: CircleAvatar(
-                  radius: 30,
+                  backgroundColor: Color.fromARGB(255, 243, 235, 245),
+                  radius: 35,
                   child: SvgPicture.asset(
                     delivers[index].picture,
                   ),
-                  // backgroundImage: NetworkImage(delivers[index].picture),
-                  // backgroundColor: Colors.grey,
                 ),
                 title: Text(delivers[index].name),
                 subtitle: Text(delivers[index].outil),
-                trailing: const Text(
+                trailing: Text(
                   "10 km",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
                 ),
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           // builder: (context) => DetailPage(delivers[index])
-                          builder: (context) => CommandPage()));
+                          builder: (context) => EditCommand()));
                 },
               ),
             ),
@@ -70,6 +126,14 @@ class _DeliverListState extends State<DeliverList> {
     );
 
     //   }
+  }
+
+  bool isVisible() {
+    if (isSearching == false) {
+      return true;
+    } else {
+      return false;
+    }
   }
   //   );
   // }
@@ -87,32 +151,4 @@ class DetailPage extends StatelessWidget {
       ),
     );
   }
-}
-
-AppBar buildAppBar() {
-  return AppBar(
-      title: Text("Mon application"),
-      leading: GestureDetector(
-        onTap: () {/* Write listener code here */},
-        child: Icon(
-          Icons.menu, // add custom icons also
-        ),
-      ),
-      actions: <Widget>[
-        Padding(
-            padding: EdgeInsets.only(right: 10.0),
-            child: GestureDetector(
-              onTap: () {},
-              child: Icon(
-                Icons.search,
-                size: 26.0,
-              ),
-            )),
-        Padding(
-            padding: EdgeInsets.only(right: 10.0),
-            child: GestureDetector(
-              onTap: () {},
-              child: Icon(Icons.more_vert),
-            )),
-      ]);
 }
