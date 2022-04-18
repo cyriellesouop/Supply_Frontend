@@ -8,7 +8,6 @@ import 'package:supply_app/components/screen/manager/components/edit_command.dar
 import '../../../../constants.dart';
 import '../menu_content/nav_bar.dart';
 import 'deliver_model.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class DeliverList extends StatefulWidget {
   const DeliverList({Key? key}) : super(key: key);

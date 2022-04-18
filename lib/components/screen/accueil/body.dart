@@ -8,8 +8,7 @@ class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return SingleChildScrollView(
-      child: Center(
+    return Center(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
           child: Column(
@@ -17,12 +16,12 @@ class Body extends StatelessWidget {
               Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: kDefaultPadding * 2,
-                      vertical: kDefaultPadding * 2),
-                  height: size.height * 0.6,
+                      vertical: kDefaultPadding ),
+                  height: size.height * 0.5,
                   width: size.width * 0.6,
                   child: Image.asset("assets/images/liv.png")),
               Container(
-                  height: size.height / 6,
+                  height: size.height * 0.15,
                   width: size.width * 0.8,
                   child: Text(
                     "Bienvenue sur mon application",
@@ -59,7 +58,7 @@ class Body extends StatelessWidget {
             ],
           ),
         ),
-      ),
+     
     );
   }
 }

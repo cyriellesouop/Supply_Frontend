@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
 import 'package:supply_app/components/screen/manager/components/inscription.dart';
 import 'package:supply_app/constants.dart';
 
@@ -76,7 +77,7 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
                 /*  final prefs = await SharedPreferences.getInstance();
                 prefs.setBool('showInscription', true);*/
                 Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => Inscription()));
+                    MaterialPageRoute(builder: (context) => InscriptionName()));
               },
               child: Text(
                 'COMMENCER',

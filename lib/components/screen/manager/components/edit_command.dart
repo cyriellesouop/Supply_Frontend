@@ -14,6 +14,7 @@ class EditCommand extends StatefulWidget {
 class _EditCommandState extends State<EditCommand> {
   String bouton = "Annuler";
   String dropdownValue = 'Fragile';
+  String dropdownValuePoids = 'Kg';
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -122,12 +123,38 @@ class _EditCommandState extends State<EditCommand> {
               Padding(
                 padding: const EdgeInsets.only(
                     bottom: 30, right: kDefaultPadding, left: kDefaultPadding),
-                child: TextFormField(
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: 'Donner une estimation de poids',
-                      hintStyle: TextStyle(color: Colors.grey[800]),
-                      fillColor: Colors.white70),
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.,
+                  children: [
+                    Container(
+                      width: size.width * 0.6,
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                            labelText: 'Estimer le poids',
+                            hintStyle: TextStyle(color: Colors.grey[800]),
+                            fillColor: Colors.white70),
+                      ),
+                    ),
+                    Expanded(
+                      //  width: size.width * 0.2,
+                      child: DropdownButtonFormField<String>(
+                        value: dropdownValuePoids,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            dropdownValuePoids = newValue!;
+                          });
+                        },
+                        items: <String>['tonnes', 'Kg', 'g', 'mg']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Padding(
