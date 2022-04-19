@@ -83,6 +83,20 @@ class _InscriptionState extends State<Inscription> {
                         fillColor: Colors.white70),
                   ),
                 ),
+                 Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: TextFormField(
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                        //  labelText: 'Veuillez saisir le nom de l\'entreprise',
+
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.grey[800]),
+                        hintText: "Adresse de l'entreprise",
+                        //  prefixIcon: const Icon(Icons.home_mini_rounded),
+                        fillColor: Colors.white70),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 30),
                   // width: size.width - 40,
@@ -108,7 +122,7 @@ class _InscriptionState extends State<Inscription> {
                 const SizedBox(
                   height: 25,
                 ),
-                Center(
+              /*  Center(
                   child: Text("Veuillez saisir le code recu",
                       style: GoogleFonts.poppins(
                           fontSize: 15, color: Colors.redAccent)),
@@ -131,7 +145,7 @@ class _InscriptionState extends State<Inscription> {
                 ),
                 const SizedBox(
                   height: 30.0,
-                ),
+                ), */
                 FlatButton(
                   onPressed: () {
                     Navigator.push(
@@ -146,7 +160,7 @@ class _InscriptionState extends State<Inscription> {
                   color: kPrimaryColor,
                   textColor: kBackgroundColor,
                   child: Text(
-                    'CREER VOTRE COMPTE',
+                    'VERIFIER',
                     style: GoogleFonts.poppins(fontSize: 15),
                   ),
                 )

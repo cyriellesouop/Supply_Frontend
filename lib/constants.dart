@@ -7,4 +7,5 @@ const kPrimaryColor = Color.fromARGB(255, 139, 26, 173);
 const kTextColor = Color.fromARGB(255, 51, 54, 59);
 const kBackgroundColor = Colors.white;
 
+
 const double kDefaultPadding = 20.0;

@@ -1,12 +1,13 @@
 # Roadmap 
 
 ### [RELEASE] - [Estimated Delivery Date]
-
-### [CURRENT_TASKS]
 - Update input type of contact field
 - Add a button Verifier on Inscription screen
-- Create and dialogBox for validation phone Number 
+- Create an dialogBox for validation phone Number 
 - Add **Create account** button after approving validation phone Number in the dialogBox
+- Add firebase authentification phone number
+
+### [CURRENT_TASKS]
 - Update the list delivers screen 
 ### [BACKLOGS]
 

@@ -12,7 +12,7 @@ class InscriptionName extends StatefulWidget {
 }
 
 class _InscriptionNameState extends State<InscriptionName> {
-  String dropdownValueOutil = 'voiture';
+ // String dropdownValueOutil = 'voiture';
 
   @override
   Widget build(BuildContext context) {
@@ -77,30 +77,23 @@ class _InscriptionNameState extends State<InscriptionName> {
 
                         filled: true,
                         hintStyle: TextStyle(color: Colors.grey[800]),
-                        hintText: "Nom d\'utilisateur",
+                        hintText: "Nom de l\'entreprise",
                         //  prefixIcon: const Icon(Icons.home_mini_rounded),
                         fillColor: Colors.white70),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 30),
-                  child: DropdownButtonFormField<String>(
+                  child: TextFormField(
+                    style: GoogleFonts.poppins(fontSize: 15),
                     decoration: InputDecoration(
-                      labelText: 'Quel est votre outil de livraison',
-                    ),
-                    value: dropdownValueOutil,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        dropdownValueOutil = newValue!;
-                      });
-                    },
-                    items: <String>['voiture', 'moto', 'tricyle', 'camionnette']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                        //  labelText: 'Veuillez saisir le nom de l\'entreprise',
+
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.grey[800]),
+                        hintText: "Adresse de l'entreprise",
+                        //  prefixIcon: const Icon(Icons.home_mini_rounded),
+                        fillColor: Colors.white70),
                   ),
                 ),
                 const SizedBox(

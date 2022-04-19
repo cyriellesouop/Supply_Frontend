@@ -1,17 +1,14 @@
 // ignore_for_file: prefer_const_constructors
-
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:otp_text_field/otp_field.dart';
 import 'package:otp_text_field/otp_field_style.dart';
 import 'package:otp_text_field/style.dart';
 import 'package:supply_app/components/screen/manager/components/deliver_list.dart';
 import 'package:supply_app/constants.dart';
-//import '../components/manager_list.dart';
-
 class PhoneAuth extends StatefulWidget {
   const PhoneAuth({Key? key}) : super(key: key);
 
@@ -20,7 +17,13 @@ class PhoneAuth extends StatefulWidget {
 }
 
 class _PhoneAuthState extends State<PhoneAuth> {
-  int start = 30;
+  TextEditingController phoneController = TextEditingController();
+    bool isLoading = false;
+   OtpFieldController otpCodeController =  OtpFieldController();
+   String  verificationIDreceived="";
+   bool otploginVisible = false;
+  FirebaseAuth auth=FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -40,10 +43,13 @@ class _PhoneAuthState extends State<PhoneAuth> {
             child: ListView(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
+                  padding: const EdgeInsets.only(bottom: 30, top: 20),
                   child: TextFormField(
+                    controller: phoneController,
+                     keyboardType: TextInputType.phone,
                     
                     decoration: InputDecoration(
+                    
                       fillColor: Colors.white70,
                       filled: true,
                       hintText: "Votre Contact",
@@ -53,71 +59,27 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         favorite: ['+237', 'CM'],
                         hideMainText: true,
                       ),
-                      /*  suffixIcon: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 14, horizontal: 15),
-                          child: IconButton(
-                              icon:
-                                  SvgPicture.asset("assets/icons/envoyer.svg"),
-                              onPressed: () {
-                                startTimer();
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>  DeliverList()));
-                              }),
-                        )*/
+                     
                     ),
                   ),
                 ),
                 SizedBox(
-                  height: 40,
-                ),
-                Center(
-                  child: Row(
-                    children: [
-                      Text("Renvoie d'un nouveau code dans",
-                          style: GoogleFonts.poppins(
-                              fontSize: 15, fontWeight: FontWeight.bold)),
-                      Expanded(
-                        child: Text("00:$start",
-                            style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                color: Color.fromARGB(255, 225, 28, 10))),
-                      ),
-                      Expanded(
-                        child: Text(" sec",
-                            style: GoogleFonts.poppins(
-                                fontSize: 15, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                OTPTextField(
-                  keyboardType: TextInputType.number,
-                  length: 5,
-                  width: MediaQuery.of(context).size.width - 34,
-                  fieldWidth: 30,
-                  otpFieldStyle: OtpFieldStyle(borderColor: Colors.black),
-                  style: const TextStyle(fontSize: 17, color: Colors.black),
-                  textFieldAlignment: MainAxisAlignment.spaceAround,
-                  fieldStyle: FieldStyle.underline,
-                  /* onCompleted: (pin) {
-                  print("Completed: " + pin);
-                },*/
-                ),
-                const SizedBox(
-                  height: 40.0,
+                  height: 60,
                 ),
                 FlatButton(
                   onPressed: () {
-                    Navigator.push(
+                if (otploginVisible==false) {
+                   verifyNumber();
+                  
+          
+                } 
+
+                else{
+                   Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const  DeliverList()));
+                            builder: (context) => const DeliverList()));
+                }       
                   },
                   padding: EdgeInsets.all(15),
                   shape: RoundedRectangleBorder(
@@ -125,32 +87,119 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   ),
                   color: kPrimaryColor,
                   textColor: kBackgroundColor,
-                  child: Text(
-                    'CREER VOTRE COMPTE',
+                  child: Text(otploginVisible? "CREER UN COMPTE":"VERIFIER",
+                    
                     style: GoogleFonts.poppins(fontSize: 15),
-                  ),
-                )
+                  ),)
+
+
+             
               ],
             ),
           )),
     );
   }
+ void _showValidationDialog(BuildContext context) async =>   showDialog(
+    context: context, 
+    builder: (context){
+      return AlertDialog(
+        
 
-  void startTimer() {
-    const onsec = Duration(seconds: 1);
-    Timer timer = Timer.periodic(onsec, (timer) {
-      if (start == 0) {
-        setState(() {
-          timer.cancel();
-        });
-      } else {
-        setState(() {
-          start--;
-        });
-      }
+        title: Text("Veuillez saisir le code recu",style: GoogleFonts.poppins(
+                              fontSize: 15, fontWeight: FontWeight.bold,)),
+        content: OTPTextField(
+          controller:otpCodeController,
+         
+                
+                    keyboardType: TextInputType.number,
+                  
+                    length: 6,
+                    width: MediaQuery.of(context).size.width - 28,
+                    fieldWidth: 25,
+                    otpFieldStyle: OtpFieldStyle(borderColor: Colors.black),
+                    style: const TextStyle(fontSize: 17, color: Colors.black),
+                    textFieldAlignment: MainAxisAlignment.spaceAround,
+                    fieldStyle: FieldStyle.underline,
+                  
+                  ),
+        actions:<Widget> [
+          TextButton(
+             child: Text("valider"),
+            onPressed: (){
+              
+                   verifyCode()  ;
+              
+             Navigator.of(context).pop();
+           }
+            )
+        ],
+      );
     });
-  }
+
+  Future <void> verifyNumber() async{
+
+print("+237${phoneController.text}");
+
+  await auth.verifyPhoneNumber(
+    
+    phoneNumber: "+237${phoneController.text}",  
+    verificationCompleted: (PhoneAuthCredential credential) async{
+    await auth.signInWithCredential(credential).then((value) => print("connexion reussie"));
+    },
+    verificationFailed: (FirebaseAuthException exception){
+      if (exception.code == 'invalid-phone-number') {
+      showMessage("le numero de telephone est invalid!");
+    }
+
+    }, 
+    codeSent: (String verificationID, int? resendtoken){
+      _showValidationDialog(context);
+      print(resendtoken);
+      print("code envoye");
+      setState(() {
+        verificationIDreceived=verificationID;
+        otploginVisible=true;
+      });  
+      
+    }, 
+    codeAutoRetrievalTimeout: (String verificationID){
+       
+    });
 }
+
+ Future <void> verifyCode() async {
+   print(otpCodeController.toString()+"verfication du code envoye");
+  PhoneAuthCredential credential=PhoneAuthProvider.credential(
+    verificationId: verificationIDreceived, 
+    smsCode: otpCodeController.toString());
+
+    await auth.signInWithCredential(credential).then((value){print("creation de compte reussie");});
+}
+
+ void showMessage(String errorMessage) {
+    showDialog(
+        context: context,
+        builder: (BuildContext builderContext) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                child: Text("Ok"),
+                onPressed: ()  {
+                  Navigator.of(builderContext).pop();
+                },
+              )
+            ],
+          );
+        }).then((value) {
+      setState(() {
+        isLoading = false;
+      });
+    });
+ }
+}
+
 
 AppBar buildAppBar() {
   return AppBar(
