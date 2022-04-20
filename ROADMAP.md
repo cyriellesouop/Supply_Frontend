@@ -9,6 +9,8 @@
 
 ### [CURRENT_TASKS]
 - Update the list delivers screen 
+- make collections on firestore
+- create Models
 ### [BACKLOGS]
 
 here are detailed the primary functionalities of the application
@@ -19,6 +21,7 @@ here are detailed the primary functionalities of the application
  - delete, update an order
  - list orders
  - Tracking
+
 
 
 

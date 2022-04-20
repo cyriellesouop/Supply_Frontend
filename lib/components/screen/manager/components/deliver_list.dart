@@ -35,96 +35,104 @@ class _DeliverListState extends State<DeliverList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Visibility(visible: isVisible(), child: NavBar()),
-      appBar: AppBar(
-          backgroundColor: kPrimaryColor,
-          title: !isSearching
-              ? Text(
-                  'Mon application',
-                  style: GoogleFonts.philosopher(fontSize: 20),
-                )
-              : TextField(
-                  decoration: InputDecoration(
-                      icon: Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                      hintText: "Rechercher un livreur",
-                      hintStyle: TextStyle(color: Colors.white70),
-                      fillColor: kPrimaryColor),
-                ),
-          actions: <Widget>[
-            // !isSearching ?
-            Visibility(
-              visible: isVisible(),
-              child: Padding(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.search,
-                      size: 26,
+    Size size = MediaQuery.of(context).size;
+    return Stack(
+      children: <Widget>[
+        Image.asset(
+          "assets/images/maps.jpeg",
+          height: size.height,
+          width: size.width,
+          fit: BoxFit.cover,
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent.withBlue(20),
+          drawer: Visibility(visible: isVisible(), child: NavBar()),
+          appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              title: !isSearching
+                  ? Text(
+                      'Mon application',
+                      style: GoogleFonts.philosopher(fontSize: 20),
+                    )
+                  : TextField(
+                      decoration: InputDecoration(
+                          icon: Icon(
+                            Icons.search,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                          hintText: "Rechercher un livreur",
+                          hintStyle: TextStyle(color: Colors.white70),
+                          fillColor: kPrimaryColor),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        this.isSearching = !this.isSearching;
-                      });
+                    //visibilite des elements de la appbar
+              actions: <Widget>[
+                // !isSearching ?
+                Visibility(
+                  visible: isVisible(),
+                  child: Padding(
+                      padding: EdgeInsets.only(right: 10.0),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.search,
+                          size: 26,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            this.isSearching = !this.isSearching;
+                          });
+                        },
+                      )),
+                ),
+                Visibility(
+                  visible: isVisible(),
+                  child: Padding(
+                      padding: EdgeInsets.only(right: 10.0),
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Icon(Icons.more_vert),
+                      )),
+                ),
+              ]),
+          body: ListView.builder(
+            padding: EdgeInsets.only(
+                top: kDefaultPadding,
+                left: kDefaultPadding / 2,
+                right: kDefaultPadding / 2),
+            itemCount: delivers.length,
+            itemBuilder: (BuildContext context, int index) {
+              return SingleChildScrollView(
+                child: Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 243, 235, 245),
+                      radius: 30,
+                      child: SvgPicture.asset(
+                        delivers[index].picture,
+                      ),
+                    ),
+                    title: Text(delivers[index].name),
+                    subtitle: Text(delivers[index].outil),
+                    trailing: Text(
+                      "10 km",
+                      style:
+                          GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              // builder: (context) => DetailPage(delivers[index])
+                              builder: (context) => EditCommand()));
                     },
-                  )
-                  /* GestureDetector(
-                onTap: () {},
-                child: Icon(
-                  Icons.search,
-                  size: 26.0,
-                ),
-              )*/
-                  ),
-            ),
-            Visibility(
-              visible: isVisible(),
-              child: Padding(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Icon(Icons.more_vert),
-                  )),
-            ),
-          ]),
-      body: ListView.builder(
-        itemCount: delivers.length,
-        itemBuilder: (BuildContext context, int index) {
-          return SingleChildScrollView(
-            child: Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 243, 235, 245),
-                  radius: 35,
-                  child: SvgPicture.asset(
-                    delivers[index].picture,
                   ),
                 ),
-                title: Text(delivers[index].name),
-                subtitle: Text(delivers[index].outil),
-                trailing: Text(
-                  "10 km",
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                ),
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          // builder: (context) => DetailPage(delivers[index])
-                          builder: (context) => EditCommand()));
-                },
-              ),
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+      ],
     );
-
-    //   }
   }
 
   bool isVisible() {
@@ -134,8 +142,6 @@ class _DeliverListState extends State<DeliverList> {
       return false;
     }
   }
-  //   );
-  // }
 }
 
 class DetailPage extends StatelessWidget {

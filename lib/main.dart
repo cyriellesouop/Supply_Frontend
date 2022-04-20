@@ -1,7 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:supply_app/components/home_screen.dart';
-
 import 'components/screen/accueil/splash_screen.dart';
 
 Future <void> main() async {
@@ -18,6 +16,7 @@ class MyApp extends StatelessWidget {
     // ignore: prefer_const_constructors
     return MaterialApp(
         //  title: 'Mon application',
+        
         debugShowCheckedModeBanner: false,
         home:  SplashScreen()
        // home: HomeScreen()

@@ -45,7 +45,7 @@ class _InscriptionNameState extends State<InscriptionName> {
                           shape: BoxShape.circle,
                           image: DecorationImage(
                               fit: BoxFit.cover,
-                              image: AssetImage("assets/images/avar.svg"))),
+                              image: AssetImage("assets/images/profil.png"))),
                     ),
                     Positioned(
                       bottom: 0,
@@ -134,3 +134,4 @@ AppBar buildAppBar() {
     centerTitle: true,
   );
 }
+
