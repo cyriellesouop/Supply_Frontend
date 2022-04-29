@@ -1,48 +1,101 @@
 // ignore_for_file: prefer_const_constructors, unused_local_variable
 import 'dart:async';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-//import 'package:otp_autofill/otp_autofill.dart';
-import 'package:otp_text_field/otp_field.dart';
-import 'package:otp_text_field/otp_field_style.dart';
-import 'package:otp_text_field/style.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:supply_app/components/screen/manager/components/deliver_list.dart';
+import 'package:supply_app/components/services/position_service.dart';
+import 'package:supply_app/components/services/user_service.dart';
 
 import 'package:supply_app/constants.dart';
 
+import '../../../../models/Database_Model.dart';
+
 class PhoneAuth extends StatefulWidget {
-  const PhoneAuth({Key? key}) : super(key: key);
+  //  final InscriptionName formulaireinit;
+  // const PhoneAuth({Key? key, required this.formulaireinit}) : super(key: key);
+  final String nameField;
+  final String adressField;
+  final String picture;
+  const PhoneAuth(
+      {Key? key,
+      required this.nameField,
+      required this.adressField,
+      required this.picture})
+      : super(key: key);
 
   @override
   _PhoneAuthState createState() => _PhoneAuthState();
 }
 
 class _PhoneAuthState extends State<PhoneAuth> {
+//controleur du champs de remplissage du numero de telephone et de l'Ot code
   TextEditingController phoneController = TextEditingController();
-  bool isLoading = false;
   TextEditingController otpCodeController = TextEditingController();
-  // late OTPInteractor _otpInteractor = OTPInteractor();
-  // = OTPTextEditController(codeLength: codeLength)
-  // OtpFieldController otpController =  OtpFieldController();
-  //  OTPInteractor _otpInteractor = OTPInteractor();
+  bool isLoading = false;
+  // variable contenant le message de verification
   String verificationIDreceived = "";
+
+// variables contenant les coordonees d'une position
+  late double lat;
+  late double long;
+  //verifie si l'espace pour le code pin est visible afin de changer la valeur des boutons et les actions derrieres les boutons
   bool otploginVisible = false;
+
+  // creation d'une instance de firebaseauth
   FirebaseAuth auth = FirebaseAuth.instance;
 
+//fonction pour obtenir les coordonnees la position actuelle
+  void getCurrentLocation() async {
+    LocationPermission permission;
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      lat = position.latitude;
+      long = position.longitude;
+    } on PlatformException catch (e) {
+      if (e.code == "PERMISSION_DENIED") {
+        var error = "PERMISSION_DENIED";
+        print("PERMISSION_DENIED");
+      } else if (e.code == "PERMISSION_DENIED_NEVER_ASK") {
+        print("PERMISSION_DENIED_NEVER_ASK");
+      }
+    }
+    /* permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.deniedForever) {
+        return Future.error('Location Not Available');
+      }
+    } else {
+      throw Exception('Error');
+    }*/
+    //fonction Geolocator qui donne la localisation
+
+    //coordonee obtenue grace a Geolocator
+  }
+
+  //-----------------------------------------------------------------
+
+//la fonction initstate  la listenOtp lors de rechargement de la page
+  @override
   void initState() {
     super.initState();
+    getCurrentLocation();
     _listenOtp();
   }
 
+/* remplissage automatique de l'otp et */
+  void _listenOtp() async {
+    await SmsAutoFill().listenForCode();
+  }
 
-void _listenOtp() async {
-  await SmsAutoFill().listenForCode();
-
-}
+/* ************************************/
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -83,11 +136,28 @@ void _listenOtp() async {
                   height: 60,
                 ),
                 FlatButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (otploginVisible == false) {
-                  
                       verifyNumber();
                     } else {
+                      print(
+                          "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
+
+                      /**----------------------------------------------------------------------------------*/
+                      PositionModel pos =
+                          PositionModel(longitude: long, latitude: lat);
+                      var identifiant = await PositionService().addPosition(
+                          pos); // renvoie l'id de la position actuelle du manager
+
+                      UserModel user = UserModel(
+                        adress: widget.adressField,
+                        name: widget.nameField,
+                        idPosition: identifiant,
+                        phone:  int.parse(phoneController.text),
+                        picture: 'add',
+                      );
+                      await UserService().addUser(user);
+                      /**-----------------------------------------------------------------------------------*/
                       /*  Fluttertoast.showToast(
                      msg: "compte cree avec succes",
                       toastLength: Toast.LENGTH_SHORT,
@@ -120,6 +190,7 @@ void _listenOtp() async {
           )),
     );
   }
+
 // fonction d'affichage de la boite de dialogue
   void _showValidationDialog(BuildContext context) async => showDialog(
       context: context,
@@ -132,7 +203,6 @@ void _listenOtp() async {
                 fontWeight: FontWeight.bold,
               )),
           content: PinFieldAutoFill(
-           
             controller: otpCodeController,
             keyboardType: TextInputType.number,
             codeLength: 6,
@@ -181,7 +251,7 @@ void _listenOtp() async {
           print(resendtoken);
           print("code envoye");
           print(signcode);
-         
+
           setState(() {
             verificationIDreceived = verificationID;
             otploginVisible = true;
@@ -203,7 +273,15 @@ void _listenOtp() async {
     });
   }
 
-// la fonction affichant l'erreu dans une boite de dialogue
+  // fonction qui retourne l'identifiant de l'utilisateur actuelle de l'application
+
+  Future<String> currentUserid() async {
+    final User user = auth.currentUser!;
+    final id = user.uid;
+    return id;
+  }
+
+// la fonction affichant l'erreur dans une boite de dialogue
   void showMessage(String errorMessage) {
     showDialog(
         context: context,

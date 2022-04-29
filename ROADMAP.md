@@ -11,6 +11,10 @@
 - Update the list delivers screen 
 - make collections on firestore
 - create Models
+- create collection
+- create Models
+- create user account for all user
+
 ### [BACKLOGS]
 
 here are detailed the primary functionalities of the application
