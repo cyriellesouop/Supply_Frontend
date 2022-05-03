@@ -1,26 +1,3 @@
-La verifyPhoneNumber()méthode qui se trouve à l'intérieur de la firebase_authdépendance générera l'otp et l'enverra à l'appareil. 
-Il faut plusieurs rappels, le premier verificationCompletedsera invoqué dans les deux cas suivants :
-
-
-1 - Vérification instantanée. Dans certains cas, le numéro de téléphone peut être vérifié instantanément sans qu'il soit nécessaire d'envoyer ou de saisir un code de vérification.
-
-2 - Récupération automatique. Sur certains appareils, les services Google Play peuvent détecter automatiquement le SMS de vérification entrant et effectuer la vérification sans intervention de l'utilisateur.
-
-Le rappel prendra a PhoneAuthCredentialcomme argument, qui contiendra le smsCode, puis en utilisant setState()nous mettrons à jour la valeur du TextFormFieldcontenant le otp.
-
-Ensuite, puisque l'utilisateur est déjà connecté, nous utilisons linkWithCredential()pour lier à la fois les informations d'identification du téléphone et d'un autre fournisseur,
- et si cela génère l'erreur e.code == 'provider-already-linked', le téléphone sera déjà lié, nous nous connectons donc simplement et naviguons vers le fichier HomePage().
-
-Le verificationFailedrappel sera appelé chaque fois qu'une erreur se produit, nous utilisons donc le showMessage()pour montrer l'erreur à l'utilisateur.
-
-Le codeSentrappel sera appelé lorsque le code de vérification par SMS aura été envoyé au numéro de téléphone fourni. Ensuite, nous enregistrons le verificationIdafin que nous puissions construire un identifiant plus tard en combinant le code avec un ID de vérification.
-
-
-
-
-FirebaseAuth( 9470): [SmsRetrieverHelper] SMS verification code request failed: unknown status code: 17052 Exceeded per phone number quota for sending verification codes.
-
-
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:async';
@@ -30,6 +7,8 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:supply_app/components/models/Database_Model.dart';
+import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/screen/manager/profil_deliver.dart';
 import 'package:supply_app/components/services/user_service.dart';
@@ -97,7 +76,7 @@ class _ManagerHomeState extends State<ManagerHome> {
     List<LatLng> polylineCoordinates = [];
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleAPiKey="AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU",
+      googleAPiKey = "AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU",
       PointLatLng(positionDeliver.latitude, positionDeliver.longitude),
       PointLatLng(positionDeliver.latitude, positionDeliver.longitude),
       travelMode: TravelMode.driving,
@@ -125,7 +104,6 @@ class _ManagerHomeState extends State<ManagerHome> {
     polylines[id] = polyline;
     setState(() {});
   }
-
 
 //widget final
   @override
@@ -181,18 +159,22 @@ class _ManagerHomeState extends State<ManagerHome> {
                               top: kDefaultPadding,
                               left: kDefaultPadding / 2,
                               right: kDefaultPadding / 2),
-                              scrollDirection: Axis.horizontal,
+                          scrollDirection: Axis.horizontal,
                           itemCount: count,
                           itemBuilder: (BuildContext context, int index) {
-                            final DocumentSnapshot snapshot =
-                                Deliversnapshot.data!.docs[index];
-                            return ProfilDeliver(snapshot);
+                            /*  final DocumentSnapshot snapshot =
+                                Deliversnapshot.data!.docs[index];*/
+                            final user = Deliversnapshot.data!.docs
+                                .map((doc) => UserModel.fromJson(
+                                    doc.data() as Map<String, dynamic>))
+                                .toList()[index];
+
+                            return ProfilDeliver(user);
                           },
                         );
                       },
                     ),
                   )
-
                 ],
               ),
             ),
@@ -201,7 +183,6 @@ class _ManagerHomeState extends State<ManagerHome> {
       ),
     );
   }
-
 }
 
 @override

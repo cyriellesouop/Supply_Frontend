@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
+import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'package:supply_app/constants.dart';
+import 'package:supply_app/main.dart';
 
 /*Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +32,9 @@ class IntroductionScreen extends StatefulWidget {
 }
 
 class _IntroductionScreenState extends State<IntroductionScreen> {
+
+ 
+ 
   final controller = PageController();
   bool isLastPage = false;
 
@@ -73,10 +79,10 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
                   minimumSize: const Size.fromHeight(80)),
               onPressed: () async {
                 //navigate directly on the inscription page
-                /*  final prefs = await SharedPreferences.getInstance();
-                prefs.setBool('showInscription', true);*/
+                 final prefs = await SharedPreferences.getInstance();
+                prefs.setBool('ManagerHome', true);
                 Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => InscriptionName()));
+                    MaterialPageRoute(builder: (context) => const InscriptionName()));
               },
               child: Text(
                 'COMMENCER',

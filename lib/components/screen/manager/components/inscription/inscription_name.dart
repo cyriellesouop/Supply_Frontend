@@ -1,46 +1,34 @@
-// ignore_for_file: dead_code, sized_box_for_whitespace, prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, no_logic_in_create_state,, must_be_immutable
+// ignore_for_file: dead_code, sized_box_for_whitespace, prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, no_logic_in_create_state,, must_be_immutable, prefer_typing_uninitialized_variables
 
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_validate.dart';
+
 import 'package:supply_app/constants.dart';
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 
 class InscriptionName extends StatefulWidget {
- 
-  //les controleurs des champs nom, adresse et de la photo
-  /*TextEditingController? nameController = TextEditingController();
-  TextEditingController? adresseController = TextEditingController();
-  TextEditingController? pictureController = TextEditingController(); */
-
-  // InscriptionName(this.nameController,this.adresseController,this.pictureController, {Key? key}) : super(key: key);
-
-  // const InscriptionName({Key? key}) : super(key: key);
-
+  const InscriptionName({Key? key}) : super(key: key);
 
   @override
   _InscriptionNameState createState() => _InscriptionNameState();
 }
 
 class _InscriptionNameState extends State<InscriptionName> {
-  late PickedFile _imageFile;
-  final ImagePicker _picker = ImagePicker();
-  late File _image;
-  final picker = ImagePicker();
-
+ //_image contiendra le chemin d'acces a l'image prise depuis un telephone
+  var _image;
 
 //les controleurs des champs nom, adresse et de la photo
   TextEditingController nameController = TextEditingController();
   TextEditingController adresseController = TextEditingController();
-  TextEditingController pictureController = TextEditingController(); 
+ String picture="assets/images/profil.png";
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-// creation du constructeur avec les elements caracteristiques de la page inscription name
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,15 +41,18 @@ class _InscriptionNameState extends State<InscriptionName> {
             onTap: () {
               FocusScope.of(context).unfocus();
             },
-            child: ListView(
-              children: <Widget>[
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
-                          context: context,
-                          builder: ((builder) => bottomSheet()));
-                    },
+            child: Form(
+               key: _formKey,
+              child: ListView(
+                
+                children: <Widget>[
+                  Center(
+                    /* child: InkWell(
+                      onTap: () {
+                        showModalBottomSheet(
+                            context: context,
+                            builder: ((builder) => bottomSheet()));
+                      },*/
                     child: Stack(children: [
                       Container(
                         width: 150,
@@ -77,14 +68,10 @@ class _InscriptionNameState extends State<InscriptionName> {
                             shape: BoxShape.circle,
                             image: DecorationImage(
                                 fit: BoxFit.cover,
-                                image: AssetImage("assets/images/profil.png")
-
-                                /*  image: (_imageFile != null)
-                                    ? FileImage(File(_imageFile.path))
+                                image: (_image != null)
+                                    ? FileImage(_image)
                                     : AssetImage("assets/images/profil.png")
-                                        as ImageProvider
-                                */
-                                )),
+                                        as ImageProvider)),
                       ),
                       Positioned(
                         bottom: 0,
@@ -98,72 +85,85 @@ class _InscriptionNameState extends State<InscriptionName> {
                               color: kPrimaryColor),
                           child: IconButton(
                             icon: Icon(Icons.camera_alt, color: Colors.white),
-                            onPressed: () {},
+                            onPressed: () {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: ((builder) => bottomSheet()));
+                            },
                           ),
                         ),
                       )
                     ]),
+                    //  ),
                   ),
-                ),
-                const SizedBox(
-                  height: 25.0,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
-                  child: TextFormField(
-                    controller: nameController,
-                   
-                    style: GoogleFonts.poppins(fontSize: 15),
-                    decoration: InputDecoration(
-                        //  labelText: 'Veuillez saisir le nom de l\'entreprise',
-
-                        filled: true,
-                        hintStyle: TextStyle(color: Colors.grey[800]),
-                        hintText: "Nom de l\'entreprise",
-                        //  prefixIcon: const Icon(Icons.home_mini_rounded),
-                        fillColor: Colors.white70),
+                  const SizedBox(
+                    height: 25.0,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
-                  child: TextFormField(
-                    controller: adresseController,
-                    style: GoogleFonts.poppins(fontSize: 15),
-                    decoration: InputDecoration(
-                        //  labelText: 'Veuillez saisir le nom de l\'entreprise',
-
-                        filled: true,
-                        hintStyle: TextStyle(color: Colors.grey[800]),
-                        hintText: "Adresse de l'entreprise",
-                        //  prefixIcon: const Icon(Icons.home_mini_rounded),
-                        fillColor: Colors.white70),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30),
+                    child: TextFormField(
+                      controller: nameController,
+                      style: GoogleFonts.poppins(fontSize: 15),
+                       validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'veuillez saisir votre nom';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          filled: true,
+                          hintStyle: TextStyle(color: Colors.grey[800]),
+                          hintText: "Nom de l\'entreprise",
+                          fillColor: Colors.white70),
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                FlatButton(
-                  onPressed: () async {
-                      
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>  PhoneAuth(nameField :nameController.text,adressField:adresseController.text, picture:pictureController.text))
-                            );
-                            
-                  },
-                  padding: EdgeInsets.all(15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30),
+                    child: TextFormField(
+                      controller: adresseController,
+                      style: GoogleFonts.poppins(fontSize: 15),
+                       validator: (value) {
+                        if (value == null ||  value.isEmpty) {
+                          return 'veuillez saisir l adresse de votre entreprise';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          filled: true,
+                          hintStyle: TextStyle(color: Colors.grey[800]),
+                          hintText: "Adresse de l'entreprise",
+                          fillColor: Colors.white70),
+                    ),
                   ),
-                  color: kPrimaryColor,
-                  textColor: kBackgroundColor,
-                  child: Text(
-                    'SUIVANT',
-                    style: GoogleFonts.poppins(fontSize: 15),
+                  const SizedBox(
+                    height: 25,
                   ),
-                )
-              ],
+                  FlatButton(
+                    onPressed: () async {
+                      print("le chemin d'acces a l'image est :$picture");
+                       print("le deuxieme chemin d'acces a l'image est :$_image");
+                        if (_formKey.currentState!.validate()){
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PhoneAuth(
+                                  nameField: nameController.text,
+                                  adressField: adresseController.text,
+                                  picture: picture)));}
+                    },
+                    padding: EdgeInsets.all(15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    color: kPrimaryColor,
+                    textColor: kBackgroundColor,
+                    child: Text(
+                      'SUIVANT',
+                      style: GoogleFonts.poppins(fontSize: 15),
+                    ),
+                  )
+                ],
+              ),
             ),
           )),
     );
@@ -193,15 +193,13 @@ class _InscriptionNameState extends State<InscriptionName> {
               icon: Icon(Icons.camera),
               onPressed: () {
                 selectOrTakePhoto(ImageSource.camera);
-               // takePhoto(ImageSource.camera);
               },
               label: Text("Camera"),
             ),
             FlatButton.icon(
               icon: Icon(Icons.image),
               onPressed: () {
-                selectOrTakePhoto(ImageSource.camera);
-               // takePhoto(ImageSource.gallery);
+                selectOrTakePhoto(ImageSource.gallery);
               },
               label: Text("Gallerie"),
             ),
@@ -211,48 +209,29 @@ class _InscriptionNameState extends State<InscriptionName> {
     );
   }
 
-Future selectOrTakePhoto(ImageSource imageSource) async {
-    final pickedFile = await picker.getImage(source: imageSource);
+  Future<void> selectOrTakePhoto(ImageSource imageSource) async {
+    final pickedFile = (await ImagePicker().pickImage(source: imageSource));
+    
+    if (pickedFile == null) {
+      return;
+    }
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final fileName = p.basename(pickedFile.path);
+    final savedImage =
+        await File(pickedFile.path).copy('${appDir.path}/$fileName');
 
     setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-        print(pickedFile.path);
-     //   Navigator.pushNamed(context, routeEdit, arguments: _image);
-      } else
-        print('No photo was selected or taken');
+      _image = savedImage;
+      picture=pickedFile.path;
     });
   }
-
-
-
-
-
-
-
-  
-
-  /*void takePhoto(ImageSource source) async {
-
-    try{
-    String pathImage = join((await getTemporaryDirectory()).path,'${DateTime.now().millisecondsSinceEpoch}.jpg');
-    final pickedFile = await _picker.getImage(
-      source: source,
-      
-    );
-    setState(() {
-      _imageFile = pickedFile!;
-    });
-    } catch (e){
-      print(e);
-    }
-  }*/
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<PickedFile>('_imageFile', _imageFile));
-    properties.add(DiagnosticsProperty<PickedFile>('_imageFile', _imageFile));
+    properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
+    properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
   }
 }
 
