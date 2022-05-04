@@ -37,11 +37,14 @@ class _PhoneAuthState extends State<PhoneAuth> {
 //controleur du champs de remplissage du numero de telephone et de l'Ot code
   TextEditingController phoneController = TextEditingController();
   TextEditingController otpCodeController = TextEditingController();
+  // gerer l'etat du formulaire
   final _formKey = GlobalKey<FormState>();
+  //verifier si l'authentification a reussi
   late bool verified;
   late UserModel user;
+  // timer utiliser pour le onloading
  Timer? _timer;
-  // String bouton = 'VERIFIER';
+
 
   // variable contenant le message de verification
   String verificationIDreceived = "";
@@ -86,7 +89,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   //-----------------------------------------------------------------
 
-//la fonction initstate  la listenOtp et la currentlocation lors de rechargement de la page
+//la fonction initstate  la listenOtp et la currentlocation et le easyloading lors de rechargement de la page
   @override
   void initState() {
     super.initState();
@@ -98,9 +101,12 @@ class _PhoneAuthState extends State<PhoneAuth> {
         _timer?.cancel();
       }
     });
-    //  EasyLoading.showSuccess('Use in initState');
-    // EasyLoading.removeCallbacks();
+    
   }
+  /**************************************************/
+  
+
+
 
 /* remplissage automatique de l'otp et */
   void _listenOtp() async {
@@ -141,9 +147,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           RegExp(r"[0-9]"),
                         )
                       ],
-                      validator: (phoneController) {
-                        if (phoneController == null ||
-                            phoneController.isEmpty) {
+                      validator:(value) {
+                        if (value == null ||  value.isEmpty) {
                           return 'veuillez saisir votre numero de telephone';
                         }
                         return null;
@@ -183,22 +188,29 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         var identifiant = await PositionService().addPosition(
                             pos); // renvoie l'id de la position actuelle du manager
 
-                        UserModel user = UserModel(
+                        UserModel userCreate = UserModel(
+                          //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                          idUser: authClass.identifiant(),
                           adress: widget.adressField,
                           name: widget.nameField,
-                          idPosition: identifiant,
+                          position: pos,
+                         // idPosition: identifiant,
                           phone: int.parse(phoneController.text),
                           picture: widget.picture,
                         );
                         _timer?.cancel();
                         await EasyLoading.show(status: 'en cours...');
-                        await UserService().setUser(user).then((value) =>
-                            EasyLoading.showSuccess('compte cree avec succes')
+                       // await UserService().setUser(user).then((value) =>
+                       await UserService().addUser(userCreate).then((value) =>
+
+                           ( EasyLoading.showSuccess('compte cree avec succes'))
                                 .catchError((onError) {
                               EasyLoading.showError('echec de connexion');
                             }));
+                             _timer?.cancel();
+                             EasyLoading.dismiss();
 
-                        // if(response.stat){}
+                        
                         /**-----------------------------------------------------------------------------------*/
                         /*    Fluttertoast.showToast(
                             msg: "compte cree avec succes",
@@ -212,7 +224,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const ManagerHome()));
+                              //builder: (context) =>  ManagerHome( user: authClass.user)));
+                                builder: (context) =>  ManagerHome( currentManager: userCreate)));
                         _timer?.cancel();
                         await EasyLoading.dismiss();
                       }

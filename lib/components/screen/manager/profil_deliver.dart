@@ -6,8 +6,9 @@ import 'package:supply_app/components/models/Database_Model.dart';
 import '../../../constants.dart';
 
 class ProfilDeliver extends StatelessWidget {
-  late UserModel deliver;
-  ProfilDeliver(this. deliver, {Key? key}) : super(key: key);
+   UserModel deliver;
+  UserModel manager;
+  ProfilDeliver(this.deliver,this.manager, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +72,7 @@ class ProfilDeliver extends StatelessWidget {
       width: 20,
       decoration:
           const BoxDecoration(shape: BoxShape.rectangle, color: kPrimaryColor),
-      child: Text("vous etes a ${calculateDistance(1, 2, 10, 5)}"),
+      child: Text("vous etes a ${calculateDistance(manager.position.latitude, manager.position.longitude, deliver.position.latitude, deliver.position.longitude)}"),
     );
   }
 

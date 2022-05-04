@@ -1,11 +1,14 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supply_app/components/services/user_service.dart';
 import '../models/Database_Model.dart';
 
 class PositionService {
   CollectionReference<Map<String, dynamic>> PositionCollection =
       FirebaseFirestore.instance.collection("position");
+ late UserService user;
+
 
   PositionModel _PositionFromSnapshot(DocumentSnapshot<Map<String, dynamic>> json) {
     var data = json.data();
@@ -53,4 +56,10 @@ class PositionService {
   Future<void> removePosition(String idPosition) {
     return PositionCollection.doc(idPosition).delete();
   }
+
+  //obtenir la latitude et longitude d'un user
+
+
+ 
+
 }

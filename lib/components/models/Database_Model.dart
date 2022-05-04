@@ -1,5 +1,15 @@
 
 
+// ignore_for_file: non_constant_identifier_names
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import 'package:supply_app/components/home_screen.dart';
+import 'package:supply_app/components/screen/manager/components/manager_home.dart';
+
 /******************************************************************************************************************/
 // class Position
 class PositionModel {
@@ -102,7 +112,8 @@ class UserModel {
   final int? phone;
   final String? tool;
   final String? picture;
-  final String idPosition;
+  final PositionModel position;
+ // final String idPosition;
   final bool isManager;
   final bool isClient;
   final bool isDeliver;
@@ -114,7 +125,8 @@ class UserModel {
        this.phone,
        this.tool,
        this.picture,
-       required this.idPosition,
+       required this.position,
+      // required this.idPosition,
        this.isManager=true,
        this.isClient=false,
        this.isDeliver=false});
@@ -127,7 +139,8 @@ class UserModel {
         phone: json['phone'],
         tool: json['tool'],
         picture:json['picture'],
-        idPosition: json['idPosition'],
+        position: PositionModel.fromJson(json['position']),
+     //   idPosition: json['idPosition'],
         isManager: json['isManager'],
         isClient: json['isClient'],
         isDeliver: json['isDeliver']
@@ -142,7 +155,7 @@ class UserModel {
         'phone': phone,
         'tool': tool,
         'picture':picture,
-        'idPosition': idPosition,
+        'position': position,
         'isManager': isManager,
         'isClient': isClient,
         'isDeliver': isDeliver
@@ -185,5 +198,7 @@ class ChatModel {
     };
   }
 }
+
+
 
 

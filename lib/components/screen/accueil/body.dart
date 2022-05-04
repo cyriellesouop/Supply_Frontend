@@ -2,6 +2,7 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:supply_app/components/screen/accueil/introduction_screen1.dart';
+import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'package:supply_app/constants.dart';
 
 class Body extends StatelessWidget {
@@ -48,7 +49,8 @@ class Body extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => IntroductionScreen()));
+                            builder: (context) => ManagerHome()));
+                             // builder: (context) => IntroductionScreen()));
                     },
                     child: Text(
                       "S\'INSCRIRE",

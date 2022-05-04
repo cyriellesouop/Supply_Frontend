@@ -6,12 +6,15 @@ import 'package:supply_app/components/screen/manager/components/manager_home.dar
 
 class Authclass {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final storage = new FlutterSecureStorage();
+  late User user;// =  _auth.currentUser;
+ 
+
+  final storage = const FlutterSecureStorage();
   bool otploginVisible = false;
 
-
-
-  
+  Authclass(){
+    user= _auth.currentUser!;
+  }
 
   void storeTokenAndData(UserCredential userCredential) async {
     print("enregistrement du token et des donnees");
@@ -29,16 +32,21 @@ class Authclass {
       String phoneNumber, BuildContext context, Function setData) async {
     // ignore: prefer_function_declarations_over_variables
     PhoneVerificationCompleted verificationCompleted =
-        (PhoneAuthCredential phoneAuthCredential) async {showSnackBar(context, "Verification Completed");};
+        (PhoneAuthCredential phoneAuthCredential) async {
+      //showSnackBar(context, "Verification Completed");
+    };
     // ignore: prefer_function_declarations_over_variables
     PhoneVerificationFailed verificationFailed =
-        (FirebaseAuthException exception) { showSnackBar(context, exception.toString());};
+        (FirebaseAuthException exception) {
+      //showSnackBar(context, exception.toString());
+    };
     // ignore: prefer_function_declarations_over_variables
     PhoneCodeSent codeSent =
         (String verificationID, [int? forceResnedingtoken]) {
       setData(verificationID);
-       showSnackBar(context, "Time out");
-    } ;
+      //
+      //  showSnackBar(context, "Time out");
+    };
 
     // ignore: prefer_function_declarations_over_variables
     PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
@@ -51,14 +59,17 @@ class Authclass {
           verificationFailed: verificationFailed,
           codeSent: codeSent,
           codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
-    } catch (e) {showSnackBar(context, e.toString());}
+    } catch (e) {
+      //showSnackBar(context, e.toString());
+    }
   }
 
+/*
   void showSnackBar(BuildContext context, String text) {
     final snackBar = SnackBar(content: Text(text));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
+*/
   Future<bool> signInwithPhoneNumber(
       String verificationId, String smsCode, BuildContext context) async {
     try {
@@ -68,22 +79,31 @@ class Authclass {
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
       storeTokenAndData(userCredential);
-     // otploginVisible=true;
-     // Navigator.pop(context,otploginVisible);
-     Navigator.pop(context);
-     /* Navigator.pushAndRemoveUntil(
+      // otploginVisible=true;
+      // Navigator.pop(context,otploginVisible);
+      Navigator.pop(context);
+      /* Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (builder) =>const ManagerHome()),
           (route) => false);*/
-           showSnackBar(context, "logged In");
+      // showSnackBar(context, "logged In");
       return true;
-     
     } catch (e) {
-      showSnackBar(context, e.toString());
+      // showSnackBar(context, e.toString());
       return false;
     }
+  }
 
+ // ignore: unnecessary_null_comparison
+ String identifiant()=> (user.uid == null)? "":user.uid.toString();
 
+  /*Future<String> getCurrentUserId() async {
+    if (signInwithPhoneNumber){
+      final String uid= user.uid.toString();
 
-  
-}}
+    }
+   
+    final String uid = user.uid.toString();
+    return uid;
+  }*/
+}
