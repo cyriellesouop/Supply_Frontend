@@ -27,6 +27,14 @@ class _InscriptionNameState extends State<InscriptionName> {
   TextEditingController adresseController = TextEditingController();
  String picture="assets/images/profil.png";
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  
+//vider les controller
+  @override
+  void dispose() {
+   nameController.dispose();
+    adresseController.dispose();
+    super.dispose();
+  }
 
 
   @override

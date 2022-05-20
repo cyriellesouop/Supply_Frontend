@@ -3,15 +3,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
-import '../../../constants.dart';
+import '../../../../constants.dart';
 
 class ProfilDeliver extends StatelessWidget {
-   UserModel deliver;
-  UserModel manager;
-  ProfilDeliver(this.deliver,this.manager, {Key? key}) : super(key: key);
+  //UserModel deliver;
+ // UserModel manager;
+ // double latmanager,longmanager,latdeliver,longdeliver;
+ // ProfilDeliver(this.deliver,this.manager,this.latmanager,this.longmanager,this.latdeliver,this.longdeliver, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+     Size size = MediaQuery.of(context).size;
     return Column(
       children: [
         InkWell(
@@ -21,10 +23,10 @@ class ProfilDeliver extends StatelessWidget {
           },
           child: Stack(children: [
             Container(
-              width: 150,
-              height: 150,
+              width: size.width*0.35,
+              height: size.width*0.35,
               decoration: BoxDecoration(
-                  border: Border.all(width: 4, color: Colors.white70),
+                  border: Border.all(width: 1, color: Colors.white),
                   boxShadow: [
                     BoxShadow(
                         spreadRadius: 2,
@@ -40,17 +42,18 @@ class ProfilDeliver extends StatelessWidget {
                       )),
             ),
             Positioned(
-              bottom: 0,
-              right: 0,
+              bottom: size.width*0.22,
+              right: size.width*0.02,
               child: Container(
-                height: 40,
-                width: 40,
+                height: 30,
+                width: 30,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(width: 4, color: Colors.white),
+                    border: Border.all(width: 0,color: Colors.transparent ),
+                    //color: Colors.white),
                     color: kPrimaryColor,
                     image: DecorationImage(
-                        fit: BoxFit.cover, image: AssetImage( deliver.name)
+                        fit: BoxFit.cover, image: AssetImage( 'assets/images/profil.png')
                         //  image: AssetImage("${user.tool}")
                         )),
                
@@ -59,9 +62,10 @@ class ProfilDeliver extends StatelessWidget {
           ]),
         ),
         const SizedBox(
-          height: 5,
+          height: 10,
         ),
-        Text( deliver.name),
+        Text( 'deliver.name'),
+       // Text( deliver.name),
       ],
     );
   }
@@ -72,7 +76,8 @@ class ProfilDeliver extends StatelessWidget {
       width: 20,
       decoration:
           const BoxDecoration(shape: BoxShape.rectangle, color: kPrimaryColor),
-      child: Text("vous etes a ${calculateDistance(manager.position.latitude, manager.position.longitude, deliver.position.latitude, deliver.position.longitude)}"),
+    //  child: Text("vous etes a ${calculateDistance(this.latmanager, this.longmanager, this.latdeliver, this.longdeliver)}"),
+      child: Text("vous etes a ${calculateDistance(9.9, 10.0, 10.1, 11.1)}"),
     );
   }
 

@@ -8,6 +8,9 @@ import 'package:supply_app/components/screen/manager/components/manager_home.dar
 import 'package:supply_app/constants.dart';
 import 'package:supply_app/main.dart';
 
+import '../../models/Database_Model.dart';
+import '../../services/user_service.dart';
+
 /*Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -32,6 +35,9 @@ class IntroductionScreen extends StatefulWidget {
 }
 
 class _IntroductionScreenState extends State<IntroductionScreen> {
+  late  UserModel exampleModel;
+late UserService exampleService;
+
 
  
  
@@ -80,7 +86,7 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
               onPressed: () async {
                 //navigate directly on the inscription page
                  final prefs = await SharedPreferences.getInstance();
-                prefs.setBool('ManagerHome', true);
+                prefs.setBool('InscriptionName', true);
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const InscriptionName()));
               },

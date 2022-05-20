@@ -1,11 +1,18 @@
 // ignore_for_file: deprecated_member_use, prefer_const_constructors
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
-import 'package:supply_app/components/screen/accueil/introduction_screen1.dart';
-import 'package:supply_app/components/screen/manager/components/manager_home.dart';
+import 'package:supply_app/components/models/Database_Model.dart';
+import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
+import 'package:supply_app/components/screen/manager/deliver_list.dart';
+import 'package:supply_app/components/services/user_service.dart';
 import 'package:supply_app/constants.dart';
 
+import 'introduction_screen1.dart';
+
 class Body extends StatelessWidget {
+
+
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -49,7 +56,7 @@ class Body extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ManagerHome()));
+                            builder: (context) => IntroductionScreen()));
                              // builder: (context) => IntroductionScreen()));
                     },
                     child: Text(

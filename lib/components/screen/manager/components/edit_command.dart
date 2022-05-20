@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supply_app/components/home_screen.dart';
+import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import '../../../../constants.dart';
-import 'deliver_list.dart';
+
 
 class EditCommand extends StatefulWidget {
   @override
@@ -190,7 +192,7 @@ class _EditCommandState extends State<EditCommand> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const DeliverList()));
+                            builder: (context) => const HomeScreen()));
                   },
                   padding: EdgeInsets.all(15),
                   shape: RoundedRectangleBorder(

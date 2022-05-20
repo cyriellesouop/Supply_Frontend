@@ -15,7 +15,25 @@ Le verificationFailedrappel sera appelé chaque fois qu'une erreur se produit, n
 
 Le codeSentrappel sera appelé lorsque le code de vérification par SMS aura été envoyé au numéro de téléphone fourni. Ensuite, nous enregistrons le verificationIdafin que nous puissions construire un identifiant plus tard en combinant le code avec un ID de vérification.
 
+un programme python qui prend en
 
+exercice 2
+ecrire un programme python qui prend en argument une liste de benefice etablie par une entreprise par mois. a chaque imdex est a
+est associee le benefice d'un mois.
+ca renvoit l'intervalle du mois pendant lequel l'entreprise a etabli plus de benefice
+
+
+exercice1
+**av** avant la voyelle si la chaine contient une voyelle
+s'il ya deux voyelles consevutives, ca ajoute av avant la premiere voyelle. el la ndeuxieme reste inchangee
+
+
+3.9119924,11.4810984,14.25
+3.9119924,11.4810984,14.25
+3.9168038!4d11.5215348
+3.9264793!4d11.5202084
+3.8887996!4d11.4900041
+3.8667864!4d11.5006548
 
 
 FirebaseAuth( 9470): [SmsRetrieverHelper] SMS verification code request failed: unknown status code: 17052 Exceeded per phone number quota for sending verification codes.

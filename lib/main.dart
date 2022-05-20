@@ -1,8 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supply_app/components/models/Database_Model.dart';
+import 'package:supply_app/components/screen/accueil/home_Page.dart';
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
 import 'package:supply_app/components/screen/manager/components/manager_home.dart';
+import 'package:supply_app/components/screen/manager/components/profil_deliver.dart';
+import 'package:supply_app/components/services/auth_service.dart';
+//import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'components/screen/accueil/splash_screen.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -37,18 +43,31 @@ void configLoading() {
 
 class MyApp extends StatelessWidget {
   final bool showHome;
-  const MyApp({Key? key, required this.showHome}) : super(key: key);
+
+   UserModel currentUser = new UserModel(name: 'audrey');
+   MyApp({Key? key,  required this.showHome}) : super(key: key);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     // ignore: prefer_const_constructors
-    return MaterialApp(
+    
+    return StreamProvider<AppUser?>.value(
+      value: Authclass().user, initialData: null,
+      child: MaterialApp(
         //  title: 'Mon application',
-
         debugShowCheckedModeBanner: false,
-        home: showHome? InscriptionName(): SplashScreen(),
+        home:  ManagerHome(currentManager: currentUser,),
+        // home: const HomePageScreen(),
+       // home: showHome? const HomePageScreen(): SplashScreen(),
         builder: EasyLoading.init(),
         // home: HomeScreen()
-        );
+        ));
+   /* return MaterialApp(
+        //  title: 'Mon application',
+        debugShowCheckedModeBanner: false,
+        home: showHome? const InscriptionName(): SplashScreen(),
+        builder: EasyLoading.init(),
+        // home: HomeScreen()
+        );*/
   }
 }

@@ -2,18 +2,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:supply_app/components/screen/manager/components/manager_home.dart';
+import 'package:supply_app/components/models/Database_Model.dart';
 
 class Authclass {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  late User user;// =  _auth.currentUser;
- 
+  //user =  _auth.currentUser;
 
-  final storage = const FlutterSecureStorage();
+  var storage = const FlutterSecureStorage();
   bool otploginVisible = false;
 
-  Authclass(){
-    user= _auth.currentUser!;
+  AppUser? _userFromFirebase(User? user) {
+    if (user != null) {
+      return AppUser(uid: user.uid);
+    } else {
+      return null;
+    }
+  }
+
+  Stream<AppUser?> get user {
+    return _auth.authStateChanges().map(_userFromFirebase);
   }
 
   void storeTokenAndData(UserCredential userCredential) async {
@@ -53,7 +60,7 @@ class Authclass {
         (String verificationID) {};
     try {
       await _auth.verifyPhoneNumber(
-          timeout: const Duration(seconds: 300),
+          timeout: const Duration(seconds: 180),
           phoneNumber: phoneNumber,
           verificationCompleted: verificationCompleted,
           verificationFailed: verificationFailed,
@@ -64,13 +71,7 @@ class Authclass {
     }
   }
 
-/*
-  void showSnackBar(BuildContext context, String text) {
-    final snackBar = SnackBar(content: Text(text));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-*/
-  Future<bool> signInwithPhoneNumber(
+  Future<AppUser?> signInwithPhoneNumber(
       String verificationId, String smsCode, BuildContext context) async {
     try {
       AuthCredential credential = PhoneAuthProvider.credential(
@@ -79,31 +80,33 @@ class Authclass {
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
       storeTokenAndData(userCredential);
+
+       User?  users = userCredential.user;
+      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WAOU     ");
+       print('l identifiant est ${users!.uid}');
       // otploginVisible=true;
       // Navigator.pop(context,otploginVisible);
       Navigator.pop(context);
-      /* Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (builder) =>const ManagerHome()),
-          (route) => false);*/
-      // showSnackBar(context, "logged In");
-      return true;
+
+       return _userFromFirebase(users);
+     // return true;
     } catch (e) {
       // showSnackBar(context, e.toString());
-      return false;
+        return null;
+     // return false;
     }
   }
 
- // ignore: unnecessary_null_comparison
- String identifiant()=> (user.uid == null)? "":user.uid.toString();
+  // ignore: unnecessary_null_comparison
+  // String identifiant()=> (this.users. == null)? "":this.users!.uid.toString();
 
-  /*Future<String> getCurrentUserId() async {
-    if (signInwithPhoneNumber){
-      final String uid= user.uid.toString();
-
+  bool isphonenumberok(String? actual_user) {
+    if (actual_user != '') {
+      return true;
+      // final String uid= user.uid.toString();
     }
-   
-    final String uid = user.uid.toString();
-    return uid;
-  }*/
+    // final String uid = user.uid.toString();
+    //return uid;
+    return false;
+  }
 }

@@ -10,7 +10,7 @@ class PositionService {
  late UserService user;
 
 
-  PositionModel _PositionFromSnapshot(DocumentSnapshot<Map<String, dynamic>> json) {
+ /* PositionModel _PositionFromSnapshot(DocumentSnapshot<Map<String, dynamic>> json) {
     var data = json.data();
     if (data == null) throw Exception("Position introuvable");
     return PositionModel(
@@ -19,17 +19,49 @@ class PositionService {
       longitude: data['longitude'],
       latitude: data['latitude'],
     );
-  }
-
-  //Get Positions
+  }*/
+  //Get all Positions
   Stream<List<PositionModel>> getPositions() {
-    return PositionCollection.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => PositionModel.fromJson(doc.data())).toList());
+    return PositionCollection.snapshots().map(
+      (snapshot) {
+        //  x = snapshot.docs.length;
+        //  print('la longueur du snapshot est ${snapshot.docs.length}');
+        /* try{
+      if (snapshot.docs.isNotEmpty) {
+         print('la longueur du snapshot est ${snapshot.docs.length}');  
+      } } catch (e){print('erreur est le suivant $e');}*/
+        return snapshot.docs.map((doc) {
+          //  print('moguem souop${doc.runtimeType}');
+          //print('mon adresse${doc.get('adress')}');
+          return PositionModel(
+              //idUser: data['idUser'],
+              idPosition: doc.get('idPosition'),
+              longitude: doc.get('longitude'),
+              latitude: doc.get('latitude')
+
+              );
+        }).toList();
+        // return model;
+      },
+    );
   }
 
   //Get Position by ID
-  Stream<PositionModel> getPosition(String idPosition) {
-    return PositionCollection.doc(idPosition).snapshots().map(_PositionFromSnapshot);
+  Future<PositionModel> getPosition(String idPosition) async{
+    return PositionCollection.doc(idPosition).get().then((value) {
+      if (value != null) {
+        var res = value.data();
+        var resmap = Map<String, dynamic>.from(res!);
+      //  print('type var ${resmap}');
+        return PositionModel(
+            //idUser: data['idUser'],
+            idPosition: resmap['idPosition'],
+            longitude: resmap['longitude'],
+            latitude: resmap['latitude']
+           );
+      } else
+        return null as PositionModel;
+    });
   }
 
    //Update an position and insert if not exits
