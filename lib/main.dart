@@ -8,6 +8,8 @@ import 'package:supply_app/components/screen/manager/components/inscription/insc
 import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'package:supply_app/components/screen/manager/components/profil_deliver.dart';
 import 'package:supply_app/components/services/auth_service.dart';
+import 'package:supply_app/components/services/command_service.dart';
+import 'package:supply_app/components/services/user_service.dart';
 //import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'components/screen/accueil/splash_screen.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -44,24 +46,40 @@ void configLoading() {
 class MyApp extends StatelessWidget {
   final bool showHome;
 
-   UserModel currentUser = new UserModel(name: 'audrey');
+   //UserModel currentUser = new UserModel(name: 'audrey',picture: "assets/images/profil.png");
    MyApp({Key? key,  required this.showHome}) : super(key: key);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     // ignore: prefer_const_constructors
+   /* return StreamProvider<List<UserModel>>.value(
+      value:UserService().getDelivers(),
+       initialData: [],*/
     
-    return StreamProvider<AppUser?>.value(
-      value: Authclass().user, initialData: null,
-      child: MaterialApp(
-        //  title: 'Mon application',
-        debugShowCheckedModeBanner: false,
-        home:  ManagerHome(currentManager: currentUser,),
-        // home: const HomePageScreen(),
-       // home: showHome? const HomePageScreen(): SplashScreen(),
-        builder: EasyLoading.init(),
-        // home: HomeScreen()
-        ));
+    return MultiProvider(
+      providers:[
+        //....................................
+         //StreamProvider<List<CommandModel>>.value(value: CommandService().getCommands(), initialData: [] ),
+          StreamProvider<List<UserModel>>.value(value: UserService().getDelivers(), initialData: []),
+          StreamProvider<AppUser?>.value(value: Authclass().user, initialData: null,),
+          
+
+
+        ],
+     // child: StreamProvider<AppUser?>.value(
+       // value: Authclass().user, initialData: null,
+        child: MaterialApp(
+          //  title: 'Mon application',
+          debugShowCheckedModeBanner: false,
+        //  home:  ManagerHome(currentManager: currentUser,),
+          
+           home: SplashScreen(),//SplashScreen(),// const HomePageScreen(),
+         // home: showHome? const HomePageScreen(): SplashScreen(),
+          builder: EasyLoading.init(),
+          // home: HomeScreen()
+         // )
+          ),
+    );
    /* return MaterialApp(
         //  title: 'Mon application',
         debugShowCheckedModeBanner: false,

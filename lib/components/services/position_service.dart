@@ -1,6 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:supply_app/components/services/user_service.dart';
 import '../models/Database_Model.dart';
 
@@ -46,12 +48,35 @@ class PositionService {
     );
   }
 
+
+  /*List<LatLng> getUserPosition(List<UserModel> users){
+    List<LatLng> listecoordonnees=[];
+    var coordonnees;
+   
+    // LatLng coordonnees = new LatLng(0, 0)  ;
+    
+    for (var i in users){
+    
+      getPosition(i.idPosition).then((value) {  coordonnees.latitude = value.latitude; coordonnees.longitude=value.longitude;});
+     // coordonnees = LatLng(, longitude)
+    // LatLng location = new LatLng(coordonnees., longitude)
+    print('la coordonnees est actuellement :$coordonnees');
+      listecoordonnees.add(coordonnees);
+       print('la liste de coordonnees mise a jour est:$listecoordonnees');
+    }
+    print('la liste de coordonnees totj al est:$listecoordonnees');
+    return listecoordonnees;
+
+  }*/
+
+  
+
   //Get Position by ID
-  Future<PositionModel> getPosition(String idPosition) async{
+  Future<PositionModel> getPosition(String? idPosition) async{
     return PositionCollection.doc(idPosition).get().then((value) {
-      if (value != null) {
-        var res = value.data();
-        var resmap = Map<String, dynamic>.from(res!);
+      if (value.data() != null) {
+      //  var res = value.data();
+        var resmap = Map<String, dynamic>.from(value.data()!);
       //  print('type var ${resmap}');
         return PositionModel(
             //idUser: data['idUser'],
@@ -59,8 +84,11 @@ class PositionService {
             longitude: resmap['longitude'],
             latitude: resmap['latitude']
            );
-      } else
-        return null as PositionModel;
+      } 
+     else
+       throw Exception("aucune position se trouve dans la bd");
+     //return null as PositionModel;
+    
     });
   }
 

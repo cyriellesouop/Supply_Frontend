@@ -20,8 +20,6 @@ import '../../../../models/Database_Model.dart';
 import '../manager_home.dart';
 
 class PhoneAuth extends StatefulWidget {
-  //  final InscriptionName formulaireinit;
-  // const PhoneAuth({Key? key, required this.formulaireinit}) : super(key: key);
   final String nameField;
   final String adressField;
   final String picture;
@@ -45,6 +43,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   final _formKey = GlobalKey<FormState>();
   //verifier si l'authentification a reussi
   bool verified = false;
+  bool isphonenumberNotFill = true;
   late UserModel user;
   // creation d'une instance de firebaseauth
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -54,6 +53,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
   String actual_user = '';
   // AppUser? actual_user;
   Authclass? authClass; // = Authclass(auth.currentUser);
+
+  //liste des positions de tous les livreurs
+  List<LatLng> listecoordonnees = [];
 
   //token
 
@@ -87,6 +89,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
     }
   }*/
 
+//obtenir la position actuelle
   Future<void> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -128,7 +131,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
     super.dispose();
   }
 
-  UserModel? exampleModel = new UserModel(name: 'fabiol');
+  UserModel? exampleModel =
+      new UserModel(name: 'audrey'); //,picture: "assets/images/profil.png"
 
   UserService ServiceUser = new UserService();
   PositionService ServicePosition = new PositionService();
@@ -150,12 +154,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
     //authClass = Authclass(this.auth.currentUser);
     _listDeliver();
+    //getUserPosition();
     //  print('liste de livreurs ${exampleService.getposdelivers()}');
-    _currentManager();
+    //  _currentManager();
     _DeliversPosition();
 
-//print('exemple model value ====>${exampleModel}');
-    //print(UserService().getUserbyId("UtfTYNHAjdcNyroh7p9B"));
     getCurrentLocation();
     _listenOtp();
 
@@ -173,8 +176,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
     await SmsAutoFill().listenForCode();
   }
 
+  // getUserPosition(List<UserModel>  users) async {
+
   _DeliversPosition() async {
-    print(' le nombre identifiant est ${this._listDeliver()}');
+    //  print(' le nombre identifiant est ${this._listDeliver()}');
     await ServicePosition.getPosition('OCrk7Ov4pIZXabNqnyMU').then(
       (value) {
         setState(() {
@@ -184,30 +189,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
         //  print("dans le then ma latitude est ${y.latitude}, et ma longitude est ${y.longitude}");
       },
     );
-    // print("ma latitude est ${y.latitude}, et ma longitude est ${y.longitude}");
-    /* for (var i = 0; i < this.exampleModelDeliver.length; i++) {
-      print("le compteur est:${i}");
-      print('la position est ${this.exampleModelDeliver[i].idPosition}');
-    /*  await ServicePosition.getPosition(
-              '${this.exampleModelDeliver[i].idPosition}')
-          .then(
-        (value) {
-          setState(() {
-            this.x = value;
-            this.y = LatLng(x.latitude, x.longitude);
-          });
-        },
-      );*/
-
-     // positions.add(y);
-    //  print("ma prochaine position est ${positions.last}");
-    }*/
-
-    //  print('la premiere position est ${positions[0]}');
-    // print('la deuxieme position est ${positions[1]}');
   }
 
-  _currentManager() async {
+/*   _currentManager() async {
     // print('teste user !!!111 ');
     await ServiceUser.getUserbyId("UtfTYNHAjdcNyroh7p9B").then((value) {
       setState(() {
@@ -216,7 +200,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
     });
 
     print('dikongue ${this.exampleModel}');
-  }
+  } */
 
   _listDeliver() async {
     await ServiceUser.getDelivers().forEach((element) {
@@ -231,17 +215,37 @@ class _PhoneAuthState extends State<PhoneAuth> {
           "le nombre de livreur est exactement ${exampleModelDeliver.length}");
     });
 
-    print("le nombre de livreur est ${exampleModelDeliver.length}");
-    return exampleModelDeliver.length;
+    // print("la taille de la liste est est ${exampleModelDeliver.length}");
+    // return exampleModelDeliver.length;
     // exampleModelDeliver= exampleService.getposdelivers();
   }
 
-  /* _getToken()async{
-    await authClass.getToken().then((value) {setState(() {
-      this.token=value;
-    });});
+  //liste de posiition des livreur
+  /*  getUserPosition() async {
+    LatLng coordonnees = new LatLng(0, 0);
+    await ServiceUser.getDelivers().forEach((element) async {
+      print('aaaaaaaaaaaaaaaaaaaaaa');
+      setState(() {
+        print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+        this.exampleModelDeliver = element;
+        print("cccccccccccccccccccc${this.exampleModelDeliver}");
+      });
+      print(
+          "le nombre de livreur dont je recherche la pos est exactement ${this.exampleModelDeliver.length}");
+      for (var i in this.exampleModelDeliver) {
+        await ServicePosition.getPosition(i.idPosition).then((value) {
+          LatLng coordonnees = LatLng(value.latitude, value.longitude);
 
-  }*/
+          print(
+              'la coordonnees est actuellement la latitude:${coordonnees.latitude} et la longitude est :${coordonnees.longitude}');
+          setState(() {
+            listecoordonnees.add(coordonnees);
+            print('la liste de coordonnees mise a jour est:$listecoordonnees');
+          });
+        });
+      }
+    });
+  } */
 
 /* ************************************/
   @override
@@ -269,6 +273,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 30, top: 20),
                     child: TextFormField(
+                      enabled: isphonenumberNotFill,
                       controller: phoneController,
                       keyboardType: TextInputType.phone,
                       //controller du champs de saisie de telephone
@@ -329,14 +334,15 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
                         UserModel userCreate = UserModel(
                           //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
-                          // idUser: authClass!.identifiant(),
+
                           idUser: this.actual_user,
                           adress: widget.adressField,
                           name: widget.nameField,
-                          //  position: pos,
+
                           idPosition: identifiant,
                           phone: int.parse(phoneController.text),
                           picture: widget.picture,
+                          createdAt: DateTime.now().toString()
                         );
                         _timer?.cancel();
                         // await EasyLoading.show(status: 'en cours...');
@@ -370,7 +376,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 //builder: (context) =>  ManagerHome( user: authClass.user)));
                                 builder: (context) =>
                                     //InscriptionName()
-                                    ManagerHome(currentManager: userCreate)));
+                                    ManagerHome(
+                                        currentManagerID: actual_user)));
                         _timer?.cancel();
                         await EasyLoading.dismiss();
                       }
@@ -457,11 +464,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 print('verification est :$verified');
                               });
                             });
-                            print(
+                            /*   print(
                                 'formulaire valide et actuel : ${actual_user}');
 
                             print(
-                                'formulaire valide et actuellllllllllllllll : ${actual_user}');
+                                'formulaire valide et actuellllllllllllllll : ${actual_user}'); */
                           }
 
                           if (verified == true) {
@@ -493,6 +500,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           }
 
                           setState(() {
+                            isphonenumberNotFill = !verified;
                             otploginVisible = verified;
                           });
 
@@ -510,49 +518,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
         },
         codeAutoRetrievalTimeout: (String verificationID) {});
   }
-
-  /*void _login(String verificationId) async {
-    PhoneAuthCredential credential = PhoneAuthProvider.credential(
-      verificationId: verificationId,
-      smsCode: otpCodeController.text,
-    );
-
-    var res = await auth.signInWithCredential(credential);
-    print(res);
-
-    String tel = phoneController.text;
-    var response = await   authClass.verifyPhoneNumber('+237${phoneController.text}', context, setData); 
-
-    
-  }*/
-
-  /*fonction de verification du code envoye
-
-  Future<void> verifyCode() async {
-    print(otpCodeController.text + "verfication du code envoye");
-    PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationIDreceived,
-        smsCode: otpCodeController.text);
-
-    await auth.signInWithCredential(credential).then((authresult result){
-            Navigator.pushReplacement(context, MaterialPageRoute(
-              builder: (context) => HomeScreen(result.user)
-            ));
-          }).catchError((e){
-            print(e);
-          });
-  }*/
-
-  // fonction qui retourne l'identifiant de l'utilisateur actuelle de l'application
-
-  /*validation de formulaire
-  void _submit() {
-    final isValid = _formKey.currentState?.validate();
-    if (!isValid!) {
-      return;
-    }
-    _formKey.currentState?.save();
-  }*/
 
   void setData(String verificationId) {
     setState(() {

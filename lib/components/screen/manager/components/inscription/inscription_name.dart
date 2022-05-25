@@ -1,6 +1,7 @@
 // ignore_for_file: dead_code, sized_box_for_whitespace, prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, no_logic_in_create_state,, must_be_immutable, prefer_typing_uninitialized_variables
 
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,6 +22,7 @@ class InscriptionName extends StatefulWidget {
 class _InscriptionNameState extends State<InscriptionName> {
  //_image contiendra le chemin d'acces a l'image prise depuis un telephone
   var _image;
+  FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
 //les controleurs des champs nom, adresse et de la photo
   TextEditingController nameController = TextEditingController();
@@ -241,6 +243,14 @@ class _InscriptionNameState extends State<InscriptionName> {
     properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
     properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
   }
+
+
+
+UploadTask uploadImageFile(File image, String fileName) {
+ Reference reference = FirebaseStorage.instance. ref().child(fileName);
+ UploadTask uploadTask = reference.putFile(image);
+ return uploadTask;
+}
 }
 
 AppBar buildAppBar() {

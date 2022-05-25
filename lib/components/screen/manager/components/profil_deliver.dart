@@ -1,19 +1,21 @@
 // ignore_for_file: must_be_immutable
-
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import '../../../../constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfilDeliver extends StatelessWidget {
-  //UserModel deliver;
- // UserModel manager;
- // double latmanager,longmanager,latdeliver,longdeliver;
- // ProfilDeliver(this.deliver,this.manager,this.latmanager,this.longmanager,this.latdeliver,this.longdeliver, {Key? key}) : super(key: key);
+  final UserModel deliver;
+  UserModel manager;
+  CachedNetworkImage.logLevel = CacheManagerLogLevel.debug;
+  //double latmanager,longmanager,latdeliver,longdeliver;
+  ProfilDeliver({required this.deliver, required this.manager, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-     Size size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
     return Column(
       children: [
         InkWell(
@@ -23,8 +25,9 @@ class ProfilDeliver extends StatelessWidget {
           },
           child: Stack(children: [
             Container(
-              width: size.width*0.35,
-              height: size.width*0.35,
+              margin: EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
+              width: size.width * 0.35,
+              height: size.width * 0.35,
               decoration: BoxDecoration(
                   border: Border.all(width: 1, color: Colors.white),
                   boxShadow: [
@@ -35,57 +38,59 @@ class ProfilDeliver extends StatelessWidget {
                   ],
                   shape: BoxShape.circle,
                   // ignore: prefer_const_constructors
+                  /*  image:  CachedNetworkImageProvider(
+                  'https://via.placeholder.com/350x150',
+                ), */
                   image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: const AssetImage("assets/images/profil.png")
-                      //  image: AssetImage("${user.tool}")
-                      )),
+                    fit: BoxFit.cover, //image: AssetImage("${deliver.picture}")
+
+                    //image: const AssetImage("assets/images/profil.png")
+                    image: CachedNetworkImageProvider(
+                      'https://via.placeholder.com/350x150',
+                    ),
+                  )),
             ),
+            CachedNetworkImage( imageUrl: 'https://via.placeholder.com/350x150'),
             Positioned(
-              bottom: size.width*0.22,
-              right: size.width*0.02,
+              bottom: size.width * 0.22,
+              right: size.width * 0.02,
               child: Container(
                 height: 30,
                 width: 30,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(width: 0,color: Colors.transparent ),
+                    border: Border.all(width: 0, color: Colors.transparent),
                     //color: Colors.white),
                     color: kPrimaryColor,
                     image: DecorationImage(
-                        fit: BoxFit.cover, image: AssetImage( 'assets/images/profil.png')
+                        fit: BoxFit.cover,
+                        image: AssetImage('assets/images/profil.png')
                         //  image: AssetImage("${user.tool}")
                         )),
-               
               ),
             )
           ]),
         ),
         const SizedBox(
-          height: 10,
+          height: 8,
         ),
-        Text( 'deliver.name'),
-       // Text( deliver.name),
+        // Text( 'deliver.name'),
+        Text(deliver.name,
+            style:
+                GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 15)),
       ],
     );
   }
 
-  Widget distance(BuildContext context) {
+  /* Widget distance(BuildContext context) {
     return Container(
       height: 5,
       width: 20,
       decoration:
           const BoxDecoration(shape: BoxShape.rectangle, color: kPrimaryColor),
-    //  child: Text("vous etes a ${calculateDistance(this.latmanager, this.longmanager, this.latdeliver, this.longdeliver)}"),
-      child: Text("vous etes a ${calculateDistance(9.9, 10.0, 10.1, 11.1)}"),
+      child: Text("vous etes a ${calculateDistance(this.latmanager, this.longmanager, this.latdeliver, this.longdeliver)}"),
+    //  child: Text("vous etes a ${calculateDistance(9.9, 10.0, 10.1, 11.1)}"),
     );
-  }
+  }*/
 
-  double calculateDistance(lat1, lon1, lat2, lon2) {
-    var p = 0.017453292519943295;
-    var a = 0.5 -
-        cos((lat2 - lat1) * p) / 2 +
-        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a));
-  }
 }

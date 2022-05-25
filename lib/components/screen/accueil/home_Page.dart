@@ -18,20 +18,22 @@ class _HomePageScreenState extends State<HomePageScreen> {
   Widget build(BuildContext context) {
     // List<Agence> listAg = Provider.of<List<Agence>>(context);
     final user = Provider.of<AppUser?>(context);
+    
     UserService ServiceUser = new UserService();
-    UserModel currentUser = new UserModel(name: 'audrey');
+    UserModel currentUser = new UserModel(name: 'audrey');//,picture: "assets/images/profil.png"
 
     if (user == null) {
       return SplashScreen();
      // return InscriptionName();
     } else {
+      print("in my home page the user id isssssssssssssssssssssssssssssssssssssssssssssssssssss:${user.uid}");
       ServiceUser.getUserbyId(user.uid).then((value) {currentUser=value;});
 
     /*  setState(() {
         currentUser = ServiceUser.getUserbyId(user.uid) as UserModel;
       });*/
 
-      return ManagerHome(currentManager: currentUser);
+      return ManagerHome(currentManagerID: user.uid);
     }
   }
 }

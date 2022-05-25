@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/Database_Model.dart';
 
 class UserService {
+   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+
   CollectionReference<Map<String, dynamic>> userCollection =
       FirebaseFirestore.instance.collection("user");
 
@@ -49,7 +53,9 @@ class UserService {
               idPosition: doc.get('idPosition'),
               isManager: doc.get('isManager'),
               isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'));
+              isDeliver: doc.get('isDeliver'),
+             // createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
@@ -59,9 +65,45 @@ class UserService {
 //liste de livreurs correcte
 
   Stream<List<UserModel>> getDelivers() {
+    
     // int x = 0;
     print("moguem souop audrey");
     return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
+      (snapshot) {
+        //  x = snapshot.docs.length;
+        //  print('la longueur du snapshot est ${snapshot.docs.length}');
+        /* try{
+      if (snapshot.docs.isNotEmpty) {
+         print('la longueur du snapshot est ${snapshot.docs.length}');  
+      } } catch (e){print('erreur est le suivant $e');}*/
+        return snapshot.docs.map((doc) {
+          //  print('moguem souop${doc.runtimeType}');
+          //print('mon adresse${doc.get('adress')}');
+          return UserModel(
+              //idUser: data['idUser'],
+              idUser: doc.get('idUser'),
+             // adress: doc.get('adress'),
+              name: doc.get('name'),
+             // phone: int.parse(doc.get('phone')),
+              tool: doc.get('tool'),
+              picture: doc.get('picture'),
+              idPosition: doc.get('idPosition'),
+              isManager: doc.get('isManager'),
+              isClient: doc.get('isClient'),
+              isDeliver: doc.get('isDeliver'),
+             // createdAt: doc.get('createdAt')
+              );
+        }).toList();
+        // return model;
+      },
+    );
+  }
+
+  //liste des managers correctes
+Stream<List<UserModel>> getManagers()  {
+    // int x = 0;
+    print("moguem souop audrey");
+    return userCollection.where('isManager', isEqualTo: true).snapshots().map(
       (snapshot) {
         //  x = snapshot.docs.length;
         //  print('la longueur du snapshot est ${snapshot.docs.length}');
@@ -83,12 +125,18 @@ class UserService {
               idPosition: doc.get('idPosition'),
               isManager: doc.get('isManager'),
               isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'));
+              isDeliver: doc.get('isDeliver'),
+              //createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
     );
   }
+
+
+
+
   ////////////////////////////////////////////////////////////////////////
   Future<Stream<List<UserModel>>> getDeliverss() async {
     // int x = 0;
@@ -115,21 +163,64 @@ class UserService {
               idPosition: doc.get('idPosition'),
               isManager: doc.get('isManager'),
               isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'));
+              isDeliver: doc.get('isDeliver'),
+              //createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
     );
   }
 
-  
+
+UploadTask uploadImageFile(File image, String fileName) {
+ Reference reference = firebaseStorage.ref().child(fileName);
+ UploadTask uploadTask = reference.putFile(image);
+ return uploadTask;
+}  
 
 //retourner un utilisateur grace a son identifiant sous format de userModel correcte
   Future<UserModel> getUserbyId(String idUsersearch) async {
+    print('identifianttttttttt $idUsersearch');
+    //userCollection.doc(idUsersearch).get().then((value)=>print(value.data()));
+
+    return  userCollection.where('idUser', isEqualTo: idUsersearch).get().then((value) {
+    //  if (value.docs == null) throw Exception("user not found");
+      if (value != null) {
+        var res = value.docs.first.data();
+        print('le premier resultat de la requete  $res');
+        var resmap = Map<String, dynamic>.from(res);
+       print('typereeeeeeeee varrrrrrrrrrr $resmap');
+        return UserModel(
+            //idUser: data['idUser'],
+            idUser: resmap['idUser'],
+            adress: resmap['adress'],
+            name: resmap['name'],
+            // phone: int.parse(resmap['phone']),
+            phone: resmap['phone'],
+            tool: resmap['tool'],
+            picture: resmap['picture'],
+            idPosition: resmap['idPosition'],
+            isManager: resmap['isManager'],
+            isClient: resmap['isClient'],
+            isDeliver: resmap['isDeliver'],
+           // createdAt:resmap['createdAt']
+            );
+      } else
+      throw Exception("aucun utilisateur trouve dans la bd");
+       // return null as UserModel;
+    });
+   
+  }
+
+
+
+  //get an user
+/*   Future<UserModel> getUserbyId(String idUsersearch) async {
    // print(idUsersearch);
     //userCollection.doc(idUsersearch).get().then((value)=>print(value.data()));
 
-    return userCollection.doc(idUsersearch).get().then((value) {
+    return  userCollection.doc(idUsersearch).get().then((value) {
       if (value != null) {
         var res = value.data();
         var resmap = Map<String, dynamic>.from(res!);
@@ -150,11 +241,7 @@ class UserService {
         return null as UserModel;
     });
     //print('samuel ${userCollection.doc(idUsersearch).get().then((value)=>print(value.data.data()))}');
-  }
-
-
-
-  //get an user
+  } */
   
 
 

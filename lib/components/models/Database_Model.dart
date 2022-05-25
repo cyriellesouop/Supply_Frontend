@@ -4,9 +4,11 @@ class AppUser {
   final String uid;
 
   AppUser({required this.uid});
-  String get userId {
+  //-------------
+  /*String get userId {
     return uid;
-  }
+    //-----------------
+  }*/
   
 }
 
@@ -115,6 +117,7 @@ class UserModel {
   bool isManager;
   bool isClient;
   bool isDeliver;
+ String? createdAt;
 
   UserModel(
       {this.idUser,
@@ -127,7 +130,8 @@ class UserModel {
       this.idPosition,
       this.isManager = true,
       this.isClient = false,
-      this.isDeliver = false});
+      this.isDeliver = false,
+      this.createdAt, });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -141,7 +145,8 @@ class UserModel {
         idPosition: json['idPosition'],
         isManager: json['isManager'],
         isClient: json['isClient'],
-        isDeliver: json['isDeliver']);
+        isDeliver: json['isDeliver'],
+        createdAt: json['createdAt']);
   }
   Map<String, dynamic> toMap() {
     return {
@@ -154,7 +159,8 @@ class UserModel {
       'idPosition': idPosition,
       'isManager': isManager,
       'isClient': isClient,
-      'isDeliver': isDeliver
+      'isDeliver': isDeliver,
+      'createdAt':createdAt
     };
   }
 

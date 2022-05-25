@@ -89,7 +89,7 @@ late UserService exampleService;
                 prefs.setBool('InscriptionName', true);
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const InscriptionName()));
-              },
+              }, 
               child: Text(
                 'COMMENCER',
                 style: GoogleFonts.philosopher(

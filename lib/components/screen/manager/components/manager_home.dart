@@ -1,30 +1,35 @@
 // ignore_for_file: non_constant_identifier_names
-
-import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-
 import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/screen/manager/components/profil_deliver.dart';
+import 'package:supply_app/components/screen/manager/tri_rapide.dart';
 import 'package:supply_app/components/services/user_service.dart';
 import 'package:supply_app/constants.dart';
 
 import '../../../services/position_service.dart';
 
 class ManagerHome extends StatefulWidget {
-  UserModel currentManager;
-  ManagerHome({Key? key, required this.currentManager}) : super(key: key);
+  //UserModel currentManager;
+  String currentManagerID;
+  ManagerHome({required this.currentManagerID, Key? key}) : super(key: key);
   @override
   _ManagerHomeState createState() => _ManagerHomeState();
 }
 
 class _ManagerHomeState extends State<ManagerHome> {
-  late PositionModel positionDeliver;
+  // initialisation du manager courant
+  UserModel currentManager = new UserModel(name: 'fabiol');
+  //var Deliver = Map<UserModel, double>();
+  var deliver;
+
+  List<Map<String, dynamic>> tableauJson = [];
+
+  List<Map<String, dynamic>> tableauJsontrie = [];
 
   //  LatLng startLocation = LatLng(latCurrentManager,longCurrentManager);
 
@@ -32,194 +37,195 @@ class _ManagerHomeState extends State<ManagerHome> {
   PolylinePoints polylinePoints = PolylinePoints();
 
   String googleAPiKey = "AIzaSyDma7ThRPGokuU_cJ2Q_qFvowIpK35RAPs"; //google api
-  Set<Marker> markers = {}; //markers for google map
-  Map<PolylineId, Polyline> polylines = {}; //polylines to show direction
+  //Marker est un tableau qui contient toutes les positions representees sur la map
 
-  //liste des livreurs
-  // Stream<List<UserModel>> databaseDeliver = UserService().getdelivers();
+  final Set<Marker> markers = new Set(); //markers for google map
+  // Map<PolylineId, Polyline> polylines = {}; //polylines to show direction
 
   UserModel? exampleModel = new UserModel(name: 'fabiol');
 
   UserService ServiceUser = new UserService();
   PositionService ServicePosition = new PositionService();
-  PositionModel x = new PositionModel(longitude: 0, latitude: 0);
-  LatLng y = new LatLng(0, 0);
+  //PositionModel x = new PositionModel(longitude: 0, latitude: 0);
+  LatLng currentManagerPosition = new LatLng(0, 0);
   PositionModel xdeliver = new PositionModel(longitude: 0, latitude: 0);
   LatLng ydeliver = new LatLng(0, 0);
 
-  List<LatLng> positions = [];
-
+  //tableau des identifiants des position de tous les livreurs
   List<UserModel> exampleModelDeliver = [];
+  //liste des positions de tous les livreurs
+  List<LatLng> listecoordonnees = [];
+  List<double> Distances = [];
+  List<double> DistanceInter = [];
 
   @override
   void initState() {
-    _listDeliver();
-    //  print('liste de livreurs ${exampleService.getposdelivers()}');
-    _currentDeliver();
-    _ManagerPosition();
-    _DeliverPosition();
-
-    //  double latCurrentManager = this.y.latitude;
-    //  double longCurrentManager = this.y.longitude;
-    //String? idPositionManager = widget.currentManager.position.idPosition;
-    markers.add(Marker(
-      //add start location marker
-      markerId: MarkerId(
-          //  LatLng(latCurrentManager, longCurrentManager).toString()),
-          this.y.toString()),
-      position: this.y,
-      // LatLng(latCurrentManager, longCurrentManager), //position of marker
-      infoWindow: InfoWindow(
-        //popup info
-        title: 'ma position ',
-        //le user name envoye depuis la page de validation
-        snippet: widget.currentManager.name,
-      ),
-      icon: BitmapDescriptor.defaultMarker, //Icon for Marker
-    ));
-
-    markers.add(Marker(
-      //add distination location marker
-      markerId: MarkerId(
-          // LatLng(positionDeliver.latitude, positionDeliver.longitude)
-          ydeliver.toString()),
-      position: ydeliver,
-      // LatLng(positionDeliver.latitude,
-      // positionDeliver.longitude), //position of marker
-      infoWindow: InfoWindow(
-        //popup info
-        title: 'position du livreur ',
-        snippet: widget.currentManager.name,
-      ),
-      icon: BitmapDescriptor.defaultMarker, //Icon for Marker
-    ));
-
-    getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
-
+    // _listDeliver();
+    getUserPosition();
+    // print(' audrey cyrielle moguem${widget.currentManagerID}');
+    //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
     super.initState();
   }
 
-  _ManagerPosition() async {
-    // print(' le nombre identifiant est ${this._listDeliver()}');
-    await ServicePosition.getPosition('${widget.currentManager.idPosition}')
-        .then(
-      (value) {
-        setState(() {
-          this.x = value;
-          this.y = LatLng(x.latitude, x.longitude);
-        });
-        print(
-            "dans le then la latitude manager est ${y.latitude}, et sa longitude est ${y.longitude}");
-      },
-    );
-    print(
-        "la latitude du manager est ${y.latitude}, et sa longitude est ${y.longitude}");
-  }
-
-  _DeliverPosition() async {
-    // print(' le nombre identifiant est ${this._listDeliver()}');
-    await ServicePosition.getPosition('${this.exampleModel!.idPosition}').then(
-      (value) {
-        setState(() {
-          this.xdeliver = value;
-          this.ydeliver = LatLng(xdeliver.latitude, xdeliver.longitude);
-        });
-        print(
-            "dans le then la latitude Deliver est ${ydeliver.latitude}, et sa longitude est ${ydeliver.longitude}");
-      },
-    );
-    print(
-        "la latitude du Deliver est ${ydeliver.latitude}, et sa longitude est ${ydeliver.longitude}");
-  }
-
-  _currentDeliver() async {
-    // print('teste user !!!111 ');
-    await ServiceUser.getUserbyId("OCrk7Ov4pIZXabNqnyMU").then((value) {
-      setState(() {
-        this.exampleModel = value;
-      });
-    });
-
-    print('dikongue ${this.exampleModel}');
-  }
-
-  _listDeliver() async {
+  /* _listDeliver() async {
     await ServiceUser.getDelivers().forEach((element) {
       setState(() {
         this.exampleModelDeliver = element;
       });
-      /* var taille = this.exampleModelDeliver.length;
-      for (var i = 0; i < taille; i++) {
-        print('liste de livreurs ${this.exampleModelDeliver[i]}\n');
-      }*/
+
       print(
           "le nombre de livreur est exactement ${exampleModelDeliver.length}");
     });
 
     print("le nombre de livreur est ${exampleModelDeliver.length}");
     return exampleModelDeliver.length;
-    // exampleModelDeliver= exampleService.getposdelivers();
-  }
+  } */
 
-  getDirections() async {
-    List<LatLng> polylineCoordinates = [];
+  //liste de posiition des livreur
+  getUserPosition() async {
+    LatLng coordonnees = new LatLng(0, 0);
 
-//Obtenez la liste des points par Geo-coordinate, cela renvoie une instance de PolylineResult,
-//qui contient le statut de l'api, le errorMessage et la liste des points décodés.
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleAPiKey = "AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU",
-      PointLatLng(positionDeliver.latitude, positionDeliver.longitude),
-      PointLatLng(positionDeliver.latitude, positionDeliver.longitude),
-      travelMode: TravelMode.driving,
-      // travelMode: TravelMode.transit,
-    );
-    // inserer la liste de points reperes sur google map dans le tableau polylineCoordinates
-    if (result.points.isNotEmpty) {
-      result.points.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+    //get current manager and current manager position
+    await ServiceUser.getUserbyId(widget.currentManagerID).then((value) {
+      setState(() {
+        currentManager = value;
+        print('currrent user $currentManager');
       });
-    } else {
-      print(result.errorMessage);
-    }
-// appel de la gonction addPolyLine sur la liste de points
-    addPolyLine(polylineCoordinates);
-  }
+    });
 
-//colorier en couleur violet tous les points de la liste sur la Map
-  addPolyLine(List<LatLng> polylineCoordinates) {
-    PolylineId id = PolylineId('poly');
-    Polyline polyline = Polyline(
-      polylineId: id,
-      color: Colors.deepPurpleAccent,
-      points: polylineCoordinates,
-      width: 8,
+    await ServicePosition.getPosition('${currentManager.idPosition}').then(
+      (value) {
+        setState(() {
+          currentManagerPosition = LatLng(value.latitude, value.longitude);
+        });
+        print(
+            "dans le then la latitude manager est ${currentManagerPosition.latitude}, et sa longitude est ${currentManagerPosition.longitude}");
+      },
     );
-    polylines[id] = polyline;
-    setState(() {});
+    print(
+        "la latitude du manager est ${currentManagerPosition.latitude}, et sa longitude est ${currentManagerPosition.longitude}");
+    //end
+
+//Maquer le manager courant
+    markers.add(Marker(
+      //add distination location marker
+      markerId: MarkerId(ydeliver.toString()),
+      position: currentManagerPosition,
+      infoWindow: InfoWindow(
+        //popup info
+        title: 'ma position ',
+        snippet: currentManager.name,
+      ),
+      icon: BitmapDescriptor.defaultMarker, //Icon for Marker
+    ));
+
+    //affiche la position du current manager
+    print('curent usermanager position ${this.currentManager}');
+    //recupere la liste de livreurs
+    print('curent userposition ${this.currentManager}');
+    await ServiceUser.getDelivers().forEach((element) async {
+      //modifier la letat de la liste des livreurs
+      setState(() {
+        this.exampleModelDeliver = element;
+      });
+
+      var n = -1;
+      //pour chaque livreur, on renvoie sa posion
+      for (var i in this.exampleModelDeliver) {
+        n++;
+        await ServicePosition.getPosition(i.idPosition).then((value) {
+          LatLng coordonnees = LatLng(value.latitude, value.longitude);
+
+          print(
+              'la coordonnees est actuellement la latitude:${coordonnees.latitude} et la longitude est :${coordonnees.longitude}');
+          //modifier l'etat de la liste des positions de chaque livreurs et de la table des identifiants
+          setState(() {
+            listecoordonnees.add(coordonnees);
+            print('la liste de coordonnees mise a jour est:$listecoordonnees');
+             //mise a jour du tableau contenant les infos sur les livreurs et leur distance
+            tableauJson.add({
+              "Deliver": i,
+              "Distance": getDistance(
+                      this.currentManagerPosition, coordonnees)
+                  
+            });
+            print('lacoordonnees est:$coordonnees');
+             print('le tableau json mise a jour est:$listecoordonnees');
+
+            //  Deliver[i]=getDistanceBetween(this.currentManagerPosition, this.listecoordonnees)[n];
+
+         /*   deliver = {
+              "Deliver": i,
+              "Distance": getDistance(
+                      this.currentManagerPosition, coordonnees)
+                  
+            };*/
+
+           
+
+            //marquage sur la map de tous les livreurs contenus dans la precedente liste
+            //-------------------------------------------
+            markers.add(Marker(
+              //add start location marker
+              markerId: MarkerId(coordonnees.toString()),
+              position: coordonnees,
+
+              infoWindow: InfoWindow(
+                //popup info
+                title: 'Livreur ${i.name} ',
+                //le user name envoye depuis la page de validation
+                snippet:
+                    ' situe a ${getDistance(this.currentManagerPosition, coordonnees)} km de vous',
+              ),
+              icon: BitmapDescriptor.defaultMarker, //Icon for Marker
+            ));
+
+            print(
+                'la tailles de liste des marqueurs est : ${markers.length} et les marqueurs sont : $markers');
+
+            //marquage de tous les livreurs sur la map
+            //-------------------------------------------
+          });
+        });
+      }
+     /*  setState(() {
+       tableauJsontrie = TriRapidejson(table: tableauJson).QSort(0, n - 1) ;
+      }); */
+    });
   }
 
 //widget final
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    // final allDelivers = Provider.of<List<UserModel>>(context);
+    var n = tableauJson.length;
 
+  tableauJsontrie = TriRapidejson(table: tableauJson).QSort(0, n - 1) ;
+  print('les distances sont :$listecoordonnees');
+
+    print(
+        'la table json esst $tableauJson');
+    print('le tableau json trie est $tableauJsontrie');
+    /* print(
+        'la liste des distance et livreurs associees est ${TriRapide(table: this.DistanceInter).tableauTrie(this.Distances)}');
+ */
     return Scaffold(
       body: Column(
         children: [
           Container(
             height: size.height * 0.58,
+            //height: size.height,
             child: GoogleMap(
               zoomGesturesEnabled: true, //enable Zoom in, out on map
               mapType: MapType.normal,
               myLocationEnabled: true,
               initialCameraPosition: CameraPosition(
-                target: this.y,
-                //LatLng(widget.currentManager.position.latitude,
-                //   widget.currentManager.position.longitude),
-                zoom: 14,
+                target: this.currentManagerPosition,
+                zoom: 10,
               ),
-              markers: markers, //markers to show on map
-              polylines: Set<Polyline>.of(polylines.values), //polyl
+              markers: this.markers, //markers to show on map
+              // polylines: Set<Polyline>.of(polylines.values), //polyl
               onMapCreated: (GoogleMapController controller) {
                 mapController = controller;
               },
@@ -227,112 +233,52 @@ class _ManagerHomeState extends State<ManagerHome> {
           ),
           Container(
               height: size.height * 0.4,
-                width: size.width,
-              margin: const EdgeInsets.symmetric(vertical: kDefaultPadding/4),
-              //padding: EdgeInsets.only(top: size.height * 0.4),
-              // left: kDefaultPadding / 10,
-              // top: size.height * 0.7,
-              // right: kDefaultPadding / 10,
+              margin: const EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
               child: Stack(
                 children: [
                   Container(
+                    width: size.width,
                     height: size.height * 0.1,
-                    margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
                       children: [
-                        Text('jjjjjjjjjjjjjjjjjjjjjjjjjjjjj'),
-                        SizedBox(height: 5,),
-                        Text('jjjjjjjjjjjjjjjjjjjjjjjjjjjjj'),
-                        
+                        Text(
+                          'contacter un livreur ss',
+                          style: GoogleFonts.philosopher(
+                              fontSize: 17, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          'Economique, rapide et fiable',
+                          style: GoogleFonts.poppins(
+                              color: Colors.grey, fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   ),
-                  
                   Positioned(
                     width: size.width,
-                    bottom: -50,
+                    bottom: -40,
                     right: 0,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-
-                      children: <Widget>[
-                        ProfilDeliver(),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        ProfilDeliver(),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        ProfilDeliver(),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        ProfilDeliver(),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        ProfilDeliver(),
-                      ],
-
-                      // child:
-                      /*  StreamBuilder<List>(
-                                 
-                                stream: FirebaseFirestore.instance
-                                    .collection("user")
-                                    .where('isDeliver', isEqualTo: true)
-                                    .snapshots()
-                                    .map((snapshot) {
-                                  return snapshot.docs.map((doc) {
-                                    //  print('moguem souop${doc.runtimeType}');
-                                    //print('mon adresse${doc.get('adress')}');
-                                    return UserModel(
-                                        //idUser: data['idUser'],
-                                        idUser: doc.get('idUser'),
-                                        adress: doc.get('adress'),
-                                        name: doc.get('name'),
-                                        phone: int.parse(doc.get('phone')),
-                                        tool: doc.get('tool'),
-                                        picture: doc.get('picture'),
-                                        idPosition: doc.get('idPosition'),
-                                        isManager: doc.get('isManager'),
-                                        isClient: doc.get('isClient'),
-                                        isDeliver: doc.get('isDeliver'));
-                                  }).toList();
-                                  // return model;
-                                }),
-                                builder:
-                                    (BuildContext context, AsyncSnapshot<List> Delivers) {
-                                  if (!Delivers.hasData) {
-                                    return const Text('Loading');
-                                  }
-                                  final int count = Delivers.data!.length;
-                                  return ListView.builder(
-                                    padding: const EdgeInsets.only(
-                                        top: kDefaultPadding,
-                                        left: kDefaultPadding / 2,
-                                        right: kDefaultPadding / 2),
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: count,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      /*  final DocumentSnapshot snapshot =
-                                          Deliversnapshot.data!.docs[index];*/
-                                      final Deliver = Delivers.data![index];
-                                  
-                                      // retourner pour chaque valeur de la liste, le wiget profilDeliver
-                                      return ProfilDeliver();
-                                      /*return ProfilDeliver(
-                                          Deliver,
-                                          widget.currentManager,
-                                          this.y.latitude,
-                                          this.y.longitude,
-                                          this.y.latitude,
-                                          this.y.longitude);*/
-                                    },
-                                  );
-                                },
-                              ),*/
-                      //  )
+                    child: SizedBox(
+                      height: size.height * 0.38,
+                      child: ListView.builder(
+                        //  shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        // itemCount: allDelivers.length,
+                        itemCount: this.exampleModelDeliver.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ProfilDeliver(
+                            deliver: this.exampleModelDeliver[index],
+                            manager: this.currentManager,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -340,6 +286,82 @@ class _ManagerHomeState extends State<ManagerHome> {
         ],
       ),
     );
+  }
+
+//calcul de la distance entre deux positions
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var a = 0.5 -
+        cos((lat2 - lat1) * p) / 2 +
+        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
+  }
+
+//supprime les doublons dans une liste
+  List<double> tableauTrie(List<double> table) {
+    int i, j, k;
+    var n = table.length;
+    for (i = 0; i < n; i++) {
+      for (j = i + 1; j < n;) {
+        if (table[j] == table[i]) {
+          table.removeAt(j);
+          n--;
+        } else
+          j++;
+      }
+    }
+    return table;
+  }
+
+  List<Map<String, dynamic>> tableauTriejson(List<Map<String, dynamic>> table) {
+    int i, j, k;
+    var n = table.length;
+    for (i = 0; i < n; i++) {
+      for (j = i + 1; j < n;) {
+        if (table[j]['Distance'] == table[i]['Distance'] &&
+            table[j]['Deliver'] == table[i]['Deliver']) {
+          table.removeAt(j);
+          n--;
+        } else
+          j++;
+      }
+    }
+    return table;
+  }
+
+//fonction qui renvoie la dstance des livreurs par rapport a la position du gerant
+  List<double> getDistanceBetween(
+      LatLng currentManagerPosition, List<LatLng> positionDeliverList) {
+    var dist;
+    for (var i in positionDeliverList) {
+      dist = calculateDistance(currentManagerPosition.latitude,
+          currentManagerPosition.longitude, i.latitude, i.longitude);
+      setState(() {
+        DistanceInter.add(dist);
+      });
+    }
+    var n = this.DistanceInter.length;
+    setState(() {
+      Distances = TriRapide(table: this.DistanceInter).QSort(0, n - 1);
+    });
+    //  return tableauTrie(Distances);
+    return DistanceInter;
+    // TriRapide(table: this.DistanceInter).tableauTrie(this.DistanceInter);
+  }
+
+  double getDistance(
+      LatLng currentManagerPosition, LatLng positionDeliverList) {
+    var dist;
+
+    dist = calculateDistance(
+        currentManagerPosition.latitude,
+        currentManagerPosition.longitude,
+        positionDeliverList.latitude,
+        positionDeliverList.longitude);
+
+    //  return tableauTrie(Distances);
+    return dist;
+    // TriRapide(table: this.DistanceInter).tableauTrie(this.DistanceInter);
   }
 }
 
