@@ -107,6 +107,7 @@ FirebaseAuth( 9470): [SmsRetrieverHelper] SMS verification code request failed: 
 4.002709, 9.760013  8iUxmn1QtqPFNuWaHmTq
 
 4.051313245736643, 9.768330036581581 KyPPUgZytPz5DXcqjWDv
+57438675
 
   /*  getDirections() async {
     List<LatLng> polylineCoordinates = [];

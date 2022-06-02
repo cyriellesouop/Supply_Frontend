@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/screen/accueil/home_Page.dart';
+
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
 import 'package:supply_app/components/screen/manager/components/manager_home.dart';
 import 'package:supply_app/components/screen/manager/components/profil_deliver.dart';
@@ -22,9 +23,6 @@ Future<void> main() async {
      runApp(MyApp(showHome:showHome));
   configLoading();
 }
- 
-
-
 //onloading bar
 void configLoading() {
   EasyLoading.instance
@@ -73,19 +71,13 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
         //  home:  ManagerHome(currentManager: currentUser,),
           
-           home: SplashScreen(),//SplashScreen(),// const HomePageScreen(),
+           home: SplashScreen(),// const HomePageScreen(),
          // home: showHome? const HomePageScreen(): SplashScreen(),
           builder: EasyLoading.init(),
           // home: HomeScreen()
          // )
           ),
     );
-   /* return MaterialApp(
-        //  title: 'Mon application',
-        debugShowCheckedModeBanner: false,
-        home: showHome? const InscriptionName(): SplashScreen(),
-        builder: EasyLoading.init(),
-        // home: HomeScreen()
-        );*/
+   
   }
 }

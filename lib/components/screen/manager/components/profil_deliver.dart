@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import '../../../../constants.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+//import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfilDeliver extends StatelessWidget {
-  final UserModel deliver;
+ // final UserModel deliver;
+ final Map<String, dynamic> deliver;
   UserModel manager;
-  CachedNetworkImage.logLevel = CacheManagerLogLevel.debug;
+  // CachedNetworkImage.logLevel = CacheManagerLogLevel.debug;
   //double latmanager,longmanager,latdeliver,longdeliver;
   ProfilDeliver({required this.deliver, required this.manager, Key? key})
       : super(key: key);
@@ -20,6 +21,45 @@ class ProfilDeliver extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {
+            Container(
+              margin: EdgeInsets.only(top: size.height* 0.8, left: 2, right: 2, bottom: 2),
+              width: size.width,
+              height: 40,
+              child: Row(
+                children: [
+                  FlatButton(
+                    minWidth: size.width * 0.7,
+                    onPressed: () {},
+                    padding: EdgeInsets.all(15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    color: kPrimaryColor,
+                    textColor: kBackgroundColor,
+                    child: Text(
+                      'CONFIRMER ${deliver['Deliver']['name']} ',
+                      style: GoogleFonts.poppins(fontSize: 15),
+                    ),
+
+                    // width: size.width * 0.7 ,
+                    // child: FlatButton,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    width: size.width * 0.25,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 1, color: Colors.white70),
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage("assets/images/profil.png"))),
+                  ),
+                ],
+              ),
+            );
             /* showModalBottomSheet(
                 context: context, builder: ((builder) => bottomSheet()));*/
           },
@@ -42,15 +82,12 @@ class ProfilDeliver extends StatelessWidget {
                   'https://via.placeholder.com/350x150',
                 ), */
                   image: DecorationImage(
-                    fit: BoxFit.cover, //image: AssetImage("${deliver.picture}")
+                      fit: BoxFit
+                          .cover, //image: AssetImage("${deliver.picture}")
 
-                    //image: const AssetImage("assets/images/profil.png")
-                    image: CachedNetworkImageProvider(
-                      'https://via.placeholder.com/350x150',
-                    ),
-                  )),
+                      image: const AssetImage("assets/images/profil.png"))),
             ),
-            CachedNetworkImage( imageUrl: 'https://via.placeholder.com/350x150'),
+            //   CachedNetworkImage(imageUrl: 'https://via.placeholder.com/350x150'),
             Positioned(
               bottom: size.width * 0.22,
               right: size.width * 0.02,
@@ -75,12 +112,14 @@ class ProfilDeliver extends StatelessWidget {
           height: 8,
         ),
         // Text( 'deliver.name'),
-        Text(deliver.name,
+        Text(deliver['Deliver']['name'],
             style:
                 GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 15)),
       ],
     );
   }
+
+
 
   /* Widget distance(BuildContext context) {
     return Container(

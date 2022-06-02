@@ -9,7 +9,7 @@ class AppUser {
     return uid;
     //-----------------
   }*/
-  
+
 }
 
 /******************************************************************************************************************/
@@ -106,6 +106,7 @@ class CommandModel {
 /******************************************************************************************************************/
 // class User
 class UserModel {
+  String? idDoc;
   String? idUser;
   String? adress;
   String name;
@@ -117,24 +118,27 @@ class UserModel {
   bool isManager;
   bool isClient;
   bool isDeliver;
- String? createdAt;
+  String? createdAt;
 
-  UserModel(
-      {this.idUser,
-      this.adress,
-      required this.name,
-      this.phone,
-      this.tool,
-      this.picture,
-      //this.position,
-      this.idPosition,
-      this.isManager = true,
-      this.isClient = false,
-      this.isDeliver = false,
-      this.createdAt, });
+  UserModel({
+    this.idDoc,
+    this.idUser,
+    this.adress,
+    required this.name,
+    this.phone,
+    this.tool,
+    this.picture,
+    //this.position,
+    this.idPosition,
+    this.isManager = true,
+    this.isClient = false,
+    this.isDeliver = false,
+    this.createdAt,
+  });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
+        idDoc: json['idDoc'],
         idUser: json['idUser'],
         adress: json['adress'],
         name: json['name'],
@@ -150,6 +154,7 @@ class UserModel {
   }
   Map<String, dynamic> toMap() {
     return {
+     // 'idDoc': id,
       'idUser': idUser,
       'adress': adress,
       'name': name,
@@ -160,7 +165,7 @@ class UserModel {
       'isManager': isManager,
       'isClient': isClient,
       'isDeliver': isDeliver,
-      'createdAt':createdAt
+      'createdAt': createdAt
     };
   }
 

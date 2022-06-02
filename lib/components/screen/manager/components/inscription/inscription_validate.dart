@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, unused_local_variable
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:ui';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -250,7 +251,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
 /* ************************************/
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+   // Size size=MediaQuery.of(context).size;
+ //  var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: buildAppBar(),
@@ -347,6 +349,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         _timer?.cancel();
                         // await EasyLoading.show(status: 'en cours...');
                         // await UserService().setUser(user).then((value) =>
+
+                       // await UserService().updateUserData(this.actual_user,widget.nameField,int.parse(phoneController.text),widget.picture,widget.adressField,identifiant).then((value) =>
                         await UserService().addUser(userCreate).then((value) =>
                             (EasyLoading.showSuccess('compte cree avec succes'))
                                 .catchError((onError) {

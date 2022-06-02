@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/Database_Model.dart';
 
 class UserService {
-   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+ 
 
   CollectionReference<Map<String, dynamic>> userCollection =
       FirebaseFirestore.instance.collection("user");
@@ -28,7 +28,7 @@ class UserService {
   }*/
 
   //Get users
- Stream<List<UserModel>> getUsers() {
+  Stream<List<UserModel>> getUsers() {
     // int x = 0;
     print("moguem souop audrey");
     return userCollection.snapshots().map(
@@ -43,19 +43,20 @@ class UserService {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-              //idUser: data['idUser'],
-              idUser: doc.get('idUser'),
-              adress: doc.get('adress'),
-              name: doc.get('name'),
-              phone: int.parse(doc.get('phone')),
-              tool: doc.get('tool'),
-              picture: doc.get('picture'),
-              idPosition: doc.get('idPosition'),
-              isManager: doc.get('isManager'),
-              isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'),
-             // createdAt: doc.get('createdAt')
-              );
+            //  idDoc:doc.id ,
+            //idUser: data['idUser'],
+            idUser: doc.get('idUser'),
+            adress: doc.get('adress'),
+            name: doc.get('name'),
+            phone: int.parse(doc.get('phone')),
+            tool: doc.get('tool'),
+            picture: doc.get('picture'),
+            idPosition: doc.get('idPosition'),
+            isManager: doc.get('isManager'),
+            isClient: doc.get('isClient'),
+            isDeliver: doc.get('isDeliver'),
+            // createdAt: doc.get('createdAt')
+          );
         }).toList();
         // return model;
       },
@@ -65,7 +66,6 @@ class UserService {
 //liste de livreurs correcte
 
   Stream<List<UserModel>> getDelivers() {
-    
     // int x = 0;
     print("moguem souop audrey");
     return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
@@ -80,19 +80,20 @@ class UserService {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-              //idUser: data['idUser'],
-              idUser: doc.get('idUser'),
-             // adress: doc.get('adress'),
-              name: doc.get('name'),
-             // phone: int.parse(doc.get('phone')),
-              tool: doc.get('tool'),
-              picture: doc.get('picture'),
-              idPosition: doc.get('idPosition'),
-              isManager: doc.get('isManager'),
-              isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'),
-             // createdAt: doc.get('createdAt')
-              );
+            //idUser: data['idUser'],
+            // idDoc: doc.id,
+            idUser: doc.get('idUser'),
+            // adress: doc.get('adress'),
+            name: doc.get('name'),
+            // phone: int.parse(doc.get('phone')),
+            tool: doc.get('tool'),
+            picture: doc.get('picture'),
+            idPosition: doc.get('idPosition'),
+            isManager: doc.get('isManager'),
+            isClient: doc.get('isClient'),
+            isDeliver: doc.get('isDeliver'),
+            // createdAt: doc.get('createdAt')
+          );
         }).toList();
         // return model;
       },
@@ -100,7 +101,7 @@ class UserService {
   }
 
   //liste des managers correctes
-Stream<List<UserModel>> getManagers()  {
+  Stream<List<UserModel>> getManagers() {
     // int x = 0;
     print("moguem souop audrey");
     return userCollection.where('isManager', isEqualTo: true).snapshots().map(
@@ -115,25 +116,63 @@ Stream<List<UserModel>> getManagers()  {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-              //idUser: data['idUser'],
-              idUser: doc.get('idUser'),
-              adress: doc.get('adress'),
-              name: doc.get('name'),
-              phone: int.parse(doc.get('phone')),
-              tool: doc.get('tool'),
-              picture: doc.get('picture'),
-              idPosition: doc.get('idPosition'),
-              isManager: doc.get('isManager'),
-              isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'),
-              //createdAt: doc.get('createdAt')
-              );
+            //idUser: data['idUser'],
+
+            idUser: doc.get('idUser'),
+            adress: doc.get('adress'),
+            name: doc.get('name'),
+            phone: int.parse(doc.get('phone')),
+            tool: doc.get('tool'),
+            picture: doc.get('picture'),
+            idPosition: doc.get('idPosition'),
+            isManager: doc.get('isManager'),
+            isClient: doc.get('isClient'),
+            isDeliver: doc.get('isDeliver'),
+            //createdAt: doc.get('createdAt')
+          );
         }).toList();
         // return model;
       },
     );
   }
 
+//recuperer la photo d'un user
+
+ 
+
+Future<void> updateUser(UserModel user) async {
+    userCollection.doc(user.idDoc).update(
+      {'adress': user.adress,
+      'name': user.name,
+      'phone': user.phone,
+      'picture': user.picture,
+      'idPosition': user.idPosition,},
+    );
+  }
+
+
+
+
+
+
+
+
+
+/*   A tester
+  Future<void> updateUserData(String idUser, String name, int phone,
+      String picture, String adress, String idPosition) {
+    DocumentReference<Map<String, dynamic>> idkey = userCollection.doc();
+    String id = idkey.id;
+    return userCollection.doc(id).set({
+      'idDoc': id,
+      'idUser': idUser,
+      'adress': adress,
+      'name': name,
+      'phone': phone,
+      'picture': picture,
+      'idPosition': idPosition,
+    });
+  } */
 
 
 
@@ -153,67 +192,60 @@ Stream<List<UserModel>> getManagers()  {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-              //idUser: data['idUser'],
-              idUser: doc.get('idUser'),
-              adress: doc.get('adress'),
-              name: doc.get('name'),
-              phone: int.parse(doc.get('phone')),
-              tool: doc.get('tool'),
-              picture: doc.get('picture'),
-              idPosition: doc.get('idPosition'),
-              isManager: doc.get('isManager'),
-              isClient: doc.get('isClient'),
-              isDeliver: doc.get('isDeliver'),
-              //createdAt: doc.get('createdAt')
-              );
+            //idUser: data['idUser'],
+            idUser: doc.get('idUser'),
+            adress: doc.get('adress'),
+            name: doc.get('name'),
+            phone: int.parse(doc.get('phone')),
+            tool: doc.get('tool'),
+            picture: doc.get('picture'),
+            idPosition: doc.get('idPosition'),
+            isManager: doc.get('isManager'),
+            isClient: doc.get('isClient'),
+            isDeliver: doc.get('isDeliver'),
+            //createdAt: doc.get('createdAt')
+          );
         }).toList();
         // return model;
       },
     );
   }
 
-
-UploadTask uploadImageFile(File image, String fileName) {
- Reference reference = firebaseStorage.ref().child(fileName);
- UploadTask uploadTask = reference.putFile(image);
- return uploadTask;
-}  
-
 //retourner un utilisateur grace a son identifiant sous format de userModel correcte
   Future<UserModel> getUserbyId(String idUsersearch) async {
     print('identifianttttttttt $idUsersearch');
     //userCollection.doc(idUsersearch).get().then((value)=>print(value.data()));
 
-    return  userCollection.where('idUser', isEqualTo: idUsersearch).get().then((value) {
-    //  if (value.docs == null) throw Exception("user not found");
+    return userCollection
+        .where('idUser', isEqualTo: idUsersearch)
+        .get()
+        .then((value) {
+      //  if (value.docs == null) throw Exception("user not found");
       if (value != null) {
         var res = value.docs.first.data();
         print('le premier resultat de la requete  $res');
         var resmap = Map<String, dynamic>.from(res);
-       print('typereeeeeeeee varrrrrrrrrrr $resmap');
+        print('typereeeeeeeee varrrrrrrrrrr $resmap');
         return UserModel(
-            //idUser: data['idUser'],
-            idUser: resmap['idUser'],
-            adress: resmap['adress'],
-            name: resmap['name'],
-            // phone: int.parse(resmap['phone']),
-            phone: resmap['phone'],
-            tool: resmap['tool'],
-            picture: resmap['picture'],
-            idPosition: resmap['idPosition'],
-            isManager: resmap['isManager'],
-            isClient: resmap['isClient'],
-            isDeliver: resmap['isDeliver'],
-           // createdAt:resmap['createdAt']
-            );
+          //idUser: data['idUser'],
+          idUser: resmap['idUser'],
+          adress: resmap['adress'],
+          name: resmap['name'],
+          // phone: int.parse(resmap['phone']),
+          phone: resmap['phone'],
+          tool: resmap['tool'],
+          picture: resmap['picture'],
+          idPosition: resmap['idPosition'],
+          isManager: resmap['isManager'],
+          isClient: resmap['isClient'],
+          isDeliver: resmap['isDeliver'],
+          // createdAt:resmap['createdAt']
+        );
       } else
-      throw Exception("aucun utilisateur trouve dans la bd");
-       // return null as UserModel;
+        throw Exception("aucun utilisateur trouve dans la bd");
+      // return null as UserModel;
     });
-   
   }
-
-
 
   //get an user
 /*   Future<UserModel> getUserbyId(String idUsersearch) async {
@@ -242,47 +274,32 @@ UploadTask uploadImageFile(File image, String fileName) {
     });
     //print('samuel ${userCollection.doc(idUsersearch).get().then((value)=>print(value.data.data()))}');
   } */
-  
-
 
 //add an user correcte
   Future<void> addUser(UserModel user) async {
-    // var documentRef =
-    await userCollection.add(user.toMap());
-    /*  var createdId = documentRef.id;
-     userCollection.doc(createdId).update(
-        {'idUser': createdId},
-      );
-     return createdId;*/
+    // DocumentReference<Map<String, dynamic>> idkey = userCollection.doc();
+     DocumentReference idkey = userCollection.doc();
+    String id = idkey.id;
+
+   // await userCollection.add(user.toMap());
+
+    await userCollection.add({
+      'idDoc': userCollection.doc(),
+      'idUser':  user.idUser,
+      'adress':  user.adress,
+      'name':  user.name,
+      'phone':  user.phone,
+      'tool':  user.tool,
+      'picture':  user.picture,
+      'idPosition':  user.idPosition,
+      'isManager':  user.isManager,
+      'isClient':  user.isClient,
+      'isDeliver':  user.isDeliver,
+      'createdAt':  user.createdAt});
+   
   }
 
-  //Update an user and insert if not exits
-  Future<void> setUser(UserModel user) async {
-    var optionManager = SetOptions(
-        mergeFields: ['adress', 'name', 'phone', 'picture', 'idPosition']);
-    var optionDeliver = SetOptions(
-        mergeFields: ['name', 'phone', 'tool', 'picture', 'idPosition']);
-    var optionClient = SetOptions(mergeFields: ['name', 'idPosition']);
-
-    if (user.isManager) {
-      userCollection
-          .doc(user.idUser)
-          .set(user.toMap(), optionManager)
-          .then((value) => print("User Added"))
-          .catchError((error) => print("Failed to add user: $error"));
-    } else if (user.isDeliver) {
-      userCollection
-          .doc(user.idUser)
-          .set(user.toMap(), optionDeliver)
-          .then((value) => print("User Added"))
-          .catchError((error) => print("Failed to add user: $error"));
-    } else if (user.isClient) {
-      // ignore: avoid_single_cascade_in_expression_statements
-      userCollection.doc(user.idUser).set(user.toMap(), optionClient)
-        ..then((value) async => print("User Added"))
-            .catchError((error) => print("Failed to add user: $error"));
-    }
-  }
+ 
 
 //fonction de mise a jour du numero de telephone
   Future<void> updatePhoneuser(String userId, String userphone) async {
@@ -292,14 +309,13 @@ UploadTask uploadImageFile(File image, String fileName) {
   }
   //supprimer un utilisateur de la base de donnee
 
-  Future<void> removeUser(String idUser)  async {
+  Future<void> removeUser(String idUser) async {
     return userCollection
         .doc(idUser)
         .delete()
         .then((value) => print("User Deleted"))
         .catchError((error) => print("Failed to delete user: $error"));
   }
-   
 
   //idposition of deliver
 
@@ -363,6 +379,36 @@ UploadTask uploadImageFile(File image, String fileName) {
         (snapshot) => snapshot.docs
             .map((doc) => UserModel.fromJson(doc.data()))
             .toList());
+  }
+
+
+
+   //Update an user and insert if not exits
+  Future<void> setUser(UserModel user) async {
+    var optionManager = SetOptions(
+        mergeFields: ['adress', 'name', 'phone', 'picture', 'idPosition']);
+    var optionDeliver = SetOptions(
+        mergeFields: ['name', 'phone', 'tool', 'picture', 'idPosition']);
+    var optionClient = SetOptions(mergeFields: ['name', 'idPosition']);
+
+    if (user.isManager) {
+      userCollection
+          .doc(user.idUser)
+          .set(user.toMap(), optionManager)
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    } else if (user.isDeliver) {
+      userCollection
+          .doc(user.idUser)
+          .set(user.toMap(), optionDeliver)
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    } else if (user.isClient) {
+      // ignore: avoid_single_cascade_in_expression_statements
+      userCollection.doc(user.idUser).set(user.toMap(), optionClient)
+        ..then((value) async => print("User Added"))
+            .catchError((error) => print("Failed to add user: $error"));
+    }
   }
 
 */

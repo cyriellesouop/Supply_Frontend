@@ -1,12 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 
-class Authclass {
+class Authclass extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   //user =  _auth.currentUser;
+  //------------------------------------------------------------
+  
+
+  //----------------------------------------------------------------
 
   var storage = const FlutterSecureStorage();
   bool otploginVisible = false;

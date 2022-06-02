@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_validate.dart';
-
+import 'package:supply_app/components/services/storage_service.dart';
 import 'package:supply_app/constants.dart';
 import 'package:path/path.dart' as p;
 
@@ -20,27 +20,30 @@ class InscriptionName extends StatefulWidget {
 }
 
 class _InscriptionNameState extends State<InscriptionName> {
- //_image contiendra le chemin d'acces a l'image prise depuis un telephone
+  //_image contiendra le chemin d'acces a l'image prise depuis un telephone
   var _image;
+  File? image;
+  File? avatarImageFile;
+  bool? isLoading;
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
 //les controleurs des champs nom, adresse et de la photo
   TextEditingController nameController = TextEditingController();
   TextEditingController adresseController = TextEditingController();
- String picture="assets/images/profil.png";
+  String picture = "assets/images/profil.png";
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+final Storage storage = Storage();
 //vider les controller
   @override
   void dispose() {
-   nameController.dispose();
+    nameController.dispose();
     adresseController.dispose();
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: buildAppBar(),
@@ -52,9 +55,8 @@ class _InscriptionNameState extends State<InscriptionName> {
               FocusScope.of(context).unfocus();
             },
             child: Form(
-               key: _formKey,
+              key: _formKey,
               child: ListView(
-                
                 children: <Widget>[
                   Center(
                     /* child: InkWell(
@@ -114,7 +116,7 @@ class _InscriptionNameState extends State<InscriptionName> {
                     child: TextFormField(
                       controller: nameController,
                       style: GoogleFonts.poppins(fontSize: 15),
-                       validator: (value) {
+                      validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'veuillez saisir votre nom';
                         }
@@ -132,8 +134,8 @@ class _InscriptionNameState extends State<InscriptionName> {
                     child: TextFormField(
                       controller: adresseController,
                       style: GoogleFonts.poppins(fontSize: 15),
-                       validator: (value) {
-                        if (value == null ||  value.isEmpty) {
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
                           return 'veuillez saisir l adresse de votre entreprise';
                         }
                         return null;
@@ -151,15 +153,17 @@ class _InscriptionNameState extends State<InscriptionName> {
                   FlatButton(
                     onPressed: () async {
                       print("le chemin d'acces a l'image est :$picture");
-                       print("le deuxieme chemin d'acces a l'image est :$_image");
-                        if (_formKey.currentState!.validate()){
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PhoneAuth(
-                                  nameField: nameController.text,
-                                  adressField: adresseController.text,
-                                  picture: picture)));}
+                      print(
+                          "le deuxieme chemin d'acces a l'image est :$_image");
+                      if (_formKey.currentState!.validate()) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PhoneAuth(
+                                    nameField: nameController.text,
+                                    adressField: adresseController.text,
+                                    picture: picture)));
+                      }
                     },
                     padding: EdgeInsets.all(15),
                     shape: RoundedRectangleBorder(
@@ -221,20 +225,56 @@ class _InscriptionNameState extends State<InscriptionName> {
 
   Future<void> selectOrTakePhoto(ImageSource imageSource) async {
     final pickedFile = (await ImagePicker().pickImage(source: imageSource));
-    
+
     if (pickedFile == null) {
       return;
     }
 
     final appDir = await getApplicationDocumentsDirectory();
+    //-------------------------------------------------------
+    image = File(pickedFile.path);
     final fileName = p.basename(pickedFile.path);
-    final savedImage =
-        await File(pickedFile.path).copy('${appDir.path}/$fileName');
-
+    final savedImage =await File(pickedFile.path).copy('${appDir.path}/$fileName');
     setState(() {
       _image = savedImage;
-      picture=pickedFile.path;
+     // picture = pickedFile.path;
+
+      //======================================================
+      avatarImageFile = image;
+      isLoading = true;
+      //======================================================
     });
+    uploadFile();
+  }
+
+  Future uploadFile() async {
+   var photo;
+    String fileName =
+        '${nameController.text} prise le ${DateTime.now().toString()}';
+    UploadTask uploadTask = uploadImageFile(avatarImageFile!, fileName);
+    try {
+      TaskSnapshot snapshot = await uploadTask;
+     photo = await snapshot.ref.getDownloadURL();
+
+      //  photoUrl = await snapshot.ref.getDownloadURL();
+      // await profileProvider.setPrefs(FirestoreConstants.photoUrl, photoUrl);
+      setState(() {
+        isLoading = false;
+        picture=photo;
+      });
+      print('mise a jour du profil reussi');
+    } on FirebaseException catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('l erreur sur profil est : $e');
+    }
+  }
+
+  UploadTask uploadImageFile(File image, String fileName) {
+    Reference reference = firebaseStorage.ref();//.child(fileName);
+    UploadTask uploadTask = reference.putFile(image);
+    return uploadTask;
   }
 
   @override
@@ -243,14 +283,6 @@ class _InscriptionNameState extends State<InscriptionName> {
     properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
     properties.add(DiagnosticsProperty<PickedFile>('_image', _image));
   }
-
-
-
-UploadTask uploadImageFile(File image, String fileName) {
- Reference reference = FirebaseStorage.instance. ref().child(fileName);
- UploadTask uploadTask = reference.putFile(image);
- return uploadTask;
-}
 }
 
 AppBar buildAppBar() {
