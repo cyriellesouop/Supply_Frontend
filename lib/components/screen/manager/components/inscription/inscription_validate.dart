@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors, unused_local_variable
 import 'dart:async';
-import 'dart:ffi';
+
 import 'dart:ui';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,12 +11,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:supply_app/components/services/auth_service.dart';
 import 'package:supply_app/components/services/position_service.dart';
 import 'package:supply_app/components/services/user_service.dart';
 import 'package:supply_app/constants.dart';
-
 import '../../../../models/Database_Model.dart';
 import '../manager_home.dart';
 
@@ -48,18 +48,14 @@ class _PhoneAuthState extends State<PhoneAuth> {
   late UserModel user;
   // creation d'une instance de firebaseauth
   FirebaseAuth auth = FirebaseAuth.instance;
-
 // variable contenant le message de verification
   String verificationIDreceived = "";
   String actual_user = '';
   // AppUser? actual_user;
   Authclass? authClass; // = Authclass(auth.currentUser);
-
-  //liste des positions de tous les livreurs
+//liste des positions de tous les livreurs
   List<LatLng> listecoordonnees = [];
-
-  //token
-
+//token
   String? token;
   // timer utiliser pour le onloading
   Timer? _timer;
@@ -69,26 +65,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
   late double long;
   //verifie si l'espace pour le code pin est visible afin de changer la valeur des boutons et les actions derrieres les boutons
   bool otploginVisible = false;
-
+  bool isLoading = false;
 //fonction pour obtenir les coordonnees la position actuelle
-  /* void getCurrentLocation() async {
-    LocationPermission permission;
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      lat = position.latitude;
-      long = position.longitude;
-    } on PlatformException catch (e) {
-      if (e.code == "PERMISSION_DENIED") {
-        var error = "PERMISSION_DENIED";
-        getCurrentLocation();
-
-        // print("PERMISSION_DENIED");
-      } else if (e.code == "PERMISSION_DENIED_NEVER_ASK") {
-        print("PERMISSION_DENIED_NEVER_ASK");
-      }
-    }
-  }*/
 
 //obtenir la position actuelle
   Future<void> getCurrentLocation() async {
@@ -155,9 +133,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
     //authClass = Authclass(this.auth.currentUser);
     _listDeliver();
-    //getUserPosition();
-    //  print('liste de livreurs ${exampleService.getposdelivers()}');
-    //  _currentManager();
+
     _DeliversPosition();
 
     getCurrentLocation();
@@ -170,6 +146,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
       }
     });
   }
+
   /**************************************************/
 
 /* remplissage automatique de l'otp et */
@@ -187,72 +164,26 @@ class _PhoneAuthState extends State<PhoneAuth> {
           this.x = value;
           this.y = LatLng(x.latitude, x.longitude);
         });
-        //  print("dans le then ma latitude est ${y.latitude}, et ma longitude est ${y.longitude}");
       },
     );
   }
-
-/*   _currentManager() async {
-    // print('teste user !!!111 ');
-    await ServiceUser.getUserbyId("UtfTYNHAjdcNyroh7p9B").then((value) {
-      setState(() {
-        this.exampleModel = value;
-      });
-    });
-
-    print('dikongue ${this.exampleModel}');
-  } */
 
   _listDeliver() async {
     await ServiceUser.getDelivers().forEach((element) {
       setState(() {
         this.exampleModelDeliver = element;
       });
-      /* var taille = this.exampleModelDeliver.length;
-      for (var i = 0; i < taille; i++) {
-        print('liste de livreurs ${this.exampleModelDeliver[i]}\n');
-      }*/
+
       print(
           "le nombre de livreur est exactement ${exampleModelDeliver.length}");
     });
-
-    // print("la taille de la liste est est ${exampleModelDeliver.length}");
-    // return exampleModelDeliver.length;
-    // exampleModelDeliver= exampleService.getposdelivers();
   }
-
-  //liste de posiition des livreur
-  /*  getUserPosition() async {
-    LatLng coordonnees = new LatLng(0, 0);
-    await ServiceUser.getDelivers().forEach((element) async {
-      print('aaaaaaaaaaaaaaaaaaaaaa');
-      setState(() {
-        print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
-        this.exampleModelDeliver = element;
-        print("cccccccccccccccccccc${this.exampleModelDeliver}");
-      });
-      print(
-          "le nombre de livreur dont je recherche la pos est exactement ${this.exampleModelDeliver.length}");
-      for (var i in this.exampleModelDeliver) {
-        await ServicePosition.getPosition(i.idPosition).then((value) {
-          LatLng coordonnees = LatLng(value.latitude, value.longitude);
-
-          print(
-              'la coordonnees est actuellement la latitude:${coordonnees.latitude} et la longitude est :${coordonnees.longitude}');
-          setState(() {
-            listecoordonnees.add(coordonnees);
-            print('la liste de coordonnees mise a jour est:$listecoordonnees');
-          });
-        });
-      }
-    });
-  } */
 
 /* ************************************/
   @override
   Widget build(BuildContext context) {
-   // Size size=MediaQuery.of(context).size;
- //  var size = MediaQuery.of(context).size;
+    Size size=MediaQuery.of(context).size;
+    //  var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: buildAppBar(),
@@ -287,14 +218,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
                       validator: (value) {
                         if (value?.length != 9) {
                           //  if (value == null || value.isEmpty) {
-                          return ' ${this.exampleModel!.name}';
+                          return ' Numero de telephone invalide';
                         }
                         return null;
                       },
                       decoration: InputDecoration(
-                        /*  errorText: (phoneController.value.text.isEmpty)
-                            ? 'erreur, veuillez remplir ce champ'
-                            : 'en attente de verification du numero ${phoneController.text}',*/
                         fillColor: Colors.white70,
                         filled: true,
                         hintText: "Votre Contact",
@@ -310,61 +238,76 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   SizedBox(
                     height: 60,
                   ),
-                  FlatButton(
-                    onPressed: () async {
-                      if (otploginVisible == false) {
-                        if (_formKey.currentState!.validate()) {
-                          // _timer?.cancel();
-                          //  await EasyLoading.show(
-                          // status: "vous allez recevoir um message");
+                  !isLoading
+                      ? FlatButton(
+                          onPressed: () async {
+                            if (otploginVisible == false) {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() {
+                                  isLoading = true;
+                                });
 
-                          //   if(otpDialog)
-                          _showValidationDialog(context);
-                          setState(() {});
-                        }
-                      } else {
-                        print(
-                            "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
+                                
+                             otpDialog?_showValidationDialog(context):{};
+                              }
+                            } else {
+                              print(
+                                  "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
 
-                        print("le token est : ${this.token}");
+                              print("le token est : ${this.token}");
 
-                        /**----------------------------------------------------------------------------------*/
-                        PositionModel pos =
-                            PositionModel(longitude: long, latitude: lat);
-                        var identifiant = await PositionService().addPosition(
-                            pos); // renvoie l'id de la position actuelle du manager
+                              /**----------------------------------------------------------------------------------*/
+                              PositionModel pos =
+                                  PositionModel(longitude: long, latitude: lat);
+                              var identifiant = await PositionService().addPosition(
+                                  pos); // renvoie l'id de la position actuelle du manager
 
-                        UserModel userCreate = UserModel(
-                          //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                              //stockage local with sharedprefs
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              prefs.setString('id', this.actual_user);
+                              prefs.setString('name', widget.nameField);
+                              prefs.setString('adress', widget.adressField);
+                              prefs.setString('picture', widget.picture);
+                              prefs.setInt(
+                                  'phone', int.parse(phoneController.text));
+                              prefs.setString('idPosition', identifiant);
+                              prefs.setBool('isAuthenticated', true);
 
-                          idUser: this.actual_user,
-                          adress: widget.adressField,
-                          name: widget.nameField,
+                              UserModel userCreate = UserModel(
+                                  //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
 
-                          idPosition: identifiant,
-                          phone: int.parse(phoneController.text),
-                          picture: widget.picture,
-                          createdAt: DateTime.now().toString()
-                        );
-                        _timer?.cancel();
-                        // await EasyLoading.show(status: 'en cours...');
-                        // await UserService().setUser(user).then((value) =>
+                                  idUser: this.actual_user,
+                                  adress: widget.adressField,
+                                  name: widget.nameField,
+                                  idPosition: identifiant,
+                                  phone: int.parse(phoneController.text),
+                                  picture: widget.picture,
+                                  createdAt: DateTime.now().toString());
+                              _timer?.cancel();
+                               setState(() {
+                                  isLoading = true;
+                                });
+                              // await EasyLoading.show(status: 'en cours...');
+                              // await UserService().setUser(user).then((value) =>
 
-                       // await UserService().updateUserData(this.actual_user,widget.nameField,int.parse(phoneController.text),widget.picture,widget.adressField,identifiant).then((value) =>
-                        await UserService().addUser(userCreate).then((value) =>
-                            (EasyLoading.showSuccess('compte cree avec succes'))
-                                .catchError((onError) {
-                              EasyLoading.showError('echec de connexion');
-                            }));
-                        setState(() {
-                          phoneController.text = '';
-                        });
+                              // await UserService().updateUserData(this.actual_user,widget.nameField,int.parse(phoneController.text),widget.picture,widget.adressField,identifiant).then((value) =>
+                              await UserService().addUser(userCreate).then(
+                                  (value) => (EasyLoading.showSuccess(
+                                              'compte cree avec succes'))
+                                          .catchError((onError) {
+                                        EasyLoading.showError(
+                                            'echec de connexion');
+                                      }));
+                              setState(() {
+                                phoneController.text = '';
+                              });
 
-                        _timer?.cancel();
-                        EasyLoading.dismiss();
+                              _timer?.cancel();
+                              EasyLoading.dismiss();
 
-                        /**-----------------------------------------------------------------------------------*/
-                        /*    Fluttertoast.showToast(
+                              /**-----------------------------------------------------------------------------------*/
+                              /*    Fluttertoast.showToast(
                             msg: "compte cree avec succes",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
@@ -373,37 +316,49 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             textColor: Colors.white,
                             fontSize: 16.0);*/
 
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
 
-                                //builder: (context) =>  ManagerHome( user: authClass.user)));
-                                builder: (context) =>
-                                    //InscriptionName()
-                                    ManagerHome(
-                                        currentManagerID: actual_user)));
-                        _timer?.cancel();
-                        await EasyLoading.dismiss();
-                      }
-                    },
-                    padding: EdgeInsets.all(15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    color: kPrimaryColor,
-                    textColor: kBackgroundColor,
-                    child: Text(
-                      otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
-                      style: GoogleFonts.poppins(fontSize: 15),
-                    ),
-                  ),
-                  /*  Visibility(
+                                      //builder: (context) =>  ManagerHome( user: authClass.user)));
+                                      builder: (context) =>
+                                          //InscriptionName()
+                                          ManagerHome(
+                                              currentManagerID: actual_user)));
+                              _timer?.cancel();
+                              await EasyLoading.dismiss();
+                            }
+                          },
+                          padding: EdgeInsets.all(15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          color: kPrimaryColor,
+                          textColor: kBackgroundColor,
+                          child: Text(
+                            otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
+                            style: GoogleFonts.poppins(fontSize: 15),
+                          ),
+                        )
+                      : Container(
+                        margin: EdgeInsets.symmetric(horizontal: size.width*0.37),
+                          height: 40,
+                          width: 10,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 6.0,
+                            backgroundColor: Colors.grey,
+                           
+                            valueColor: AlwaysStoppedAnimation(kPrimaryColor),
+                          ),
+                        )
+
+                  /* Visibility(
                     visible: isLoading,
                     child: SizedBox(
                       height: 20,
                       child: CircularProgressIndicator(),
                     ),
-                  ),*/
+                  ), */
                 ],
               ),
             ),
@@ -429,91 +384,93 @@ class _PhoneAuthState extends State<PhoneAuth> {
               context: context,
               builder: (context) {
                 // final signcode = SmsAutoFill().getAppSignature();
-                return AlertDialog(
-                  title: Text("Veuillez saisir le code recu",
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      )),
-                  content: PinFieldAutoFill(
-                    controller: otpCodeController,
-                    keyboardType: TextInputType.number,
-                    codeLength: 6,
-                    onCodeChanged: (val) {
-                      print(val);
-                    },
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                        child: Text("valider"),
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            print(
-                                '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
-                            // _timer?.cancel();
-                            //  EasyLoading.show(
-                            //     status: 'verification en cours...');
-
-                            await authClass!
-                                .signInwithPhoneNumber(
-                                    // verified= await authClass!.signInwithPhoneNumber(
-                                    verificationIDreceived,
-                                    otpCodeController.text,
-                                    context)
-                                .then((value) {
-                              setState(() {
-                                actual_user = value!.uid.toString();
-                                verified =
-                                    authClass!.isphonenumberok(actual_user);
-                                print('verification est :$verified');
+                return  AlertDialog(
+                    title: Text("Veuillez saisir le code recu",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    content: PinFieldAutoFill(
+                      controller: otpCodeController,
+                      keyboardType: TextInputType.number,
+                      codeLength: 6,
+                      onCodeChanged: (val) {
+                        print(val);
+                      },
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                          child: Text("valider"),
+                          onPressed: () async {
+                            // if (_formKey.currentState!.validate()) {
+                              print(
+                                  '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
+                              // _timer?.cancel();
+                              //  EasyLoading.show(
+                              //     status: 'verification en cours...');
+                
+                              await authClass!
+                                  .signInwithPhoneNumber(
+                                      // verified= await authClass!.signInwithPhoneNumber(
+                                      verificationIDreceived,
+                                      otpCodeController.text,
+                                      context)
+                                  .then((value) {
+                                setState(() {
+                                  actual_user = value!.uid.toString();
+                                  verified =
+                                      authClass!.isphonenumberok(actual_user);
+                                      otpDialog = false;
+                                  print('verification est :$verified');
+                                });
                               });
-                            });
-                            /*   print(
-                                'formulaire valide et actuel : ${actual_user}');
-
-                            print(
-                                'formulaire valide et actuellllllllllllllll : ${actual_user}'); */
-                          }
-
-                          if (verified == true) {
-                            _timer?.cancel();
-                            await EasyLoading.showSuccess(
-                                "le code saisi est correct");
-                          } else {
+                          //  } else {
+                             /*  setState(() {
+                                otpDialog = false;
+                              }); */
+                          //  }
+                
+                            if (verified == true) {
+                              isLoading = false;
+                              _timer?.cancel();
+                              await EasyLoading.showSuccess(
+                                  "le code saisi est correct");
+                            } else {
+                              /* _timer?.cancel();
+                              await EasyLoading.showError(
+                                  "le code saisi est incorrect"); */
+                             /*  setState(() {
+                                otpDialog = false;
+                                //otpCodeController.text = '';
+                              }); */
+                              /** 
+                              _timer?.cancel();
+                              await EasyLoading.showError("verification echoue");
+                              */
+                              _timer?.cancel();
+                              await EasyLoading.dismiss();
+                              Fluttertoast.showToast(
+                                  msg: "le code saisi est incorrect",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 5,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0);
+                
+                              /* setState(() {
+                                otpDialog = false;
+                              }); */
+                            }
+                
                             setState(() {
-                              otpCodeController.text = '';
+                              isphonenumberNotFill = !verified;
+                              otploginVisible = verified;
                             });
-                            /** 
-                            _timer?.cancel();
-                            await EasyLoading.showError("verification echoue");
-                            */
-                            _timer?.cancel();
-                            await EasyLoading.dismiss();
-                            Fluttertoast.showToast(
-                                msg: "le code saisi est incorrect",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 5,
-                                backgroundColor: Colors.red,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
-
-                            setState(() {
-                              otpDialog = false;
-                            });
-                          }
-
-                          setState(() {
-                            isphonenumberNotFill = !verified;
-                            otploginVisible = verified;
-                          });
-
-                          /* setState(() {
-                            isLoading = false;
-                          });*/
-                        })
-                  ],
-                );
+                          })
+                    ],
+                  )
+                ;
               });
           final signcode = SmsAutoFill().getAppSignature;
           print(resendtoken);
@@ -548,6 +505,23 @@ class _PhoneAuthState extends State<PhoneAuth> {
           );
         });
   }*/
+
+  save() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('id', this.actual_user);
+    prefs.setString('name', widget.nameField);
+    prefs.setString('adress', widget.adressField);
+    prefs.setString('picture', widget.picture);
+    prefs.setInt('phone', int.parse(phoneController.text));
+    /*  await ServiceUser.getUserbyId(this.actual_user).then((value) {
+      prefs.setString('name', value.name);
+      prefs.setInt('Phone', value.phon);
+      prefs.setString('name', value.name);
+      prefs.setString('name', value.name);
+      prefs.setString('name', value.name);
+      prefs.setString('name', value.name);
+    }); */
+  }
 }
 
 AppBar buildAppBar() {

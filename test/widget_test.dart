@@ -18,7 +18,9 @@ void main() {
     // Build our app and trigger a frame.
     final prefs=await SharedPreferences.getInstance();
      final showHome = prefs.getBool('showHome')?? false;
-    await tester.pumpWidget(MyApp(showHome: showHome,));
+      final id = prefs.getString('id')?? '';
+       await tester.pumpWidget(MyApp(showHome: showHome,identifiant: id,));
+   //await tester.pumpWidget(MyApp(showHome: showHome,identifiant: id,));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

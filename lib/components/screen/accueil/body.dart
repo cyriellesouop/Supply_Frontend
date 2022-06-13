@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, prefer_const_constructors
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/screen/manager/components/inscription/inscription_name.dart';
 import 'package:supply_app/components/screen/manager/deliver_list.dart';
@@ -52,11 +53,13 @@ class Body extends StatelessWidget {
                     ),
                     color: kPrimaryColor,
                     textColor: kBackgroundColor,
-                    onPressed: () {
+                    onPressed: () async {
+                       final prefs = await SharedPreferences.getInstance();
+                      var isInscription= prefs.getBool('InscriptionName')?? false;
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => IntroductionScreen()));
+                            builder: (context) => isInscription? InscriptionName(): IntroductionScreen()));
                              // builder: (context) => IntroductionScreen()));
                     },
                     child: Text(

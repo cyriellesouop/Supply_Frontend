@@ -1,14 +1,19 @@
 // ignore_for_file: non_constant_identifier_names
-import 'dart:convert';
+
+import 'dart:ui';
 import 'dart:math';
+//import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/components/models/Database_Model.dart';
 import 'package:supply_app/components/screen/manager/tri_rapide.dart';
 import 'package:supply_app/components/services/user_service.dart';
 import 'package:supply_app/constants.dart';
+import 'package:supply_app/palette.dart';
 
 import '../../../services/position_service.dart';
 import '../menu_content/nav_bar.dart';
@@ -17,6 +22,15 @@ class ManagerHome extends StatefulWidget {
   //UserModel currentManager;
   String currentManagerID;
   ManagerHome({required this.currentManagerID, Key? key}) : super(key: key);
+
+  
+  String get ID{
+    return this.currentManagerID;
+  }
+
+ void set ID(String managerID){
+    this.currentManagerID=managerID;
+  }
   @override
   _ManagerHomeState createState() => _ManagerHomeState();
 }
@@ -27,10 +41,12 @@ class _ManagerHomeState extends State<ManagerHome> {
   //var Deliver = Map<UserModel, double>();
   // var deliver = null;
   bool isdeliver = false;
+  var hauteur, hauteur2;
+
   bool isDev = false;
 //pour le appBar
   bool isSearching = false;
-  var deliver =null;
+  var deliver = UserModel(name: 'audrey').toMap();
   var Dev = UserModel(name: 'audrey');
   Map<String, dynamic> tab = {
     'Deliver': UserModel(name: 'audrey'),
@@ -67,6 +83,7 @@ class _ManagerHomeState extends State<ManagerHome> {
   List<LatLng> listecoordonnees = [];
   List<double> Distances = [];
   List<double> DistanceInter = [];
+
 
   @override
   void initState() {
@@ -187,8 +204,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                 onTap: () {
                   setState(() {
                     isDev = false;
-                    // deliver=DeliverSort[index];
-                    // deliver = tableauJsontrie[index];
+
                     Dev = i;
                   });
                   Dev != UserModel(name: 'audrey')
@@ -215,29 +231,51 @@ class _ManagerHomeState extends State<ManagerHome> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    /* setState(() {
+      this.hauteur = size.height * 0.53;
+      this.hauteur2 = size.height * 0.3;
+    }); */
+
     // final allDelivers = Provider.of<List<UserModel>>(context);
     var n = tableauJson.length;
 
-    tableauJsontrie =tableauTrie(TriRapidejson(table: tableauJson).QSort(0, n - 1)) ;
+    tableauJsontrie =
+        tableauTrie(TriRapidejson(table: tableauJson).QSort(0, n-1));
     // DeliverSort = listeTrie(tableauJsontrie);
     print('les distances sont :${exampleModelDeliver}');
 
     print('la table json esst $tableauJson');
-print('le tableau json trie est ${tableauJsontrie.length}');
+    print('le tableau json trie est ${tableauJsontrie.length}');
     /* print(
         'la liste des distance et livreurs associees est ${TriRapide(table: this.DistanceInter).tableauTrie(this.Distances)}');
  */
     return Scaffold(
-      drawer: NavBar(), //Visibility(visible: isVisible(), child: NavBar()),
-      appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: /* !isSearching
+      drawer: NavBar(currentManagerID: widget.currentManagerID), //Visibility(visible: isVisible(), child: NavBar()),
+     appBar: AppBar(
+        backgroundColor: kPrimaryColor,
+        //   backgroundColor: Colors.transparent,
+        title: /* !isSearching
                   ? Text(
                       'Mon application',
                       style: GoogleFonts.philosopher(fontSize: 20),
                     )
                   : */
-              TextField(
+            Text('Mon application'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: MysearchDelegate(
+                    tableauJsontrie: tableauJsontrie,
+                    hintText: " rechercher un livreur"),
+              );
+            },
+            icon: const Icon(Icons.search),
+          )
+        ],
+      ),
+      /*   TextField(
             decoration: InputDecoration(
               /*  icon: Icon(
                   Icons.search,
@@ -277,11 +315,11 @@ print('le tableau json trie est ${tableauJsontrie.length}');
                     child: Icon(Icons.more_vert),
                   )),
             ), */
-          ]),
+          ]), */
       body: /* SingleChildScrollView(
         child: */
           Column(
-        children: [
+        children:<Widget> [
           Container(
             height: size.height * 0.42,
             //height: size.height,
@@ -304,16 +342,16 @@ print('le tableau json trie est ${tableauJsontrie.length}');
               height: size.height * 0.43,
               margin: const EdgeInsets.symmetric(vertical: kDefaultPadding / 5),
               child: Stack(
-                children: [
+                children: <Widget>[
                   Container(
                     width: size.width,
                     height: size.height * 0.08,
                     margin:
                         const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
-                      children: [
+                      children:<Widget> [
                         Text(
-                          'contacter un livreur ss',
+                          'contacter un livreur ',
                           style: GoogleFonts.philosopher(
                               fontSize: 17, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.center,
@@ -342,126 +380,142 @@ print('le tableau json trie est ${tableauJsontrie.length}');
                         //  mainAxisSize: MainAxisSize.min,
                         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         // scrollDirection: Axis.vertical,
-                        children: [
-                          Expanded(
-                            // flex: 2,
-                            child: ListView.builder(
-                              //  shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              // itemCount: allDelivers.length,
-                              itemCount: this.tableauJsontrie.length,
-                              //  itemCount: this.exampleModelDeliver.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return InkWell(
-                                  child: Container(
-                                    child: GetItem(index),
-                                  ),
-                                  onTap: () {
-                                    setState(() {
-                                      isdeliver = false;
-                                      // deliver=DeliverSort[index];
-                                      // deliver = tableauJsontrie[index];
-                                      deliver = this.tableauJsontrie[index];
-                                      tab = this.tableauJsontrie[index];
-                                    });
-                                    deliver != UserModel(name: 'audrey')
-                                        ? isdeliver = true
-                                        : isdeliver = false;
-                                    print(
-                                        'livreur est : $deliver et $isdeliver');
-
-                                    //  });
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          /*  Visibility(
-                            visible: isdeliver,
-
-                            child: Text(
-                                'situe a ${tab['Distance']} km de vous',
-                                // Text('${tableauJsontrie[index]['Deliver']['name']}',
-                                style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w500, fontSize: 15)),
-                            // ),
-                          ), */
-                          /*   Visibility(
-                                visible: isdeliver,
-                                child: */
-                          //  Expanded(
-                          //   flex: 1,
-                          //  child:
-                         Visibility(
-                            visible: isdeliver,
-                            child: Column(
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Container(
-                                    margin: EdgeInsets.only(left: 10),
-                                    padding: EdgeInsets.all(5),
-                                    height: 40,
-                                    width: size.width * 0.68,
-                                    color: Color.fromARGB(255, 248, 246, 248),
-                                    
-                                      child: Text(
-                                          'situe a ${tab['Distance']} km de vous',
-                                          // Text('${tableauJsontrie[index]['Deliver']['name']}',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 15,
-                                          ),),
-                                    
+                        children: <Widget>[
+                        /*   this.tableauJsontrie.length > 0
+                              ? */ Expanded(
+                                  // flex: 2,
+                                  child: ListView.builder(
+                                    //  shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    // itemCount: allDelivers.length,
+                                    itemCount: this.tableauJsontrie.length,
+                                    //  itemCount: this.exampleModelDeliver.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return InkWell(
+                                        child: Container(
+                                          child: GetItem(index),
+                                        ),
+                                        onTap: () {
+                                          setState(() {
+                                            isdeliver = false;
+                                            // deliver=DeliverSort[index];
+                                            // deliver = tableauJsontrie[index];
+                                            deliver =
+                                                this.tableauJsontrie[index]
+                                                    ['Deliver'];
+                                            tab = this.tableauJsontrie[index];
+                                          });
+                                          deliver !=
+                                                  UserModel(name: 'audrey')
+                                                      .toMap()
+                                              ? isdeliver = true
+                                              : isdeliver = false;
+                                          print(
+                                              'livreur est : $deliver et $isdeliver');
+                                          if (deliver !=
+                                              UserModel(name: 'audrey')
+                                                  .toMap()) {
+                                            isdeliver = true;
+                                            /* setState(() {
+                                        this.hauteur = size.height * 0.42;
+                                        this.hauteur2 = size.height * 0.43;
+                                      }); */
+                                          } else {
+                                            isdeliver = false;
+                                          }
+                                          print(
+                                              'livreur est : $deliver et $isdeliver');
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      FlatButton(
-                                        minWidth: size.width * 0.7,
-                                        onPressed: () {},
+                             /*  : Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "Aucun Livreur pour l'instant ",
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        //  fontWeight: FontWeight.bold,
+                                        color: Colors.grey
 
-                                        padding: EdgeInsets.all(5),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
+                                        //  backgroundColor: Colors.white
                                         ),
-                                        color: kPrimaryColor,
-                                        textColor: kBackgroundColor,
-                                        child: Text(
-                                          'CONFIRMER   ${deliver['Deliver']['name']} '.toUpperCase(),
-                                          //${this.exampleModelDeliver[index].name}',
-                                          //${user.name} ',
-                                          style:
-                                              GoogleFonts.poppins(fontSize: 15),
+                                  ),
+                                ), */
+                          Visibility(
+                              visible: (isdeliver || isDev),
+                              child: Column(
+                                children:<Widget>[
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      margin: EdgeInsets.only(left: 10),
+                                      padding: EdgeInsets.all(5),
+                                      height: 40,
+                                      width: size.width * 0.68,
+                                      color: Color.fromARGB(255, 248, 246, 248),
+                                      child: Text(
+                                        'situe a ${tab['Distance']} km de vous',
+                                        // Text('${tableauJsontrie[index]['Deliver']['name']}',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
                                         ),
-
-                                        // width: size.width * 0.7 ,
-                                        // child: FlatButton,
                                       ),
-                                      Container(
-                                        width: size.width * 0.25,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(
-                                                width: 1,
-                                                color: Colors.white70),
-                                            shape: BoxShape.circle,
-                                            image: DecorationImage(
-                                                fit: BoxFit.cover,
-                                                image: AssetImage(
-                                                    "assets/images/profil.png"))),
-                                      ),
-                                    ]),
-                              ],
-                            ) 
-                          )
-                         
-                          //  ),
-                          //  )
-                          //  Visibility(child: bottom(deliver),visible: true,)
-                          // isdeliver?Container():bottom(deliver)//:Container()
+                                    ),
+                                  ),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        FlatButton(
+                                          minWidth: size.width * 0.7,
+                                          onPressed: () async {
+                                            final prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            final showHome = prefs.getBool(
+                                                    'isAuthenticated') ??
+                                                false;
+                                            final id =
+                                                prefs.getString('id') ?? '';
+                                            print(
+                                                'identifiant est : $id et le home est $showHome');
+                                          },
+                                          padding: EdgeInsets.all(5),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          color: kPrimaryColor,
+                                          textColor: kBackgroundColor,
+                                          child: Text(
+                                            'CONFIRMER ${deliver['name']} '
+                                                .toUpperCase(),
+                                            //${this.exampleModelDeliver[index].name}',
+                                            //${user.name} ',
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 15),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: size.width * 0.25,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.white70),
+                                              shape: BoxShape.circle,
+                                              image: DecorationImage(
+                                                  fit: BoxFit.cover,
+                                                  image: AssetImage(
+                                                      "assets/images/profil.png"))),
+                                        ),
+                                      ]),
+                                ],
+                              ))
                         ],
                       ),
                     ),
@@ -474,11 +528,12 @@ print('le tableau json trie est ${tableauJsontrie.length}');
       // ),
     );
   }
+
   Widget GetItem(int index) {
     Size size = MediaQuery.of(context).size;
     return Column(
-      children: [
-        Stack(children: [
+      children:<Widget> [
+        Stack(children: <Widget>[
           Container(
             margin: EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
             width: size.width * 0.25,
@@ -493,13 +548,12 @@ print('le tableau json trie est ${tableauJsontrie.length}');
                 ],
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                    fit: BoxFit.cover, //image: AssetImage("${deliver.picture}")
-
+                    fit: BoxFit.cover,
                     image: const AssetImage("assets/images/profil.png"))),
           ),
           Positioned(
             bottom: size.width * 0.14,
-            right: size.width * 0.005,
+            right: size.width * 0.06,
             child: Container(
               height: 30,
               width: 30,
@@ -521,8 +575,8 @@ print('le tableau json trie est ${tableauJsontrie.length}');
           height: 2,
         ),
         // Text( 'deliver.name'),
-     //   Text('${this.exampleModelDeliver[index].name}',
-               Text( tableauJsontrie[index]['Deliver']['name'],
+        //   Text('${this.exampleModelDeliver[index].name}',
+        Text(tableauJsontrie[index]['Deliver']['name'],
             style:
                 GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 15)),
         const SizedBox(
@@ -535,11 +589,11 @@ print('le tableau json trie est ${tableauJsontrie.length}');
     );
   }
 
-  Widget bottom(Map<String,dynamic> tab) {
+  Widget bottom(Map<String, dynamic> tab) {
     // Widget bottom(index) {
     Size size = MediaQuery.of(context).size;
 
-    return Row(children: [
+    return Row(children: <Widget>[
       FlatButton(
         minWidth: size.width * 0.7,
         onPressed: () {},
@@ -601,13 +655,17 @@ print('le tableau json trie est ${tableauJsontrie.length}');
     return ((value * mod).round().toDouble() / mod);
   }
 
+  //set height
+
 //supprime les doublons dans une liste
   List<Map<String, dynamic>> tableauTrie(List<Map<String, dynamic>> table) {
     int i, j, k;
     var n = table.length;
     for (i = 0; i < n; i++) {
       for (j = i + 1; j < n;) {
-        if (table[j]['Distance'] == table[i]['Distance'] && table[j]['Deliver']['name'] == table[i]['Deliver']['name']&&table[j]['Deliver']['adress'] == table[i]['Deliver']['adress']) {
+        if (table[j]['Distance'] == table[i]['Distance'] &&
+            table[j]['Deliver']['name'] == table[i]['Deliver']['name'] &&
+            table[j]['Deliver']['adress'] == table[i]['Deliver']['adress']) {
           table.removeAt(j);
           n--;
         } else
@@ -617,9 +675,6 @@ print('le tableau json trie est ${tableauJsontrie.length}');
     return table;
   }
 
-  
-
-  
 //fonction qui renvoie la dstance des livreurs par rapport a la position du gerant
   /* List<double> getDistanceBetween(
       LatLng currentManagerPosition, List<LatLng> positionDeliverList) {
@@ -654,6 +709,278 @@ print('le tableau json trie est ${tableauJsontrie.length}');
     return dist;
     // TriRapide(table: this.DistanceInter).tableauTrie(this.DistanceInter);
   }
+}
 
+class MysearchDelegate extends SearchDelegate {
+  List<Map<String, dynamic>> tableauJsontrie;
+  final String hintText;
+  MysearchDelegate(
+      {required this.tableauJsontrie, required this.hintText, Key? key});
+/* 
+  List<String> added = [];
+  String currentText = '';
+  GlobalKey<AutoCompleteTextFieldState<String>> key = GlobalKey();
+  late SimpleAutoCompleteTextField textField; */
 
+  @override
+  String get searchFieldLabel => hintText;
+
+  @override
+  Widget? buildLeading(BuildContext context) => IconButton(
+      onPressed: () {
+        close(context, null);
+      },
+      icon: const Icon(Icons.arrow_back));
+
+  @override
+  List<Widget>? buildActions(BuildContext context) => [
+        IconButton(
+            onPressed: () {
+              if (query.isEmpty) {
+                close(context, null);
+              } else {
+                query = '';
+              }
+            },
+            icon: const Icon(Icons.clear))
+      ];
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
+    List<String> liste = [];
+
+    int i;
+    int n = this.tableauJsontrie.length;
+
+    for (i = 0; i < n; i++) {
+      liste.add(this.tableauJsontrie[i]['Deliver']['name']);
+    }
+    List<String> sortedItem = liste
+      ..sort(
+          (item1, item2) => item1.toLowerCase().compareTo(item2.toLowerCase()));
+    List<String> suggestions = sortedItem;
+    //#########################################################################################
+    /* _FirstPageState() {
+      textField = SimpleAutoCompleteTextField(
+          key: key,
+          controller: TextEditingController(),
+          suggestions: suggestions,
+          textChanged: (text) => currentText = text,
+          clearOnSubmit: true,
+          textSubmitted: (text) => (text != "") ? added.add(text) : added);
+    } */
+
+    //#########################################################################################
+
+    return (suggestions.length > 0)
+        ? Column(
+            children:<Widget>[
+              Container(
+                margin: EdgeInsets.symmetric(vertical: kDefaultPadding),
+                // height: 10,
+                child: Text('Tous les livreurs disponibles',
+                    style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 138, 130, 130))),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: suggestions.length,
+                  itemBuilder: (context, index) {
+                    final suggestion = suggestions[index];
+
+                    return Column(
+                      children:<Widget> [
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: kPrimaryColor,
+                            radius: 28,
+                            backgroundImage:
+                                AssetImage("assets/images/profil.png"),
+                          ),
+                          title: Text(suggestion),
+                          subtitle: Text(
+                              'situe a ${getDistance(suggestion, this.tableauJsontrie)} km de vous'),
+                          onTap: () {
+                            print("suggestion est $suggestion");
+                            query = suggestion;
+                          },
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                //  ),
+              ),
+              /*  Autocomplete<String>(
+                  optionsBuilder: (TextEditingValue value) {
+              // When the field is empty
+              if (value.text.isEmpty) {
+                return [];
+              }
+
+              // The logic to find out which ones should appear
+              return suggestions.where((suggestion) =>
+                  suggestion.toLowerCase().contains(value.text.toLowerCase()));
+            },), */
+            ],
+          )
+        : Container(
+            height: size.height,
+            width: size.width,
+            alignment: Alignment.center,
+            child: Text(
+              "Aucun resultat ",
+              style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  //  fontWeight: FontWeight.bold,
+                  color: Colors.grey
+
+                  //  backgroundColor: Colors.white
+                  ),
+            ),
+          );
+    ;
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    List<String> liste = [];
+
+    int i;
+    int n = this.tableauJsontrie.length;
+
+    for (i = 0; i < n; i++) {
+      liste.add(this.tableauJsontrie[i]['Deliver']['name']);
+    }
+    List<String> sortedItem = liste
+      ..sort(
+          (item1, item2) => item1.toLowerCase().compareTo(item2.toLowerCase()));
+    List<String> suggestions = sortedItem;
+
+    List<String> matchQuery = [];
+    for (var deliver in suggestions) {
+      if (deliver.toLowerCase().contains(query.toLowerCase())) {
+        matchQuery.add(deliver);
+      }
+    }
+
+    return matchQuery.length > 0
+        ? ListView.builder(
+            itemCount: matchQuery.length,
+            itemBuilder: (context, index) {
+              var result = matchQuery[index];
+
+              return Column(
+                children:<Widget> [
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: kPrimaryColor,
+                      radius: 28,
+                      backgroundImage: AssetImage("assets/images/profil.png"),
+                    ),
+                    title: Text(result),
+                    subtitle: Text(
+                        'situe a ${getDistance(result, this.tableauJsontrie)} km de vous'),
+                    onTap: () {
+                      print("suggestion est $result");
+                      query = result;
+                      _showcommandDialog(context);
+                    },
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                ],
+              );
+            },
+          )
+        : Container(
+            height: size.height,
+            width: size.width,
+            alignment: Alignment.center,
+            child: Text(
+              "Aucun resultat ",
+              style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  //  fontWeight: FontWeight.bold,
+                  color: Colors.grey
+
+                  //  backgroundColor: Colors.white
+                  ),
+            ),
+          );
+  }
+
+  void _showcommandDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Palette.primarySwatch.shade400,
+              title: Container(
+                width: MediaQuery.of(context).size.width,
+                margin: EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                child: Center(
+                  child: Text(
+                    "Publier une commande",
+                    style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+
+                        //  backgroundColor: Colors.white
+                        ),
+                  ),
+                ),
+              ),
+              content: Text(
+                'Le livreur $query est situe a ${getDistance(query, this.tableauJsontrie)} km de vous  ',
+                style: GoogleFonts.poppins(fontSize: 15, color: Colors.white),
+              ),
+              actions: [
+                TextButton(
+                  child: Text("Publier"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ]);
+        });
+  }
+
+  double getDistance(String query, List<Map<String, dynamic>> tableauJsontrie) {
+    int n = tableauJsontrie.length;
+    int i;
+    double distance = 0.0;
+    for (i = 0; i < n; i++) {
+      if (tableauJsontrie[i]['Deliver']['name'].compareTo(query) == 0) {
+        distance = tableauJsontrie[i]['Distance'];
+        break;
+      }
+    }
+    return distance;
+  }
+
+  auto(List<String> suggestions) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue value) {
+        // When the field is empty
+        if (value.text.isEmpty) {
+          return [];
+        }
+
+        // The logic to find out which ones should appear
+        return suggestions.where((suggestion) =>
+            suggestion.toLowerCase().contains(value.text.toLowerCase()));
+      },
+    );
+  }
 }

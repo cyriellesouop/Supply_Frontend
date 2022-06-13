@@ -50,8 +50,8 @@ class CommandModel {
   final String? deliveredBy;
   final PositionModel startPoint;
   final PositionModel? endPoint;
-  final DateTime updatedAt;
-  final DateTime createAt;
+  final  String updatedAt;
+  final  String createAt;
 
   CommandModel(
       {this.idCommand,

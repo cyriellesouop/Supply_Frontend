@@ -11,24 +11,6 @@ import 'package:supply_app/main.dart';
 import '../../models/Database_Model.dart';
 import '../../services/user_service.dart';
 
-/*Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  final prefs = await SharedPreferences.getInstance();
-  final showInscription = prefs.getBool('showInscription') ?? false;
-
-  // runApp(MyApp(showInscription : showInscription));
-}
-
-class MyApp extends StatelessWidget {
-  final bool showInscription;
-
-  const MyApp(
-    Key? key,
-    required this.showInscription,
-  )
-} : super( Key : key); */
-
 class IntroductionScreen extends StatefulWidget {
   @override
   _IntroductionScreenState createState() => _IntroductionScreenState();
@@ -85,7 +67,7 @@ late UserService exampleService;
                   minimumSize: const Size.fromHeight(80)),
               onPressed: () async {
                 //navigate directly on the inscription page
-                 final prefs = await SharedPreferences.getInstance();
+                final prefs = await SharedPreferences.getInstance();
                 prefs.setBool('InscriptionName', true);
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const InscriptionName()));

@@ -276,15 +276,15 @@ Future<void> updateUser(UserModel user) async {
   } */
 
 //add an user correcte
-  Future<void> addUser(UserModel user) async {
+  Future<String> addUser(UserModel user) async {
     // DocumentReference<Map<String, dynamic>> idkey = userCollection.doc();
-     DocumentReference idkey = userCollection.doc();
-    String id = idkey.id;
+    /*  DocumentReference idkey = userCollection.doc();
+    String id = idkey.id; */
 
    // await userCollection.add(user.toMap());
 
-    await userCollection.add({
-      'idDoc': userCollection.doc(),
+    var documentRef = await userCollection.add({
+    //  'idDoc': userCollection.doc(),
       'idUser':  user.idUser,
       'adress':  user.adress,
       'name':  user.name,
@@ -296,6 +296,8 @@ Future<void> updateUser(UserModel user) async {
       'isClient':  user.isClient,
       'isDeliver':  user.isDeliver,
       'createdAt':  user.createdAt});
+
+      return  documentRef.id;
    
   }
 
