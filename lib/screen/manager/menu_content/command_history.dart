@@ -32,7 +32,7 @@ class _CommandListeState extends State<CommandListe> {
   List<CommandModel> termine = [];
   List<CommandModel> encours = [];
   List<CommandModel> enattente = [];
-  // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt, createAt: createAt)
+  // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt, createdAt: createdAt)
 
   //UserModel? exampleModel = new UserModel(name: 'fabiol');
 
@@ -79,15 +79,15 @@ class _CommandListeState extends State<CommandListe> {
 
     List<CommandModel> sortedenattente = enattente
       ..sort((item1, item2) =>
-          item1.createAt.toLowerCase().compareTo(item2.createAt.toLowerCase()));
+          item1.createdAt.toLowerCase().compareTo(item2.createdAt.toLowerCase()));
 
     List<CommandModel> sortedencours = encours
       ..sort((item1, item2) =>
-          item1.createAt.toLowerCase().compareTo(item2.createAt.toLowerCase()));
+          item1.createdAt.toLowerCase().compareTo(item2.createdAt.toLowerCase()));
 
     List<CommandModel> sortedtermine = termine
       ..sort((item1, item2) =>
-          item1.createAt.toLowerCase().compareTo(item2.createAt.toLowerCase()));
+          item1.createdAt.toLowerCase().compareTo(item2.createdAt.toLowerCase()));
 
     return DefaultTabController(
         length: 4,

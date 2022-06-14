@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/common/palette.dart';
 import 'package:supply_app/models/Database_Model.dart';
+import 'package:supply_app/screen/manager/components/mySearch.dart';
 import 'package:supply_app/screen/manager/tri_rapide.dart';
 import 'package:supply_app/services/command_service.dart';
 import 'package:supply_app/services/user_service.dart';
@@ -90,10 +91,7 @@ class _ManagerHomeState extends State<ManagerHome> {
 
   @override
   void initState() {
-    // _listDeliver();
     getUserPosition();
-
-    // print(' audrey cyrielle moguem${widget.currentManagerID}');
     //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
     super.initState();
   }
@@ -114,6 +112,10 @@ class _ManagerHomeState extends State<ManagerHome> {
 
   //liste de posiition des livreur
   getUserPosition() async {
+    final prefs = await SharedPreferences.getInstance();
+    final showHome = prefs.getBool('isAuthenticated') ?? false;
+    final id = prefs.getString('id') ?? '';
+    print('identifiant est : $id et le home est $showHome');
     LatLng coordonnees = new LatLng(0, 0);
 
     //get current manager and current manager position
@@ -188,15 +190,6 @@ class _ManagerHomeState extends State<ManagerHome> {
               print('lacoordonnees est:$coordonnees');
               print('le tableau json mise a jour est:$listecoordonnees');
 
-              //  Deliver[i]=getDistanceBetween(this.currentManagerPosition, this.listecoordonnees)[n];
-
-              /*   deliver = {
-              "Deliver": i,
-              "Distance": getDistance(
-                      this.currentManagerPosition, coordonnees)
-                  
-            };*/
-
               //marquage sur la map de tous les livreurs contenus dans la precedente liste
               //-------------------------------------------
               markers.add(Marker(
@@ -232,11 +225,7 @@ class _ManagerHomeState extends State<ManagerHome> {
           );
         });
       }
-      /*  setState(() {
-       tableauJsontrie = TriRapidejson(table: tableauJson).QSort(0, n - 1) ;
-      }); */
     });
-    // return this.tableauJson;
   }
 
 //widget final
@@ -253,30 +242,16 @@ class _ManagerHomeState extends State<ManagerHome> {
           TriRapidejson(table: this.tableauJson).QSort(0, this.taille - 1));
     });
 
-    /*  tableauJsontrie =
-        tableauTrie(TriRapidejson(table: tableauJson).QSort(0, n - 1)); */
-    // DeliverSort = listeTrie(tableauJsontrie);
     print('les distances sont :${exampleModelDeliver}');
 
     print('la table json esst $tableauJson');
     print('le tableau json trie est ${tableauJsontrie.length}');
-    /* print(
-        'la liste des distance et livreurs associees est ${TriRapide(table: this.DistanceInter).tableauTrie(this.Distances)}');
- */
+
     return Scaffold(
-      drawer: NavBar(
-          currentManagerID: widget
-              .currentManagerID), //Visibility(visible: isVisible(), child: NavBar()),
+      drawer: NavBar(currentManagerID: widget.currentManagerID),
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
-        //   backgroundColor: Colors.transparent,
-        title: /* !isSearching
-                  ? Text(
-                      'Mon application',
-                      style: GoogleFonts.philosopher(fontSize: 20),
-                    )
-                  : */
-            Text('Mon application'),
+        title: Text('Mon application'),
         actions: [
           IconButton(
             onPressed: () {
@@ -285,59 +260,16 @@ class _ManagerHomeState extends State<ManagerHome> {
                 delegate: MysearchDelegate(
                     tableauJsontrie: tableauJsontrie,
                     hintText: " rechercher un livreur",
-                    current_user: currentManager,
-                    position: myPosition),
+                    current_user: currentManager
+                   ),
               );
             },
             icon: const Icon(Icons.search),
           )
         ],
       ),
-      /*   TextField(
-            decoration: InputDecoration(
-              /*  icon: Icon(
-                  Icons.search,
-                  color: Colors.white,
-                  size: 26,
-                ), */
-              hintText: "Rechercher un livreur",
-              hintStyle: TextStyle(color: Colors.white70),
-              // fillColor: kPrimaryColor
-            ),
-          ),
-          //visibilite des elements de la appbar
-          actions: <Widget>[
-            // !isSearching ?
-            Visibility(
-              visible: isVisible(),
-              child: Padding(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.search,
-                      size: 26,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        this.isSearching = !this.isSearching;
-                      });
-                    },
-                  )),
-            ),
-            /*  Visibility(
-              visible: isVisible(),
-              child: Padding(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Icon(Icons.more_vert),
-                  )),
-            ), */
-          ]), */
-      body:
-          /* SingleChildScrollView(
-        child: */
-          Column(
+
+      body: Column(
         children: <Widget>[
           Container(
             height: size.height * 0.42,
@@ -392,20 +324,14 @@ class _ManagerHomeState extends State<ManagerHome> {
                     top: 42,
                     bottom: 0,
                     right: 0,
-                    //  child: SizedBox(
                     child: Container(
-                      // height: size.height * 0.5,
                       child: Column(
-                        //  mainAxisSize: MainAxisSize.min,
-                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // scrollDirection: Axis.vertical,
                         children: <Widget>[
                           /*   this.tableauJsontrie.length > 0
                               ? */
                           Expanded(
                             // flex: 2,
                             child: ListView.builder(
-                              //  shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
                               // itemCount: allDelivers.length,
                               itemCount: this.tableauJsontrie.length,
@@ -418,8 +344,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                                   onTap: () {
                                     setState(() {
                                       isdeliver = false;
-                                      // deliver=DeliverSort[index];
-                                      // deliver = tableauJsontrie[index];
+
                                       deliver = this.tableauJsontrie[index]
                                           ['Deliver'];
                                       tab = this.tableauJsontrie[index];
@@ -487,17 +412,24 @@ class _ManagerHomeState extends State<ManagerHome> {
                                       children: <Widget>[
                                         FlatButton(
                                           minWidth: size.width * 0.7,
-                                          onPressed: () async {
-                                            final prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-                                            final showHome = prefs.getBool(
-                                                    'isAuthenticated') ??
-                                                false;
-                                            final id =
-                                                prefs.getString('id') ?? '';
-                                            print(
-                                                'identifiant est : $id et le home est $showHome');
+                                          onPressed: () {
+                                            UserModel ontapDeliver = UserModel(
+                                              idUser: tab['Deliver']['idUser'],
+                                              adress: tab['Deliver']['adress'],
+                                              name: tab['Deliver']['name'],
+                                              idPosition: tab['Deliver']
+                                                  ['idPosition'],
+                                              phone: tab['Deliver']['phone'],
+                                              picture: tab['Deliver']
+                                                  ['picture'],
+                                              createdAt: tab['Deliver']
+                                                  ['createdAt'],
+                                            );
+                                            _showcommandDialog(
+                                                context,
+                                                myPosition,
+                                                currentManager,
+                                                ontapDeliver);
                                           },
                                           padding: EdgeInsets.all(5),
                                           shape: RoundedRectangleBorder(
@@ -589,59 +521,15 @@ class _ManagerHomeState extends State<ManagerHome> {
         const SizedBox(
           height: 2,
         ),
-        // Text( 'deliver.name'),
-        //   Text('${this.exampleModelDeliver[index].name}',
+
         Text(tableauJsontrie[index]['Deliver']['name'],
             style:
                 GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 15)),
         const SizedBox(
           height: 10,
         ),
-        // Text( 'deliver.name'),
-
-        //   isdeliver ? bottom(index) : Container(),
       ],
     );
-  }
-
-  Widget bottom(Map<String, dynamic> tab) {
-    // Widget bottom(index) {
-    Size size = MediaQuery.of(context).size;
-
-    return Row(children: <Widget>[
-      FlatButton(
-        minWidth: size.width * 0.7,
-        onPressed: () {},
-        padding: EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),
-        color: kPrimaryColor,
-        textColor: kBackgroundColor,
-        child: Text(
-          'CONFIRMER ${tab['Deliver']['name']} ',
-          //${this.exampleModelDeliver[index].name}',
-          //${user.name} ',
-          style: GoogleFonts.poppins(fontSize: 15),
-        ),
-
-        // width: size.width * 0.7 ,
-        // child: FlatButton,
-      ),
-      SizedBox(
-        width: 10,
-      ),
-      Container(
-        height: 30,
-        width: 30,
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: Colors.white70),
-            shape: BoxShape.circle,
-            image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/profil.png"))),
-      ),
-    ]);
   }
 
 //pour le appbar
@@ -662,15 +550,12 @@ class _ManagerHomeState extends State<ManagerHome> {
     var x = 12742 * asin(sqrt(a));
     return roundDouble(x, 2);
   }
-
   //fonction pour arrondir
 
   double roundDouble(double value, int places) {
     num mod = pow(10.0, places);
     return ((value * mod).round().toDouble() / mod);
   }
-
-  //set height
 
 //supprime les doublons dans une liste
   List<Map<String, dynamic>> tableauTrie(List<Map<String, dynamic>> table) {
@@ -720,217 +605,10 @@ class _ManagerHomeState extends State<ManagerHome> {
         positionDeliverList.longitude);
     return dist;
   }
-}
-
-class MysearchDelegate extends SearchDelegate {
-  List<Map<String, dynamic>> tableauJsontrie;
-  PositionModel position;
-  UserModel current_user;
-  final String hintText;
-  MysearchDelegate(
-      {required this.tableauJsontrie,
-      required this.hintText,
-      required this.position,
-      required this.current_user,
-      Key? key});
-/* 
-  List<String> added = [];
-  String currentText = '';
-  GlobalKey<AutoCompleteTextFieldState<String>> key = GlobalKey();
-  late SimpleAutoCompleteTextField textField; */
-
-  @override
-  String get searchFieldLabel => hintText;
-  @override
-  Widget? buildLeading(BuildContext context) => IconButton(
-      onPressed: () {
-        close(context, null);
-      },
-      icon: const Icon(Icons.arrow_back));
-
-  @override
-  List<Widget>? buildActions(BuildContext context) => [
-        IconButton(
-            onPressed: () {
-              if (query.isEmpty) {
-                close(context, null);
-              } else {
-                query = '';
-              }
-            },
-            icon: const Icon(Icons.clear))
-      ];
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    List<String> liste = [];
-    int i;
-    int n = this.tableauJsontrie.length;
-    for (i = 0; i < n; i++) {
-      liste.add(this.tableauJsontrie[i]['Deliver']['name']);
-    }
-    List<String> sortedItem = liste
-      ..sort(
-          (item1, item2) => item1.toLowerCase().compareTo(item2.toLowerCase()));
-    List<String> suggestions = sortedItem;
-    //#########################################################################################
-    /* _FirstPageState() {
-      textField = SimpleAutoCompleteTextField(
-          key: key,
-          controller: TextEditingController(),
-          suggestions: suggestions,
-          textChanged: (text) => currentText = text,
-          clearOnSubmit: true,
-          textSubmitted: (text) => (text != "") ? added.add(text) : added);
-    } */
-
-    //#########################################################################################
-
-    return (suggestions.length > 0)
-        ? Column(
-            children: <Widget>[
-              Container(
-                margin: EdgeInsets.symmetric(vertical: kDefaultPadding),
-                // height: 10,
-                child: Text('Tous les livreurs disponibles',
-                    style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 138, 130, 130))),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: suggestions.length,
-                  itemBuilder: (context, index) {
-                    final suggestion = suggestions[index];
-
-                    return Column(
-                      children: <Widget>[
-                        ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: kPrimaryColor,
-                            radius: 28,
-                            backgroundImage:
-                                AssetImage("assets/images/profil.png"),
-                          ),
-                          title: Text(suggestion),
-                          subtitle: Text(
-                              'situe a ${getDistance(suggestion, this.tableauJsontrie)} km de vous'),
-                          onTap: () {
-                            print("suggestion est $suggestion");
-                            query = suggestion;
-                             _showcommandDialog(
-                          context, this.position, this.current_user);
-                          },
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                //  ),
-              ),
-              /*  Autocomplete<String>(
-                  optionsBuilder: (TextEditingValue value) {
-              // When the field is empty
-              if (value.text.isEmpty) {
-                return [];
-              }
-
-              // The logic to find out which ones should appear
-              return suggestions.where((suggestion) =>
-                  suggestion.toLowerCase().contains(value.text.toLowerCase()));
-            },), */
-            ],
-          )
-        : Container(
-            height: size.height,
-            width: size.width,
-            alignment: Alignment.center,
-            child: Text(
-              "Aucun resultat ",
-              style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  //  fontWeight: FontWeight.bold,
-                  color: Colors.grey
-
-                  //  backgroundColor: Colors.white
-                  ),
-            ),
-          );
-    ;
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    List<String> liste = [];
-
-    int i;
-    int n = this.tableauJsontrie.length;
-
-    for (i = 0; i < n; i++) {
-      liste.add(this.tableauJsontrie[i]['Deliver']['name']);
-    }
-    List<String> sortedItem = liste
-      ..sort(
-          (item1, item2) => item1.toLowerCase().compareTo(item2.toLowerCase()));
-    List<String> suggestions = sortedItem;
-
-    List<String> matchQuery = [];
-    for (var deliver in suggestions) {
-      if (deliver.toLowerCase().contains(query.toLowerCase())) {
-        matchQuery.add(deliver);
-      }
-    }
-
-    return matchQuery.length > 0
-        ? ListView.builder(
-            itemCount: matchQuery.length,
-            itemBuilder: (context, index) {
-              var result = matchQuery[index];
-              return Column(
-                children: <Widget>[
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: kPrimaryColor,
-                      radius: 28,
-                      backgroundImage: AssetImage("assets/images/profil.png"),
-                    ),
-                    title: Text(result),
-                    subtitle: Text(
-                        'situe a ${getDistance(result, this.tableauJsontrie)} km de vous'),
-                    onTap: () {
-                      print("suggestion est $result");
-                      query = result;
-                      _showcommandDialog(
-                          context, this.position, this.current_user);
-                    },
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                ],
-              );
-            },
-          )
-        : Container(
-            height: size.height,
-            width: size.width,
-            alignment: Alignment.center,
-            child: Text(
-              "Aucun resultat ",
-              style: GoogleFonts.poppins(fontSize: 20, color: Colors.grey),
-            ),
-          );
-  }
 
 // boite de dialogue pour l'edition de la commande
-  void _showcommandDialog(
-      BuildContext context, PositionModel position, UserModel user) {
+  void _showcommandDialog(BuildContext context, PositionModel position,
+      UserModel user, UserModel deliver) {
     String bouton = "Annuler";
     String dropdownValue = 'Fragile';
     String dropdownValuePoids = 'Kg';
@@ -951,7 +629,7 @@ class MysearchDelegate extends SearchDelegate {
                 margin: EdgeInsets.symmetric(horizontal: kDefaultPadding),
                 child: Center(
                   child: Text(
-                    "Publier une commande",
+                    "commande pour ${deliver.name}",
                     style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -1020,7 +698,9 @@ class MysearchDelegate extends SearchDelegate {
                               ),
                               controller: poidsController,
                               validator: (value) {
-                                if (value == null || value.isEmpty || value.length>4) {
+                                if (value == null ||
+                                    value.isEmpty ||
+                                    value.length > 4) {
                                   return 'veuillez estimer le poids du colis';
                                 }
                                 return null;
@@ -1074,74 +754,66 @@ class MysearchDelegate extends SearchDelegate {
                     ),
                   )),
               actions: [
-                TextButton(
-                  child: Text("Publier"),
+                FlatButton(
+                  child: Text("Quitter", style: TextStyle(color:Color.fromARGB(255, 240, 229, 240) )),
+                  padding: EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color:  Palette.primarySwatch.shade400, //Color.fromARGB(255, 240, 229, 240),
+                  //  textColor: kBackgroundColor,
+                  onPressed: () => Navigator.pop(context), // passing true
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width* 0.1,),
+                FlatButton(
+                  child: Text("Publier", style: TextStyle(color:Color.fromARGB(255, 240, 229, 240) ),),
+                  padding: EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color:  Palette.primarySwatch.shade400, //,
+                  //  textColor: kBackgroundColor,
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       CommandModel command = CommandModel(
-                          createdBy: user.name,
+                          createdBy: user.idUser,
                           nameCommand: nameController.text,
-                          description: "${descriptionController.text}   $dropdownValue",
-                          poids: "${poidsController.text}   $dropdownValuePoids",
+                          description:
+                              "${descriptionController.text}   $dropdownValue",
+                          poids:
+                              "${poidsController.text}   $dropdownValuePoids",
                           statut: "en attente",
                           state: dropdownValue,
-                          startPoint: position,
-                          createAt: DateTime.now().toString());
+                          startPoint:user.idPosition,
+                          createdAt: DateTime.now().toString());
 
-                      await CommandService().addCommand(command).then((value) =>
-                          (Fluttertoast.showToast(
+                      await CommandService().addCommand(command).then((value) {
+
+                        print("commande commande commande commande commande commande commande");
+                                                  (Fluttertoast.showToast(
                                   msg: "la commande a ete publier",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 2,
+                                  timeInSecForIosWeb: 5,
                                   backgroundColor: Colors.red,
                                   textColor: Colors.white,
-                                  fontSize: 16.0))
+                                  fontSize: 16.0));  Navigator.pop(context); })
                               .catchError((onError) {
+                                Navigator.pop(context);
                             Fluttertoast.showToast(
                                 msg: "Echec de publication, veuillez reesayer!",
                                 toastLength: Toast.LENGTH_SHORT,
                                 gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 2,
+                                timeInSecForIosWeb: 5,
                                 backgroundColor: Colors.red,
                                 textColor: Colors.white,
                                 fontSize: 16.0);
-                          }));
-                          Navigator.of(context).pop();
+                          }) ;
+                      
                     }
-
-                   
                   },
-                )
+                ),
               ]);
         });
-  }
-
-  double getDistance(String query, List<Map<String, dynamic>> tableauJsontrie) {
-    int n = tableauJsontrie.length;
-    int i;
-    double distance = 0.0;
-    for (i = 0; i < n; i++) {
-      if (tableauJsontrie[i]['Deliver']['name'].compareTo(query) == 0) {
-        distance = tableauJsontrie[i]['Distance'];
-        break;
-      }
-    }
-    return distance;
-  }
-
-  auto(List<String> suggestions) {
-    return Autocomplete<String>(
-      optionsBuilder: (TextEditingValue value) {
-        // When the field is empty
-        if (value.text.isEmpty) {
-          return [];
-        }
-
-        // The logic to find out which ones should appear
-        return suggestions.where((suggestion) =>
-            suggestion.toLowerCase().contains(value.text.toLowerCase()));
-      },
-    );
   }
 }

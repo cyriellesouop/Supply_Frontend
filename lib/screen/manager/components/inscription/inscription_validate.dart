@@ -14,6 +14,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/common/palette.dart';
 import 'package:supply_app/services/auth_service.dart';
 import 'package:supply_app/services/position_service.dart';
 import 'package:supply_app/services/user_service.dart';
@@ -182,7 +183,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 /* ************************************/
   @override
   Widget build(BuildContext context) {
-    Size size=MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
     //  var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: kBackgroundColor,
@@ -247,8 +248,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                   isLoading = true;
                                 });
 
-                                
-                             otpDialog?_showValidationDialog(context):{};
+                                otpDialog ? _showValidationDialog(context) : {};
                               }
                             } else {
                               print(
@@ -285,10 +285,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                   picture: widget.picture,
                                   createdAt: DateTime.now().toString());
                               _timer?.cancel();
-                               setState(() {
-                                  isLoading = true;
-
-                                });
+                              setState(() {
+                                isLoading = true;
+                              });
                               // await EasyLoading.show(status: 'en cours...');
                               // await UserService().setUser(user).then((value) =>
 
@@ -334,7 +333,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          color:kPrimaryColor,
+                          color: kPrimaryColor,
                           textColor: kBackgroundColor,
                           child: Text(
                             otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
@@ -342,13 +341,13 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           ),
                         )
                       : Container(
-                        margin: EdgeInsets.symmetric(horizontal: size.width*0.37),
+                          margin: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.37),
                           height: 40,
                           width: 10,
                           child: CircularProgressIndicator(
                             strokeWidth: 6.0,
                             backgroundColor: Colors.grey,
-                           
                             valueColor: AlwaysStoppedAnimation(kPrimaryColor),
                           ),
                         )
@@ -385,93 +384,113 @@ class _PhoneAuthState extends State<PhoneAuth> {
               context: context,
               builder: (context) {
                 // final signcode = SmsAutoFill().getAppSignature();
-                return  AlertDialog(
-                    title: Text("Veuillez saisir le code recu",
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        )),
-                    content: PinFieldAutoFill(
-                      controller: otpCodeController,
-                      keyboardType: TextInputType.number,
-                      codeLength: 6,
-                      onCodeChanged: (val) {
-                        print(val);
-                      },
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                          child: Text("valider"),
-                          onPressed: () async {
-                            // if (_formKey.currentState!.validate()) {
-                              print(
-                                  '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
-                              // _timer?.cancel();
-                              //  EasyLoading.show(
-                              //     status: 'verification en cours...');
-                
-                              await authClass!
-                                  .signInwithPhoneNumber(
-                                      // verified= await authClass!.signInwithPhoneNumber(
-                                      verificationIDreceived,
-                                      otpCodeController.text,
-                                      context)
-                                  .then((value) {
-                                setState(() {
-                                  actual_user = value!.uid.toString();
-                                  verified =
-                                      authClass!.isphonenumberok(actual_user);
-                                      otpDialog = false;
-                                  print('verification est :$verified');
-                                });
-                              });
+                return AlertDialog(
+                  title: Text("Veuillez saisir le code recu",
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  content: PinFieldAutoFill(
+                    controller: otpCodeController,
+                    keyboardType: TextInputType.number,
+                    codeLength: 6,
+                    onCodeChanged: (val) {
+                      print(val);
+                    },
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                        child: Text("valider",
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 240, 229, 240))),
+                        padding: EdgeInsets.all(2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        color: Palette.primarySwatch.shade400,
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          // if (_formKey.currentState!.validate()) {
+                          print(
+                              '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
+                          // _timer?.cancel();
+                          //  EasyLoading.show(
+                          //     status: 'verification en cours...');
+
+                          await authClass!
+                              .signInwithPhoneNumber(
+                                  // verified= await authClass!.signInwithPhoneNumber(
+                                  verificationIDreceived,
+                                  otpCodeController.text,
+                                  context)
+                              .then((value) {
+                            setState(() {
+                              actual_user = value!.uid.toString();
+                              verified =
+                                  authClass!.isphonenumberok(actual_user);
+                              otpDialog = false;
+                              print('verification est :$verified');
+                            });
+                          });
                           //  } else {
-                             /*  setState(() {
+                          /*  setState(() {
                                 otpDialog = false;
                               }); */
                           //  }
-                
-                            if (verified == true) {
-                              isLoading = false;
-                              _timer?.cancel();
-                              await EasyLoading.showSuccess(
-                                  "le code saisi est correct");
-                            } else {
-                              /* _timer?.cancel();
+
+                          if (this.verified == true) {
+                            Navigator.pop(context);
+                            isLoading = false;
+                             Fluttertoast.showToast(
+                                msg: "le code  est incorrect",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 5,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                            /*  _timer?.cancel();
+                            await EasyLoading.showSuccess(
+                                "le code saisi est correct"); */
+                          } else {
+
+                            Navigator.pop(context);
+                           
+                            
+                            /* _timer?.cancel();
                               await EasyLoading.showError(
                                   "le code saisi est incorrect"); */
-                             /*  setState(() {
+                            /*  setState(() {
                                 otpDialog = false;
                                 //otpCodeController.text = '';
                               }); */
-                              /** 
+                            /** 
                               _timer?.cancel();
                               await EasyLoading.showError("verification echoue");
                               */
-                              _timer?.cancel();
-                              await EasyLoading.dismiss();
-                              Fluttertoast.showToast(
-                                  msg: "le code saisi est incorrect",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 5,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                
-                              /* setState(() {
+                            /*  _timer?.cancel();
+                            await EasyLoading.dismiss(); */
+                            Fluttertoast.showToast(
+                                msg: "le code saisi est incorrect",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 5,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+
+                            /* setState(() {
                                 otpDialog = false;
                               }); */
-                            }
-                
-                            setState(() {
-                              isphonenumberNotFill = !verified;
-                              otploginVisible = verified;
-                            });
-                          })
-                    ],
-                  )
-                ;
+                          }
+
+                          setState(() {
+                            isphonenumberNotFill = !verified;
+                            otploginVisible = verified;
+                          });
+                        })
+                  ],
+                );
               });
           final signcode = SmsAutoFill().getAppSignature;
           print(resendtoken);

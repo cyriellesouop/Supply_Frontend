@@ -42,21 +42,23 @@ class PositionModel {
 // class Command
 class CommandModel {
   final String? idCommand;
-  final String createdBy;
+  final String?createdBy;
   final String nameCommand;
   final String description;
   final String poids;
   final String statut;
   final String state;
   final String? deliveredBy;
-  final PositionModel startPoint;
-  final PositionModel? endPoint;
+  final String? startPoint;
+  final String? endPoint;
+  /* final PositionModel startPoint;
+  final PositionModel? endPoint; */
   final  String? updatedAt;
-  final  String createAt;
+  final  String createdAt;
 
   CommandModel(
       {this.idCommand,
-      required this.createdBy,
+       this.createdBy,
       required this.nameCommand,
       required this.description,
       required this.poids,
@@ -66,7 +68,7 @@ class CommandModel {
       required this.startPoint,
       this.endPoint,
        this.updatedAt,
-      required this.createAt});
+      required this.createdAt});
 
   factory CommandModel.fromJson(Map<String, dynamic> json) {
     return CommandModel(
@@ -78,10 +80,12 @@ class CommandModel {
         statut: json['statut'],
         state: json['state'],
         deliveredBy: json['deliveredBy'],
-        startPoint: PositionModel.fromJson(json['startPoint']),
-        endPoint: PositionModel.fromJson(json['endPoint']),
+        startPoint: json['startPoint'],
+        endPoint: json['endPoint'],
+      /*   startPoint: PositionModel.fromJson(json['startPoint']),
+        endPoint: PositionModel.fromJson(json['endPoint']), */
         updatedAt: json['updatedAt'],
-        createAt: json['createAt']);
+        createdAt: json['createdAt']);
   }
   Map<String, dynamic> toMap() {
     return {
@@ -96,14 +100,14 @@ class CommandModel {
       'startPoint': startPoint,
       'endPoint': endPoint,
       'updatedAt': updatedAt,
-      'createAt': createAt
+      'createdAt': createdAt
     };
   }
 
   @override
   String toString() {
     // TODO: implement toString
-    return this.createdBy;
+    return this.description;
   }
 }
 
