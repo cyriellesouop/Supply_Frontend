@@ -7,12 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
-import 'package:supply_app/components/screen/manager/components/inscription/inscription_validate.dart';
-import 'package:supply_app/components/services/storage_service.dart';
-import 'package:supply_app/components/services/user_service.dart';
-import 'package:supply_app/constants.dart';
+
 import 'package:path/path.dart' as p;
+import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/models/Database_Model.dart';
+import 'package:supply_app/services/storage_service.dart';
+import 'package:supply_app/services/user_service.dart';
 
 class UpdateProfil extends StatefulWidget {
   String currentManagerID;

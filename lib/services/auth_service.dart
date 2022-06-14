@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
+import 'package:supply_app/models/Database_Model.dart';
+
 
 class Authclass extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;

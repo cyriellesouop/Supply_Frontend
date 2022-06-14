@@ -1,13 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
-
 import 'package:flutter_svg/svg.dart';
+import 'package:supply_app/common/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supply_app/components/home_screen.dart';
-import 'package:supply_app/components/screen/manager/components/manager_home.dart';
-import '../../../../constants.dart';
-
-
 class EditCommand extends StatefulWidget {
   @override
   _EditCommandState createState() => _EditCommandState();
@@ -189,10 +184,7 @@ class _EditCommandState extends State<EditCommand> {
                     left: kDefaultPadding),
                 child: FlatButton(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HomeScreen()));
+                   
                   },
                   padding: EdgeInsets.all(15),
                   shape: RoundedRectangleBorder(

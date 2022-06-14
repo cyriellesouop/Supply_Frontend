@@ -69,8 +69,24 @@ class TriRapidejson {
     Map<String, dynamic> temp = {'Deliver': deliver, 'Distance': 0};
     piv = table[D]['Distance'];
     i = G - 1;
-    j = D;
-    do {
+    j = D + 1;
+
+    for (int j = G; j < D; j++) {
+      if (table[j]['Distance'] <= piv) {
+        i++;
+        temp = {
+          'Deliver': table[i]['Deliver'],
+          'Distance': table[i]['Distance']
+        };
+        table[i] = {
+          'Deliver': table[j]['Deliver'],
+          'Distance': table[j]['Distance']
+        };
+
+        table[j] = {'Deliver': temp['Deliver'], 'Distance': temp['Distance']};
+      }
+    }
+    /* do {
       do i++; while (table[i]['Distance'] < piv);
       do j--; while (table[j]['Distance'] > piv);
       temp = {'Deliver': table[i]['Deliver'], 'Distance': table[i]['Distance']};
@@ -79,21 +95,14 @@ class TriRapidejson {
         'Distance': table[j]['Distance']
       };
 
-      /* table[i]['Distance'] = table[j]['Distance'];
-      table[i]['Deliver'] = table[j]['Deliver']; 
-      table[j]['Distance'] = temp['Distance'];
-      table[j]['Deliver'] = temp['Deliver'];
-      temp['Distance'] = table[i]['Distance'];
-      temp['Deliver'] = table[i]['Deliver']; 
- */
       table[j] = {'Deliver': temp['Deliver'], 'Distance': temp['Distance']};
-    } while (j > i);
+    } while (j > i); */
 
-    table[j] = {
-      'Deliver': table[i]['Deliver'],
-      'Distance': table[i]['Distance']
+    temp = {
+      'Deliver': table[i + 1]['Deliver'],
+      'Distance': table[i + 1]['Distance']
     };
-    table[i] = {
+    table[i + 1] = {
       'Deliver': table[D]['Deliver'],
       'Distance': table[D]['Distance']
     };
@@ -107,7 +116,7 @@ class TriRapidejson {
     table[D]['Distance'] = temp['Distance'];
     table[D]['Deliver'] = temp['Deliver'];*/
 
-    return i;
+    return i + 1;
   }
 
   List<Map<String, dynamic>> QSort(int G, int D) {

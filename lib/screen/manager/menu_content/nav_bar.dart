@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
-import 'package:supply_app/components/screen/manager/menu_content/commandList.dart';
-import 'package:supply_app/components/screen/manager/menu_content/command_history.dart';
-import 'package:supply_app/components/screen/manager/menu_content/update_Profil.dart';
-import 'package:supply_app/components/services/user_service.dart';
-import 'package:supply_app/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/screen/manager/menu_content/command_history.dart';
+import 'package:supply_app/screen/manager/menu_content/update_Profil.dart';
+
+import '../../../models/Database_Model.dart';
+import '../../../services/user_service.dart';
+//import 'package:supply_app/constants.dart';
 
 /* class ManagerHome extends StatefulWidget {
   //UserModel currentManager;
@@ -26,7 +28,7 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   UserService ServiceUser = new UserService();
-  UserModel currentManager = new UserModel(name: 'fabiol');
+   UserModel currentManager = new UserModel(name: '');
 
   @override
   void initState() {
@@ -36,8 +38,11 @@ class _NavBarState extends State<NavBar> {
   }
 
   getCuurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getString('id') ?? '';
+
     //get current manager and current manager position
-    await ServiceUser.getUserbyId(widget.currentManagerID).then((value) {
+    await ServiceUser.getUserbyId(id).then((value) {
       setState(() {
         currentManager = value;
         print('currrent user $currentManager');
@@ -51,21 +56,21 @@ class _NavBarState extends State<NavBar> {
         child: ListView(
       padding: EdgeInsets.zero,
       children: [
-       InkWell(
+        InkWell(
           onTap: () {
-                        Navigator.push(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => UpdateProfil(
-                        currentManagerID: widget.currentManagerID))); 
-                      },
+                        currentManagerID: widget.currentManagerID)));
+          },
           child: UserAccountsDrawerHeader(
             accountName: Text(
               '${currentManager.name.toLowerCase()}',
               style: GoogleFonts.philosopher(
                   fontSize: 15, fontWeight: FontWeight.bold),
             ),
-        
+
             accountEmail: Text(
               '${currentManager.phone}',
               style: GoogleFonts.poppins(fontSize: 15),
@@ -87,7 +92,7 @@ class _NavBarState extends State<NavBar> {
                       image: AssetImage("assets/images/profil.png")
                           as ImageProvider)),
             ),
-        
+
             /*  CircleAvatar(
               backgroundColor: Color.fromARGB(255, 243, 235, 245),
               child: ClipOval(
@@ -100,7 +105,7 @@ class _NavBarState extends State<NavBar> {
               ),
             ), */
             decoration: BoxDecoration(color: kPrimaryColor),
-        
+
             //color: Color.fromARGB(255, 203, 56, 248)
           ),
         ),
@@ -118,11 +123,11 @@ class _NavBarState extends State<NavBar> {
           leading: Icon(Icons.history),
           title: Text('historique des commandes'),
           onTap: () {
-             Navigator.push(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>CommandListe(
-                        currentManagerID: widget.currentManagerID))); 
+                    builder: (context) => CommandListe(
+                        currentManagerID: widget.currentManagerID)));
           },
         ),
         ListTile(

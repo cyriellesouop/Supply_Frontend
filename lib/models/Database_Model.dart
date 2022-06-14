@@ -45,12 +45,13 @@ class CommandModel {
   final String createdBy;
   final String nameCommand;
   final String description;
+  final String poids;
   final String statut;
   final String state;
   final String? deliveredBy;
   final PositionModel startPoint;
   final PositionModel? endPoint;
-  final  String updatedAt;
+  final  String? updatedAt;
   final  String createAt;
 
   CommandModel(
@@ -58,12 +59,13 @@ class CommandModel {
       required this.createdBy,
       required this.nameCommand,
       required this.description,
+      required this.poids,
       required this.statut,
       required this.state,
       this.deliveredBy,
       required this.startPoint,
       this.endPoint,
-      required this.updatedAt,
+       this.updatedAt,
       required this.createAt});
 
   factory CommandModel.fromJson(Map<String, dynamic> json) {
@@ -72,6 +74,7 @@ class CommandModel {
         createdBy: json['createdBy'],
         nameCommand: json['nameCommand'],
         description: json['description'],
+        poids: json['poids'],
         statut: json['statut'],
         state: json['state'],
         deliveredBy: json['deliveredBy'],
@@ -86,6 +89,7 @@ class CommandModel {
       'createdBy': createdBy,
       'nameCommand': nameCommand,
       'description': description,
+      'poids':poids,
       'statut': statut,
       'state': state,
       'deliveredBy': deliveredBy,

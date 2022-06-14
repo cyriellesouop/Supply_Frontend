@@ -3,17 +3,19 @@
 import 'dart:ui';
 import 'dart:math';
 //import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
-import 'package:supply_app/components/screen/manager/tri_rapide.dart';
-import 'package:supply_app/components/services/user_service.dart';
-import 'package:supply_app/constants.dart';
-import 'package:supply_app/palette.dart';
+import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/common/palette.dart';
+import 'package:supply_app/models/Database_Model.dart';
+import 'package:supply_app/screen/manager/tri_rapide.dart';
+import 'package:supply_app/services/command_service.dart';
+import 'package:supply_app/services/user_service.dart';
 
 import '../../../services/position_service.dart';
 import '../menu_content/nav_bar.dart';
@@ -23,14 +25,14 @@ class ManagerHome extends StatefulWidget {
   String currentManagerID;
   ManagerHome({required this.currentManagerID, Key? key}) : super(key: key);
 
-  
-  String get ID{
+  String get ID {
     return this.currentManagerID;
   }
 
- void set ID(String managerID){
-    this.currentManagerID=managerID;
+  void set ID(String managerID) {
+    this.currentManagerID = managerID;
   }
+
   @override
   _ManagerHomeState createState() => _ManagerHomeState();
 }
@@ -42,6 +44,7 @@ class _ManagerHomeState extends State<ManagerHome> {
   // var deliver = null;
   bool isdeliver = false;
   var hauteur, hauteur2;
+  var taille = 0;
 
   bool isDev = false;
 //pour le appBar
@@ -55,6 +58,7 @@ class _ManagerHomeState extends State<ManagerHome> {
 
   List<Map<String, dynamic>> tableauJson = [];
   List<Map<String, dynamic>> tableauJsontrie = [];
+
   List<UserModel> DeliverSort = [];
 
   //  LatLng startLocation = LatLng(latCurrentManager,longCurrentManager);
@@ -74,7 +78,7 @@ class _ManagerHomeState extends State<ManagerHome> {
   PositionService ServicePosition = new PositionService();
   //PositionModel x = new PositionModel(longitude: 0, latitude: 0);
   LatLng currentManagerPosition = new LatLng(0, 0);
-  PositionModel xdeliver = new PositionModel(longitude: 0, latitude: 0);
+  PositionModel myPosition = new PositionModel(longitude: 0, latitude: 0);
   LatLng ydeliver = new LatLng(0, 0);
 
   //tableau des identifiants des position de tous les livreurs
@@ -84,11 +88,11 @@ class _ManagerHomeState extends State<ManagerHome> {
   List<double> Distances = [];
   List<double> DistanceInter = [];
 
-
   @override
   void initState() {
     // _listDeliver();
     getUserPosition();
+
     // print(' audrey cyrielle moguem${widget.currentManagerID}');
     //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
     super.initState();
@@ -124,6 +128,7 @@ class _ManagerHomeState extends State<ManagerHome> {
       (value) {
         setState(() {
           currentManagerPosition = LatLng(value.latitude, value.longitude);
+          myPosition = value;
         });
         print(
             "dans le then la latitude manager est ${currentManagerPosition.latitude}, et sa longitude est ${currentManagerPosition.longitude}");
@@ -143,7 +148,8 @@ class _ManagerHomeState extends State<ManagerHome> {
         title: 'ma position ',
         snippet: currentManager.name,
       ),
-      icon: BitmapDescriptor.defaultMarker, //Icon for Marker
+      icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueViolet), //Icon for Marker
     ));
 
     //affiche la position du current manager
@@ -166,65 +172,71 @@ class _ManagerHomeState extends State<ManagerHome> {
           print(
               'la coordonnees est actuellement la latitude:${coordonnees.latitude} et la longitude est :${coordonnees.longitude}');
           //modifier l'etat de la liste des positions de chaque livreurs et de la table des identifiants
-          setState(() {
-            listecoordonnees.add(coordonnees);
-            print('la liste de coordonnees mise a jour est:$listecoordonnees');
-            //mise a jour du tableau contenant les infos sur les livreurs et leur distance
-            tableauJson.add({
-              //json.decode9tableaujson[i]['Deliver']
-              "Deliver": i.toMap(),
-              "Distance": getDistance(this.currentManagerPosition, coordonnees)
-            });
-            print('lacoordonnees est:$coordonnees');
-            print('le tableau json mise a jour est:$listecoordonnees');
+          setState(
+            () {
+              listecoordonnees.add(coordonnees);
+              print(
+                  'la liste de coordonnees mise a jour est:$listecoordonnees');
+              //mise a jour du tableau contenant les infos sur les livreurs et leur distance
+              tableauJson.add({
+                //json.decode9tableaujson[i]['Deliver']
+                "Deliver": i.toMap(),
+                "Distance":
+                    getDistance(this.currentManagerPosition, coordonnees)
+              });
+              taille++;
+              print('lacoordonnees est:$coordonnees');
+              print('le tableau json mise a jour est:$listecoordonnees');
 
-            //  Deliver[i]=getDistanceBetween(this.currentManagerPosition, this.listecoordonnees)[n];
+              //  Deliver[i]=getDistanceBetween(this.currentManagerPosition, this.listecoordonnees)[n];
 
-            /*   deliver = {
+              /*   deliver = {
               "Deliver": i,
               "Distance": getDistance(
                       this.currentManagerPosition, coordonnees)
                   
             };*/
 
-            //marquage sur la map de tous les livreurs contenus dans la precedente liste
-            //-------------------------------------------
-            markers.add(Marker(
-                //add start location marker
-                markerId: MarkerId(coordonnees.toString()),
-                position: coordonnees,
-                infoWindow: InfoWindow(
-                  //popup info
-                  title: 'Livreur ${i.name} ',
-                  //le user name envoye depuis la page de validation
-                  snippet:
-                      ' situe a ${getDistance(this.currentManagerPosition, coordonnees)} km de vous',
-                ),
-                icon: BitmapDescriptor.defaultMarker,
-                onTap: () {
-                  setState(() {
-                    isDev = false;
+              //marquage sur la map de tous les livreurs contenus dans la precedente liste
+              //-------------------------------------------
+              markers.add(Marker(
+                  //add start location marker
+                  markerId: MarkerId(coordonnees.toString()),
+                  position: coordonnees,
+                  infoWindow: InfoWindow(
+                    //popup info
+                    title: 'Livreur ${i.name} ',
+                    //le user name envoye depuis la page de validation
+                    snippet:
+                        ' situe a ${getDistance(this.currentManagerPosition, coordonnees)} km de vous',
+                  ),
+                  icon: BitmapDescriptor.defaultMarker,
+                  onTap: () {
+                    setState(() {
+                      isDev = false;
 
-                    Dev = i;
-                  });
-                  Dev != UserModel(name: 'audrey')
-                      ? isDev = true
-                      : isDev = false;
-                } //Icon for Marker
-                ));
+                      Dev = i;
+                    });
+                    Dev != UserModel(name: 'audrey')
+                        ? isDev = true
+                        : isDev = false;
+                  } //Icon for Marker
+                  ));
 
-            print(
-                'la tailles de liste des marqueurs est : ${markers.length} et les marqueurs sont : $markers');
+              print(
+                  'la tailles de liste des marqueurs est : ${markers.length} et les marqueurs sont : $markers');
 
-            //marquage de tous les livreurs sur la map
-            //-------------------------------------------
-          });
+              //marquage de tous les livreurs sur la map
+              //-------------------------------------------
+            },
+          );
         });
       }
       /*  setState(() {
        tableauJsontrie = TriRapidejson(table: tableauJson).QSort(0, n - 1) ;
       }); */
     });
+    // return this.tableauJson;
   }
 
 //widget final
@@ -236,11 +248,13 @@ class _ManagerHomeState extends State<ManagerHome> {
       this.hauteur2 = size.height * 0.3;
     }); */
 
-    // final allDelivers = Provider.of<List<UserModel>>(context);
-    var n = tableauJson.length;
+    setState(() {
+      tableauJsontrie = tableauTrie(
+          TriRapidejson(table: this.tableauJson).QSort(0, this.taille - 1));
+    });
 
-    tableauJsontrie =
-        tableauTrie(TriRapidejson(table: tableauJson).QSort(0, n-1));
+    /*  tableauJsontrie =
+        tableauTrie(TriRapidejson(table: tableauJson).QSort(0, n - 1)); */
     // DeliverSort = listeTrie(tableauJsontrie);
     print('les distances sont :${exampleModelDeliver}');
 
@@ -250,8 +264,10 @@ class _ManagerHomeState extends State<ManagerHome> {
         'la liste des distance et livreurs associees est ${TriRapide(table: this.DistanceInter).tableauTrie(this.Distances)}');
  */
     return Scaffold(
-      drawer: NavBar(currentManagerID: widget.currentManagerID), //Visibility(visible: isVisible(), child: NavBar()),
-     appBar: AppBar(
+      drawer: NavBar(
+          currentManagerID: widget
+              .currentManagerID), //Visibility(visible: isVisible(), child: NavBar()),
+      appBar: AppBar(
         backgroundColor: kPrimaryColor,
         //   backgroundColor: Colors.transparent,
         title: /* !isSearching
@@ -268,7 +284,9 @@ class _ManagerHomeState extends State<ManagerHome> {
                 context: context,
                 delegate: MysearchDelegate(
                     tableauJsontrie: tableauJsontrie,
-                    hintText: " rechercher un livreur"),
+                    hintText: " rechercher un livreur",
+                    current_user: currentManager,
+                    position: myPosition),
               );
             },
             icon: const Icon(Icons.search),
@@ -316,10 +334,11 @@ class _ManagerHomeState extends State<ManagerHome> {
                   )),
             ), */
           ]), */
-      body: /* SingleChildScrollView(
+      body:
+          /* SingleChildScrollView(
         child: */
           Column(
-        children:<Widget> [
+        children: <Widget>[
           Container(
             height: size.height * 0.42,
             //height: size.height,
@@ -349,7 +368,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                     margin:
                         const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
-                      children:<Widget> [
+                      children: <Widget>[
                         Text(
                           'contacter un livreur ',
                           style: GoogleFonts.philosopher(
@@ -381,57 +400,53 @@ class _ManagerHomeState extends State<ManagerHome> {
                         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         // scrollDirection: Axis.vertical,
                         children: <Widget>[
-                        /*   this.tableauJsontrie.length > 0
-                              ? */ Expanded(
-                                  // flex: 2,
-                                  child: ListView.builder(
-                                    //  shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    // itemCount: allDelivers.length,
-                                    itemCount: this.tableauJsontrie.length,
-                                    //  itemCount: this.exampleModelDeliver.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return InkWell(
-                                        child: Container(
-                                          child: GetItem(index),
-                                        ),
-                                        onTap: () {
-                                          setState(() {
-                                            isdeliver = false;
-                                            // deliver=DeliverSort[index];
-                                            // deliver = tableauJsontrie[index];
-                                            deliver =
-                                                this.tableauJsontrie[index]
-                                                    ['Deliver'];
-                                            tab = this.tableauJsontrie[index];
-                                          });
-                                          deliver !=
-                                                  UserModel(name: 'audrey')
-                                                      .toMap()
-                                              ? isdeliver = true
-                                              : isdeliver = false;
-                                          print(
-                                              'livreur est : $deliver et $isdeliver');
-                                          if (deliver !=
-                                              UserModel(name: 'audrey')
-                                                  .toMap()) {
-                                            isdeliver = true;
-                                            /* setState(() {
+                          /*   this.tableauJsontrie.length > 0
+                              ? */
+                          Expanded(
+                            // flex: 2,
+                            child: ListView.builder(
+                              //  shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              // itemCount: allDelivers.length,
+                              itemCount: this.tableauJsontrie.length,
+                              //  itemCount: this.exampleModelDeliver.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return InkWell(
+                                  child: Container(
+                                    child: GetItem(index),
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      isdeliver = false;
+                                      // deliver=DeliverSort[index];
+                                      // deliver = tableauJsontrie[index];
+                                      deliver = this.tableauJsontrie[index]
+                                          ['Deliver'];
+                                      tab = this.tableauJsontrie[index];
+                                    });
+                                    deliver != UserModel(name: 'audrey').toMap()
+                                        ? isdeliver = true
+                                        : isdeliver = false;
+                                    print(
+                                        'livreur est : $deliver et $isdeliver');
+                                    if (deliver !=
+                                        UserModel(name: 'audrey').toMap()) {
+                                      isdeliver = true;
+                                      /* setState(() {
                                         this.hauteur = size.height * 0.42;
                                         this.hauteur2 = size.height * 0.43;
                                       }); */
-                                          } else {
-                                            isdeliver = false;
-                                          }
-                                          print(
-                                              'livreur est : $deliver et $isdeliver');
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                             /*  : Container(
+                                    } else {
+                                      isdeliver = false;
+                                    }
+                                    print(
+                                        'livreur est : $deliver et $isdeliver');
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          /*  : Container(
                                   alignment: Alignment.center,
                                   child: Text(
                                     "Aucun Livreur pour l'instant ",
@@ -447,7 +462,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                           Visibility(
                               visible: (isdeliver || isDev),
                               child: Column(
-                                children:<Widget>[
+                                children: <Widget>[
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Container(
@@ -532,7 +547,7 @@ class _ManagerHomeState extends State<ManagerHome> {
   Widget GetItem(int index) {
     Size size = MediaQuery.of(context).size;
     return Column(
-      children:<Widget> [
+      children: <Widget>[
         Stack(children: <Widget>[
           Container(
             margin: EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
@@ -698,24 +713,26 @@ class _ManagerHomeState extends State<ManagerHome> {
   double getDistance(
       LatLng currentManagerPosition, LatLng positionDeliverList) {
     var dist;
-
     dist = calculateDistance(
         currentManagerPosition.latitude,
         currentManagerPosition.longitude,
         positionDeliverList.latitude,
         positionDeliverList.longitude);
-
-    //  return tableauTrie(Distances);
     return dist;
-    // TriRapide(table: this.DistanceInter).tableauTrie(this.DistanceInter);
   }
 }
 
 class MysearchDelegate extends SearchDelegate {
   List<Map<String, dynamic>> tableauJsontrie;
+  PositionModel position;
+  UserModel current_user;
   final String hintText;
   MysearchDelegate(
-      {required this.tableauJsontrie, required this.hintText, Key? key});
+      {required this.tableauJsontrie,
+      required this.hintText,
+      required this.position,
+      required this.current_user,
+      Key? key});
 /* 
   List<String> added = [];
   String currentText = '';
@@ -724,7 +741,6 @@ class MysearchDelegate extends SearchDelegate {
 
   @override
   String get searchFieldLabel => hintText;
-
   @override
   Widget? buildLeading(BuildContext context) => IconButton(
       onPressed: () {
@@ -748,12 +764,9 @@ class MysearchDelegate extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
     List<String> liste = [];
-
     int i;
     int n = this.tableauJsontrie.length;
-
     for (i = 0; i < n; i++) {
       liste.add(this.tableauJsontrie[i]['Deliver']['name']);
     }
@@ -776,7 +789,7 @@ class MysearchDelegate extends SearchDelegate {
 
     return (suggestions.length > 0)
         ? Column(
-            children:<Widget>[
+            children: <Widget>[
               Container(
                 margin: EdgeInsets.symmetric(vertical: kDefaultPadding),
                 // height: 10,
@@ -793,7 +806,7 @@ class MysearchDelegate extends SearchDelegate {
                     final suggestion = suggestions[index];
 
                     return Column(
-                      children:<Widget> [
+                      children: <Widget>[
                         ListTile(
                           leading: CircleAvatar(
                             backgroundColor: kPrimaryColor,
@@ -807,6 +820,8 @@ class MysearchDelegate extends SearchDelegate {
                           onTap: () {
                             print("suggestion est $suggestion");
                             query = suggestion;
+                             _showcommandDialog(
+                          context, this.position, this.current_user);
                           },
                         ),
                         SizedBox(
@@ -877,9 +892,8 @@ class MysearchDelegate extends SearchDelegate {
             itemCount: matchQuery.length,
             itemBuilder: (context, index) {
               var result = matchQuery[index];
-
               return Column(
-                children:<Widget> [
+                children: <Widget>[
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: kPrimaryColor,
@@ -892,10 +906,11 @@ class MysearchDelegate extends SearchDelegate {
                     onTap: () {
                       print("suggestion est $result");
                       query = result;
-                      _showcommandDialog(context);
+                      _showcommandDialog(
+                          context, this.position, this.current_user);
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 5,
                   ),
                 ],
@@ -908,23 +923,29 @@ class MysearchDelegate extends SearchDelegate {
             alignment: Alignment.center,
             child: Text(
               "Aucun resultat ",
-              style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  //  fontWeight: FontWeight.bold,
-                  color: Colors.grey
-
-                  //  backgroundColor: Colors.white
-                  ),
+              style: GoogleFonts.poppins(fontSize: 20, color: Colors.grey),
             ),
           );
   }
 
-  void _showcommandDialog(BuildContext context) {
+// boite de dialogue pour l'edition de la commande
+  void _showcommandDialog(
+      BuildContext context, PositionModel position, UserModel user) {
+    String bouton = "Annuler";
+    String dropdownValue = 'Fragile';
+    String dropdownValuePoids = 'Kg';
+    TextEditingController poidsController = TextEditingController();
+    TextEditingController nameController = TextEditingController();
+
+    CommandService ServiceCommand = new CommandService();
+
+    TextEditingController descriptionController = TextEditingController();
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-              backgroundColor: Palette.primarySwatch.shade400,
+              backgroundColor: Colors.white,
               title: Container(
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.symmetric(horizontal: kDefaultPadding),
@@ -934,22 +955,162 @@ class MysearchDelegate extends SearchDelegate {
                     style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white
+                        color: Palette.primarySwatch.shade400
+                        //  color: Colors.white
 
                         //  backgroundColor: Colors.white
                         ),
                   ),
                 ),
               ),
-              content: Text(
-                'Le livreur $query est situe a ${getDistance(query, this.tableauJsontrie)} km de vous  ',
-                style: GoogleFonts.poppins(fontSize: 15, color: Colors.white),
-              ),
+              content: Form(
+                  key: _formKey,
+                  child: Container(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: nameController,
+                            style: GoogleFonts.poppins(fontSize: 15),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'veuillez nommer cette commande';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "Nom commande",
+                                filled: true,
+                                hintStyle: TextStyle(
+                                    color: Palette.primarySwatch.shade400),
+                                //  hintText: "${currentManager.adress}",
+                                fillColor: Color.fromARGB(255, 240, 229, 240)),
+                          ),
+                          DropdownButtonFormField<String>(
+                            dropdownColor: Color.fromARGB(255, 240, 229, 240),
+                            decoration: InputDecoration(
+                              labelText: 'Etat du colis',
+                              //  fillColor:Palette.primarySwatch.shade50,
+                              hintStyle: TextStyle(color: Colors.grey[800]),
+                            ),
+                            value: dropdownValue,
+                            onChanged: (String? newValue) {
+                              // setState(() {
+                              dropdownValue = newValue!;
+                              // });
+                            },
+                            items: <String>['Fragile', 'non-fragile', 'autres']
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                          SizedBox(
+                            height: 15,
+                          ),
+                          TextFormField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Estimer le poids',
+                                filled: true,
+                                fillColor: Color.fromARGB(255, 240, 229, 240),
+                                hintStyle: TextStyle(color: Colors.grey[800]),
+                              ),
+                              controller: poidsController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty || value.length>4) {
+                                  return 'veuillez estimer le poids du colis';
+                                }
+                                return null;
+                              }),
+                          DropdownButtonFormField<String>(
+                            dropdownColor: Color.fromARGB(255, 240, 229, 240),
+                            value: dropdownValuePoids,
+                            onChanged: (String? newValue) {
+                              // setState(() {
+                              dropdownValuePoids = newValue!;
+                              // });
+                            },
+                            items: <String>['tonnes', 'Kg', 'g', 'mg']
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                          SizedBox(
+                            height: 15,
+                          ),
+                          TextFormField(
+                            controller: descriptionController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'veuillez decrire la commande';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.multiline,
+                            textInputAction: TextInputAction.newline,
+                            minLines: 1,
+                            maxLines: 5,
+                            decoration: InputDecoration(
+                                labelText: 'Estimation du prix et heure ',
+                                /*  border: OutlineInputBorder(
+                                  
+                                  Color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ), */
+                                filled: true,
+                                hintStyle: TextStyle(color: Colors.grey[800]),
+                                // prefixIcon: const Icon(Icons.write),
+                                hintText: "Description de la commande ici",
+                                fillColor: Color.fromARGB(255, 240, 229, 240)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )),
               actions: [
                 TextButton(
                   child: Text("Publier"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      CommandModel command = CommandModel(
+                          createdBy: user.name,
+                          nameCommand: nameController.text,
+                          description: "${descriptionController.text}   $dropdownValue",
+                          poids: "${poidsController.text}   $dropdownValuePoids",
+                          statut: "en attente",
+                          state: dropdownValue,
+                          startPoint: position,
+                          createAt: DateTime.now().toString());
+
+                      await CommandService().addCommand(command).then((value) =>
+                          (Fluttertoast.showToast(
+                                  msg: "la commande a ete publier",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 2,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0))
+                              .catchError((onError) {
+                            Fluttertoast.showToast(
+                                msg: "Echec de publication, veuillez reesayer!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 2,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                          }));
+                          Navigator.of(context).pop();
+                    }
+
+                   
                   },
                 )
               ]);

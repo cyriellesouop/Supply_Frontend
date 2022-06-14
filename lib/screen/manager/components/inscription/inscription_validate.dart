@@ -13,10 +13,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
-import 'package:supply_app/components/services/auth_service.dart';
-import 'package:supply_app/components/services/position_service.dart';
-import 'package:supply_app/components/services/user_service.dart';
-import 'package:supply_app/constants.dart';
+import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/services/auth_service.dart';
+import 'package:supply_app/services/position_service.dart';
+import 'package:supply_app/services/user_service.dart';
 import '../../../../models/Database_Model.dart';
 import '../manager_home.dart';
 
@@ -287,6 +287,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               _timer?.cancel();
                                setState(() {
                                   isLoading = true;
+
                                 });
                               // await EasyLoading.show(status: 'en cours...');
                               // await UserService().setUser(user).then((value) =>
@@ -333,7 +334,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          color: kPrimaryColor,
+                          color:kPrimaryColor,
                           textColor: kBackgroundColor,
                           child: Text(
                             otploginVisible ? "CREER UN COMPTE" : "VERIFIER",

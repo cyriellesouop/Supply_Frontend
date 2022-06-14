@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:supply_app/components/services/user_service.dart';
+import 'package:supply_app/services/user_service.dart';
+
 import '../models/Database_Model.dart';
 
 class PositionService {

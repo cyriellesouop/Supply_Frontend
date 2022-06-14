@@ -9,17 +9,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'package:supply_app/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    final prefs=await SharedPreferences.getInstance();
-     final showHome = prefs.getBool('showHome')?? false;
-      final id = prefs.getString('id')?? '';
-       await tester.pumpWidget(MyApp(showHome: showHome,identifiant: id,));
+   
+       await tester.pumpWidget(MyApp());
    //await tester.pumpWidget(MyApp(showHome: showHome,identifiant: id,));
 
     // Verify that our counter starts at 0.
