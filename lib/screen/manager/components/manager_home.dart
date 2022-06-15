@@ -666,11 +666,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                           ),
                           DropdownButtonFormField<String>(
                             dropdownColor: Color.fromARGB(255, 240, 229, 240),
-                            decoration: InputDecoration(
-                              labelText: 'Etat du colis',
-                              //  fillColor:Palette.primarySwatch.shade50,
-                              hintStyle: TextStyle(color: Colors.grey[800]),
-                            ),
+                             hint: Text('Etat du colis',style: TextStyle(color: Colors.grey[800]),),
                             value: dropdownValue,
                             onChanged: (String? newValue) {
                               // setState(() {
@@ -785,6 +781,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                           statut: "en attente",
                           state: dropdownValue,
                           startPoint:user.idPosition,
+                          updatedAt: DateTime.now().toString(),
                           createdAt: DateTime.now().toString());
 
                       await CommandService().addCommand(command).then((value) {
