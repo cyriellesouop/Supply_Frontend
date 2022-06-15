@@ -180,7 +180,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
     });
   }
 
-/* ************************************/
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -409,7 +408,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         ),
                         color: Palette.primarySwatch.shade400,
                         onPressed: () async {
-                          Navigator.pop(context);
                           // if (_formKey.currentState!.validate()) {
                           print(
                               '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
@@ -438,25 +436,12 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               }); */
                           //  }
 
-                          if (this.verified == true) {
-                            Navigator.pop(context);
+                          if (verified == true) {
                             isLoading = false;
-                             Fluttertoast.showToast(
-                                msg: "le code  est incorrect",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 5,
-                                backgroundColor: Colors.red,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
-                            /*  _timer?.cancel();
+                            _timer?.cancel();
                             await EasyLoading.showSuccess(
-                                "le code saisi est correct"); */
+                                "le code saisi est correct");
                           } else {
-
-                            Navigator.pop(context);
-                           
-                            
                             /* _timer?.cancel();
                               await EasyLoading.showError(
                                   "le code saisi est incorrect"); */
@@ -468,8 +453,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               _timer?.cancel();
                               await EasyLoading.showError("verification echoue");
                               */
-                            /*  _timer?.cancel();
-                            await EasyLoading.dismiss(); */
+                            _timer?.cancel();
+                            await EasyLoading.dismiss();
                             Fluttertoast.showToast(
                                 msg: "le code saisi est incorrect",
                                 toastLength: Toast.LENGTH_SHORT,

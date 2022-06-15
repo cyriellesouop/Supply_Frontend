@@ -97,12 +97,15 @@ class CommandService {
 
   //liste de command d'un gerant
   Stream<List<CommandModel>> getCommandsManager(String ManagercreatedBy) {
-    print("liste de commande");
-    return CommandCollection.where('createdBy', isEqualTo: 'ManagercreatedBy')
+
+    print('historiqueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+   
+    return CommandCollection.where('createdBy', isEqualTo: ManagercreatedBy)
         .snapshots()
         .map(
       (snapshot) {
         return snapshot.docs.map((doc) {
+           print("liste de commande");
           return CommandModel(
               idCommand: doc.get('idCommand'),
               createdBy: doc.get('createdBy'),
