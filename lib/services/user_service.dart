@@ -5,8 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/Database_Model.dart';
 
 class UserService {
- 
-
   CollectionReference<Map<String, dynamic>> userCollection =
       FirebaseFirestore.instance.collection("user");
 
@@ -43,20 +41,21 @@ class UserService {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-            //  idDoc:doc.id ,
-            //idUser: data['idUser'],
-            idUser: doc.get('idUser'),
-            adress: doc.get('adress'),
-            name: doc.get('name'),
-            phone: int.parse(doc.get('phone')),
-            tool: doc.get('tool'),
-            picture: doc.get('picture'),
-            idPosition: doc.get('idPosition'),
-            isManager: doc.get('isManager'),
-            isClient: doc.get('isClient'),
-            isDeliver: doc.get('isDeliver'),
-            // createdAt: doc.get('createdAt')
-          );
+              //  idDoc:doc.id ,
+              //idUser: data['idUser'],
+              idUser: doc.get('idUser'),
+              adress: doc.get('adress'),
+              name: doc.get('name'),
+              phone: int.parse(doc.get('phone')),
+              tool: doc.get('tool'),
+              picture: doc.get('picture'),
+              idPosition: doc.get('idPosition'),
+              isManager: doc.get('isManager'),
+              isClient: doc.get('isClient'),
+              isDeliver: doc.get('isDeliver'),
+              token: doc.get('token')
+              // createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
@@ -66,39 +65,33 @@ class UserService {
 //liste de livreurs correcte
 
   Stream<List<UserModel>> getDelivers() {
-    // int x = 0;
     print("moguem souop audrey");
     return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
       (snapshot) {
-        //  x = snapshot.docs.length;
-        //  print('la longueur du snapshot est ${snapshot.docs.length}');
-        /* try{
-      if (snapshot.docs.isNotEmpty) {
-         print('la longueur du snapshot est ${snapshot.docs.length}');  
-      } } catch (e){print('erreur est le suivant $e');}*/
         return snapshot.docs.map((doc) {
-          //  print('moguem souop${doc.runtimeType}');
-          //print('mon adresse${doc.get('adress')}');
           return UserModel(
-            //idUser: data['idUser'],
-            // idDoc: doc.id,
-            idUser: doc.get('idUser'),
-            // adress: doc.get('adress'),
-            name: doc.get('name'),
-            // phone: int.parse(doc.get('phone')),
-            tool: doc.get('tool'),
-            picture: doc.get('picture'),
-            idPosition: doc.get('idPosition'),
-            isManager: doc.get('isManager'),
-            isClient: doc.get('isClient'),
-            isDeliver: doc.get('isDeliver'),
-            // createdAt: doc.get('createdAt')
-          );
+
+              // idDoc: doc.id,
+              idUser: doc.get('idUser'),
+              // adress: doc.get('adress'),
+              name: doc.get('name'),
+              // phone: int.parse(doc.get('phone')),
+              tool: doc.get('tool'),
+              picture: doc.get('picture'),
+              idPosition: doc.get('idPosition'),
+              isManager: doc.get('isManager'),
+              isClient: doc.get('isClient'),
+              isDeliver: doc.get('isDeliver'),
+              token: doc.get('token')
+              // createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
     );
   }
+
+  //s
 
   //liste des managers correctes
   Stream<List<UserModel>> getManagers() {
@@ -116,8 +109,36 @@ class UserService {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-            //idUser: data['idUser'],
+              //idUser: data['idUser'],
 
+              idUser: doc.get('idUser'),
+              adress: doc.get('adress'),
+              name: doc.get('name'),
+              phone: int.parse(doc.get('phone')),
+              tool: doc.get('tool'),
+              picture: doc.get('picture'),
+              idPosition: doc.get('idPosition'),
+              isManager: doc.get('isManager'),
+              isClient: doc.get('isClient'),
+              isDeliver: doc.get('isDeliver'),
+              token: doc.get('token')
+              //createdAt: doc.get('createdAt')
+              );
+        }).toList();
+        // return model;
+      },
+    );
+  }
+
+//liste de tous les utilisateurs 
+  Stream<List<UserModel>> getAlluser() {
+
+    print("tous les livreurs");
+    return userCollection.snapshots().map(
+      (snapshot) {
+        return snapshot.docs.map((doc) {
+          return UserModel(
+            //idUser: data['idUser'],
             idUser: doc.get('idUser'),
             adress: doc.get('adress'),
             name: doc.get('name'),
@@ -128,35 +149,36 @@ class UserService {
             isManager: doc.get('isManager'),
             isClient: doc.get('isClient'),
             isDeliver: doc.get('isDeliver'),
+            token: doc.get('token')
             //createdAt: doc.get('createdAt')
           );
         }).toList();
-        // return model;
       },
     );
   }
 
+
 //recuperer la photo d'un user
 
- 
-
-Future<void> updateUser(UserModel user) async {
-    userCollection.doc(user.idDoc).update(
-      {'adress': user.adress,
-      'name': user.name,
-      'phone': user.phone,
-      'picture': user.picture,
-      'idPosition': user.idPosition,},
+  Future<void> updateUser(UserModel user) async {
+    userCollection.doc(user.idDoc).set(
+      {
+        'adress': user.adress,
+        'name': user.name,
+       // 'phone': user.phone,
+        'picture': user.picture,
+        'idPosition': user.idPosition,
+      }, SetOptions(merge: true)
     );
   }
 
 
 
-
-
-
-
-
+  Future<void> setToken(String uid, token) async{
+    userCollection
+        .doc(uid)
+        .set({'tokenNotification': token}, SetOptions(merge: true));
+  }
 
 /*   A tester
   Future<void> updateUserData(String idUser, String name, int phone,
@@ -166,6 +188,7 @@ Future<void> updateUser(UserModel user) async {
     return userCollection.doc(id).set({
       'idDoc': id,
       'idUser': idUser,
+      
       'adress': adress,
       'name': name,
       'phone': phone,
@@ -173,8 +196,6 @@ Future<void> updateUser(UserModel user) async {
       'idPosition': idPosition,
     });
   } */
-
-
 
   ////////////////////////////////////////////////////////////////////////
   Future<Stream<List<UserModel>>> getDeliverss() async {
@@ -192,19 +213,20 @@ Future<void> updateUser(UserModel user) async {
           //  print('moguem souop${doc.runtimeType}');
           //print('mon adresse${doc.get('adress')}');
           return UserModel(
-            //idUser: data['idUser'],
-            idUser: doc.get('idUser'),
-            adress: doc.get('adress'),
-            name: doc.get('name'),
-            phone: int.parse(doc.get('phone')),
-            tool: doc.get('tool'),
-            picture: doc.get('picture'),
-            idPosition: doc.get('idPosition'),
-            isManager: doc.get('isManager'),
-            isClient: doc.get('isClient'),
-            isDeliver: doc.get('isDeliver'),
-            //createdAt: doc.get('createdAt')
-          );
+              //idUser: data['idUser'],
+              idUser: doc.get('idUser'),
+              adress: doc.get('adress'),
+              name: doc.get('name'),
+              phone: int.parse(doc.get('phone')),
+              tool: doc.get('tool'),
+              picture: doc.get('picture'),
+              idPosition: doc.get('idPosition'),
+              isManager: doc.get('isManager'),
+              isClient: doc.get('isClient'),
+              isDeliver: doc.get('isDeliver'),
+              token: doc.get('token')
+              //createdAt: doc.get('createdAt')
+              );
         }).toList();
         // return model;
       },
@@ -239,6 +261,7 @@ Future<void> updateUser(UserModel user) async {
           isManager: resmap['isManager'],
           isClient: resmap['isClient'],
           isDeliver: resmap['isDeliver'],
+          token: resmap['token'],
           // createdAt:resmap['createdAt']
         );
       } else
@@ -281,27 +304,26 @@ Future<void> updateUser(UserModel user) async {
     /*  DocumentReference idkey = userCollection.doc();
     String id = idkey.id; */
 
-   // await userCollection.add(user.toMap());
+    // await userCollection.add(user.toMap());
 
     var documentRef = await userCollection.add({
-    //  'idDoc': userCollection.doc(),
-      'idUser':  user.idUser,
-      'adress':  user.adress,
-      'name':  user.name,
-      'phone':  user.phone,
-      'tool':  user.tool,
-      'picture':  user.picture,
-      'idPosition':  user.idPosition,
-      'isManager':  user.isManager,
-      'isClient':  user.isClient,
-      'isDeliver':  user.isDeliver,
-      'createdAt':  user.createdAt});
+      //  'idDoc': userCollection.doc(),
+      'idUser': user.idUser,
+      'adress': user.adress,
+      'name': user.name,
+      'phone': user.phone,
+      'tool': user.tool,
+      'picture': user.picture,
+      'idPosition': user.idPosition,
+      'isManager': user.isManager,
+      'isClient': user.isClient,
+      'isDeliver': user.isDeliver,
+      'createdAt': user.createdAt,
+      'token': user.token
+    });
 
-      return  documentRef.id;
-   
+    return documentRef.id;
   }
-
- 
 
 //fonction de mise a jour du numero de telephone
   Future<void> updatePhoneuser(String userId, String userphone) async {
@@ -319,69 +341,7 @@ Future<void> updateUser(UserModel user) async {
         .catchError((error) => print("Failed to delete user: $error"));
   }
 
-  //idposition of deliver
-
-/*Future<QuerySnapshot<Map<String, dynamic>>> getpositionUser(String idUser,String idposition) {
-    return userCollection.where('idUser', isEqualTo:idUser).where('idPosition', isEqualTo: idposition).get('')
-      ..then((snapshot) => snapshot.docs);
-  }
-  
-  // retourne la position d'un livreur
-     Future<Stream<List>> getdeliveridpos() async {
-     return userCollection.where('isDeliver', isEqualTo: true).get().then((value) { return value.docs.single['idPosition'];});
-    // .snapshots().map((snapshot) =>
-  //     snapshot.docs.map((doc)=>doc.data()).toList());
-   }
-
-   //retourne la position d'un gerant
-    Future<Stream<List>> getmanagerpos() async {
-     return userCollection.where('isManager', isEqualTo: true).get().then((value) { return value.docs.single['idPosition'];});
-    // .snapshots().map((snapshot) =>
-  //     snapshot.docs.map((doc)=>doc.data()).toList());
-   }
-    //get delivers
-  /*Stream<List<UserModel>> getDelivers() {
-    return userCollection.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList());
-  }*/
-  *
-  //Get User by id
-
-  Stream<UserModel> getUserbyId(String idUser) {
-    return userCollection.doc(idUser).snapshots().map(_userFromSnapshot);
-  }
-
-  // get un livreur
-  Stream getdeliver() {
-    return userCollection.where('isDeliver', isEqualTo: true).snapshots();
-  }
-
-
-  Future<UserModel> getUserbyId(String idUsersearch)  async {
-    return userCollection
-        .doc(idUsersearch)
-        .get()
-        .then((snapshot) => UserModel.fromJson(snapshot.data()as Map<String, dynamic>));
-  }
-
-  Future<void> getUserbyId(String idUsersearch) async {
-    return userCollection.doc(idUsersearch).get().then((snapshot) => snapshot);
-  }
-
-   //Get User by phone
-
-  Future<QuerySnapshot<Map<String, dynamic>>> getUserbyPhone(int phone) {
-    return userCollection.where('phone', isEqualTo: phone).get()
-      ..then((snapshot) => snapshot.docs);
-  }
-
-
-  Stream<List<UserModel>> getposdelivers() {
-    return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
-        (snapshot) => snapshot.docs
-            .map((doc) => UserModel.fromJson(doc.data()))
-            .toList());
-  }
+/*
 
 
 

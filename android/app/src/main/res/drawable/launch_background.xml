@@ -3,4 +3,9 @@
     <item>
         <bitmap android:gravity="fill" android:src="@drawable/background"/>
     </item>
+    <item>
+        <bitmap android:gravity="fill" android:src="@drawable/ic_stat_ic_notification"/>
+    </item>
+
+    
 </layer-list>

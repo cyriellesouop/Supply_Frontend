@@ -49,22 +49,44 @@ class CommandService {
     var options = SetOptions(merge: true);
     return CommandCollection.doc(Command.idCommand)
         .set(Command.toMap(), options);
+
+        final 
+  {String? idCommand,
+      String? description,
+      String nameCommand
+      String? poids,
+      String? statut,
+      String? deliveredBy}
   } */
 
   //Delete
-  Future<void> removeCommand(String idCommand) {
+  Future<void> removeCommand(String? idCommand) {
+    print(
+        'supressionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn');
     return CommandCollection.doc(idCommand).delete();
+  }
+
+  Future<void> updateCommand(CommandModel Command) async {
+    print(
+        'supressionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn');
+    return CommandCollection.doc(Command.idCommand).set({
+      'nameCommand': Command.nameCommand,
+      'description': Command.description,
+      'poids': Command.poids,
+      'statut': Command.statut,
+      'state': Command.state,
+      'updatedAt': Command.updatedAt,
+    }, SetOptions(merge: true));
   }
 
   //ajouter une commande
   Future<String> addCommand(CommandModel Command) async {
+    print(
+        "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
 
-    print("pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
-    
     var documentRef = await CommandCollection.add({
-      
       //  'idDoc': userCollection.doc(),
-     // 'idCommand': Command.idCommand,
+      // 'idCommand': Command.idCommand,
       'createdBy': Command.createdBy,
       'nameCommand': Command.nameCommand,
       'description': Command.description,
@@ -75,9 +97,10 @@ class CommandService {
       'startPoint': Command.startPoint,
       'endPoint': Command.endPoint,
       'updatedAt': Command.updatedAt,
-      'createdAt': Command.createdAt
+      'createdAt': Command.createdAt,
+      
     });
-    var createdId=documentRef.id;
+    var createdId = documentRef.id;
 
     CommandCollection.doc(createdId).update(
       {'idCommand': createdId},
@@ -97,15 +120,15 @@ class CommandService {
 
   //liste de command d'un gerant
   Stream<List<CommandModel>> getCommandsManager(String ManagercreatedBy) {
+    print(
+        'historiqueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
 
-    print('historiqueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
-   
     return CommandCollection.where('createdBy', isEqualTo: ManagercreatedBy)
         .snapshots()
         .map(
       (snapshot) {
         return snapshot.docs.map((doc) {
-           print("liste de commande");
+          print("liste de commande");
           return CommandModel(
               idCommand: doc.get('idCommand'),
               createdBy: doc.get('createdBy'),
@@ -123,6 +146,41 @@ class CommandService {
       },
     );
   }
+
+  //-------------------------------------------------------------------------------------------------------------------
+//liste de command d'un gerant
+  Stream<List<CommandModel>> getCommandsManagerstatut(String ManagercreatedBy,String statut) {
+    print(
+        'ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggge');
+
+    return CommandCollection.where('createdBy', isEqualTo: ManagercreatedBy).where('statut', isEqualTo: statut)
+        .snapshots()
+        .map(
+      (snapshot) {
+        return snapshot.docs.map((doc) {
+          print("liste de commande");
+          return CommandModel(
+              idCommand: doc.get('idCommand'),
+              createdBy: doc.get('createdBy'),
+              nameCommand: doc.get('nameCommand'),
+              description: doc.get('description'),
+              poids: doc.get('poids'),
+              statut: doc.get('statut'),
+              state: doc.get('state'),
+              deliveredBy: doc.get('deliveredBy'),
+              startPoint: doc.get('startPoint'),
+              endPoint: doc.get('endPoint'),
+              updatedAt: doc.get('updatedAt'),
+              createdAt: doc.get('createdAt'));
+        }).toList();
+      },
+    );
+  }
+
+
+
+
+
 
   //get command period
   Stream<List<CommandModel>> getCommandsDate(

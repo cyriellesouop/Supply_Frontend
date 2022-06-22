@@ -59,6 +59,16 @@ class PositionService {
         .set(Position.toMap(), options);
   }
 
+  Future<void> updatePosition(PositionModel Position) async {
+    print(
+        'supressionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn');
+    return PositionCollection.doc(Position.idPosition).set({
+      'latitude': Position.latitude,
+      'longitude': Position.longitude,
+      'updatedAt': DateTime.now().toString(),
+    }, SetOptions(merge: true));
+  }
+
   // add a position
 
   Future<String> addPosition(PositionModel Position) async {

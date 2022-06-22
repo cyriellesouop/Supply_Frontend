@@ -1,21 +1,25 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'dart:convert';
 import 'dart:ui';
 import 'dart:math';
-//import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/common/palette.dart';
+import 'package:supply_app/main.dart';
 import 'package:supply_app/models/Database_Model.dart';
 import 'package:supply_app/screen/manager/components/mySearch.dart';
 import 'package:supply_app/screen/manager/tri_rapide.dart';
 import 'package:supply_app/services/command_service.dart';
+import 'package:http/http.dart' as http;
 import 'package:supply_app/services/user_service.dart';
 
 import '../../../services/position_service.dart';
@@ -46,6 +50,9 @@ class _ManagerHomeState extends State<ManagerHome> {
   bool isdeliver = false;
   var hauteur, hauteur2;
   var taille = 0;
+  var idDoc;
+
+  var NotificationCounter;
 
   bool isDev = false;
 //pour le appBar
@@ -67,7 +74,8 @@ class _ManagerHomeState extends State<ManagerHome> {
   GoogleMapController? mapController; //controller pour Google map
   PolylinePoints polylinePoints = PolylinePoints();
 
-  String googleAPiKey = "AIzaSyDma7ThRPGokuU_cJ2Q_qFvowIpK35RAPs"; //google api
+  String googleAPiKey =
+      "AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU"; //"AIzaSyDma7ThRPGokuU_cJ2Q_qFvowIpK35RAPs"; //google api
   //Marker est un tableau qui contient toutes les positions representees sur la map
 
   final Set<Marker> markers = new Set(); //markers for google map
@@ -92,30 +100,61 @@ class _ManagerHomeState extends State<ManagerHome> {
   @override
   void initState() {
     getUserPosition();
+    //requestPermission();
+    loadFCM();
+    listenFCM();
+    listenOpenFCM();
+    //   storedNotificationToken();
+    display();
+    //  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackground);
     //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
     super.initState();
   }
 
-  /* _listDeliver() async {
-    await ServiceUser.getDelivers().forEach((element) {
-      setState(() {
-        this.exampleModelDeliver = element;
-      });
+/*   Future<void> _firebaseMessagingBackground(RemoteMessage message) async {
+    await Firebase.initializeApp();
+    print("message just show :${message.messageId}");
+  } */
 
-      print(
-          "le nombre de livreur est exactement ${exampleModelDeliver.length}");
+/*   void showNotification() {
+    setState(() {
+      NotificationCounter++;
     });
+    flutterLocalNotificationsPlugin.show(
+        0,
+        "testing $NotificationCounter",
+        "is it going well ?",
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
+            importance: Importance.high,
+            playSound: true,
+          ),
+        ));
+  } */
 
-    print("le nombre de livreur est ${exampleModelDeliver.length}");
-    return exampleModelDeliver.length;
+//
+
+  /*  storedNotificationToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      idDoc = prefs.getString('idDoc') ?? '';
+    });
+    String? token = await FirebaseMessaging.instance.getToken();
+    UserService().setToken(idDoc, token);
   } */
 
   //liste de posiition des livreur
   getUserPosition() async {
-    final prefs = await SharedPreferences.getInstance();
-    final showHome = prefs.getBool('isAuthenticated') ?? false;
-    final id = prefs.getString('id') ?? '';
-    print('identifiant est : $id et le home est $showHome');
+    //obtenir l'identifiant du document
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      idDoc = prefs.getString('idDoc') ?? '';
+    });
+
+    //print('identifiant est : $id et le home est $showHome');
     LatLng coordonnees = new LatLng(0, 0);
 
     //get current manager and current manager position
@@ -139,7 +178,6 @@ class _ManagerHomeState extends State<ManagerHome> {
     print(
         "la latitude du manager est ${currentManagerPosition.latitude}, et sa longitude est ${currentManagerPosition.longitude}");
     //end
-
 //Maquer le manager courant
     markers.add(Marker(
       //add distination location marker
@@ -205,14 +243,14 @@ class _ManagerHomeState extends State<ManagerHome> {
                   ),
                   icon: BitmapDescriptor.defaultMarker,
                   onTap: () {
-                    setState(() {
+                    /* setState(() {
                       isDev = false;
 
                       Dev = i;
                     });
                     Dev != UserModel(name: 'audrey')
                         ? isDev = true
-                        : isDev = false;
+                        : isDev = false; */
                   } //Icon for Marker
                   ));
 
@@ -228,6 +266,155 @@ class _ManagerHomeState extends State<ManagerHome> {
     });
   }
 
+/*   void requestPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
+      requestPermission();
+    }
+  } */
+
+  display() async {
+    print('channel channel channel');
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+            alert: true, badge: true, sound: true);
+  }
+
+  void loadFCM() async {
+    if (!kIsWeb) {
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          'high_importance_channel', //id
+          'High Importance Notifications', //title
+
+          description: 'This channel is used for important notifications.',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true);
+
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+
+      /// Create an Android Notification Channel.
+      ///
+      /// We use this channel in the `AndroidManifest.xml` file to override the
+      /// default FCM channel to enable heads up notifications.
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+
+      /// Update the iOS foreground notification presentation options to allow
+      /// heads up notifications.
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+  }
+
+  void listenFCM() async {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      if (notification != null && android != null && !kIsWeb) {
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              // TODO add a proper drawable resource to android, for now using
+              //      one that already exists in example app.
+              icon: 'launch_background',
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  void listenOpenFCM() async {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new onMessage eevent was published');
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      if (notification != null && android != null) {
+        showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                title: Text(" ${notification.title}"),
+                content: SingleChildScrollView(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [Text(" ${notification.body}")],
+                )),
+              );
+            });
+      }
+    });
+  }
+
+  void sendPushMessage(String body, String title, String? token) async {
+    print(
+        "envoie des notionsaticioooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
+    try {
+      await http.post(
+        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+              'key=AAAALOR35JE:APA91bHzS-FNsPRD-UmapTvVLGxo3-uneI7xnuk1yZdWJqZjqLH-F65UoLc3VYtkcl13NmVgkYqxg4tlzVqg78CWmWMnNhm5ziF7nv8ekaIKpl6nb5onU76eeIgq1nU3oH03l1wfCc6F',
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': body,
+              'title': title,
+            },
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'id': '1',
+              'status': 'done'
+            },
+            "to": token,
+          },
+        ),
+      );
+
+      print("notification is send");
+    } catch (e) {
+      print("error push notification");
+    }
+  }
+
 //widget final
   @override
   Widget build(BuildContext context) {
@@ -237,18 +424,18 @@ class _ManagerHomeState extends State<ManagerHome> {
       this.hauteur2 = size.height * 0.3;
     }); */
 
-    setState(() {
+    /*  setState(() {
       tableauJsontrie = tableauTrie(
           TriRapidejson(table: this.tableauJson).QSort(0, this.taille - 1));
     });
-
+ */
     print('les distances sont :${exampleModelDeliver}');
 
     print('la table json esst $tableauJson');
     print('le tableau json trie est ${tableauJsontrie.length}');
 
     return Scaffold(
-      drawer: NavBar(currentManagerID: widget.currentManagerID),
+      drawer: NavBar(),
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
         title: Text('Mon application'),
@@ -258,10 +445,9 @@ class _ManagerHomeState extends State<ManagerHome> {
               showSearch(
                 context: context,
                 delegate: MysearchDelegate(
-                    tableauJsontrie: tableauJsontrie,
+                    tableauJsontrie: tableauJson, //tableauJsontrie
                     hintText: " rechercher un livreur",
-                    current_user: currentManager
-                   ),
+                    current_user: currentManager),
               );
             },
             icon: const Icon(Icons.search),
@@ -333,8 +519,8 @@ class _ManagerHomeState extends State<ManagerHome> {
                             // flex: 2,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              // itemCount: allDelivers.length,
-                              itemCount: this.tableauJsontrie.length,
+                              //  this.tableauJsontrie.length,
+                              itemCount: this.tableauJson.length,
                               //  itemCount: this.exampleModelDeliver.length,
                               itemBuilder: (BuildContext context, int index) {
                                 return InkWell(
@@ -345,9 +531,11 @@ class _ManagerHomeState extends State<ManagerHome> {
                                     setState(() {
                                       isdeliver = false;
 
-                                      deliver = this.tableauJsontrie[index]
+                                      deliver = this.tableauJson[
+                                              index] // this.tableauJsontrie
                                           ['Deliver'];
-                                      tab = this.tableauJsontrie[index];
+                                      tab = this.tableauJson[
+                                          index]; // this.tableauJsontrie.length
                                     });
                                     deliver != UserModel(name: 'audrey').toMap()
                                         ? isdeliver = true
@@ -371,19 +559,6 @@ class _ManagerHomeState extends State<ManagerHome> {
                               },
                             ),
                           ),
-                          /*  : Container(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "Aucun Livreur pour l'instant ",
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        //  fontWeight: FontWeight.bold,
-                                        color: Colors.grey
-
-                                        //  backgroundColor: Colors.white
-                                        ),
-                                  ),
-                                ), */
                           Visibility(
                               visible: (isdeliver || isDev),
                               child: Column(
@@ -425,6 +600,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                                               createdAt: tab['Deliver']
                                                   ['createdAt'],
                                             );
+                                            // showNotification();
                                             _showcommandDialog(
                                                 context,
                                                 myPosition,
@@ -521,8 +697,9 @@ class _ManagerHomeState extends State<ManagerHome> {
         const SizedBox(
           height: 2,
         ),
+//    Text(tableauJsontrie[index]['Deliver']['name'],
 
-        Text(tableauJsontrie[index]['Deliver']['name'],
+        Text(tableauJson[index]['Deliver']['name'],
             style:
                 GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 15)),
         const SizedBox(
@@ -575,26 +752,6 @@ class _ManagerHomeState extends State<ManagerHome> {
     return table;
   }
 
-//fonction qui renvoie la dstance des livreurs par rapport a la position du gerant
-  /* List<double> getDistanceBetween(
-      LatLng currentManagerPosition, List<LatLng> positionDeliverList) {
-    var dist;
-    for (var i in positionDeliverList) {
-      dist = calculateDistance(currentManagerPosition.latitude,
-          currentManagerPosition.longitude, i.latitude, i.longitude);
-      setState(() {
-        DistanceInter.add(dist);
-      });
-    }
-    var n = this.DistanceInter.length;
-    setState(() {
-      Distances = TriRapide(table: this.DistanceInter).QSort(0, n - 1);
-    });
-    //  return tableauTrie(Distances);
-    return DistanceInter;
-    // TriRapide(table: this.DistanceInter).tableauTrie(this.DistanceInter);
-  } */
-
   double getDistance(
       LatLng currentManagerPosition, LatLng positionDeliverList) {
     var dist;
@@ -611,7 +768,7 @@ class _ManagerHomeState extends State<ManagerHome> {
       UserModel user, UserModel deliver) {
     String bouton = "Annuler";
     String dropdownValue = 'Fragile';
-    String dropdownValuePoids = 'Kg';
+    String dropdownValuePoids = 'kg';
     TextEditingController poidsController = TextEditingController();
     TextEditingController nameController = TextEditingController();
 
@@ -666,7 +823,10 @@ class _ManagerHomeState extends State<ManagerHome> {
                           ),
                           DropdownButtonFormField<String>(
                             dropdownColor: Color.fromARGB(255, 240, 229, 240),
-                             hint: Text('Etat du colis',style: TextStyle(color: Colors.grey[800]),),
+                            hint: Text(
+                              'Etat du colis',
+                              style: TextStyle(color: Colors.grey[800]),
+                            ),
                             value: dropdownValue,
                             onChanged: (String? newValue) {
                               // setState(() {
@@ -709,7 +869,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                               dropdownValuePoids = newValue!;
                               // });
                             },
-                            items: <String>['tonnes', 'Kg', 'g', 'mg']
+                            items: <String>['tonnes', 'kg', 'g', 'mg']
                                 .map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
@@ -733,12 +893,6 @@ class _ManagerHomeState extends State<ManagerHome> {
                             minLines: 1,
                             maxLines: 5,
                             decoration: InputDecoration(
-                                labelText: 'Estimation du prix et heure ',
-                                /*  border: OutlineInputBorder(
-                                  
-                                  Color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ), */
                                 filled: true,
                                 hintStyle: TextStyle(color: Colors.grey[800]),
                                 // prefixIcon: const Icon(Icons.write),
@@ -751,23 +905,31 @@ class _ManagerHomeState extends State<ManagerHome> {
                   )),
               actions: [
                 FlatButton(
-                  child: Text("Quitter", style: TextStyle(color:Color.fromARGB(255, 240, 229, 240) )),
+                  child: Text("Quitter",
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
                   padding: EdgeInsets.all(2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
-                  color:  Palette.primarySwatch.shade400, //Color.fromARGB(255, 240, 229, 240),
+                  color: Palette.primarySwatch
+                      .shade400, //Color.fromARGB(255, 240, 229, 240),
                   //  textColor: kBackgroundColor,
                   onPressed: () => Navigator.pop(context), // passing true
                 ),
-                SizedBox(width: MediaQuery.of(context).size.width* 0.1,),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                ),
                 FlatButton(
-                  child: Text("Publier", style: TextStyle(color:Color.fromARGB(255, 240, 229, 240) ),),
+                  child: Text(
+                    "Publier",
+                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
+                  ),
                   padding: EdgeInsets.all(2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
-                  color:  Palette.primarySwatch.shade400, //,
+                  color: Palette.primarySwatch.shade400, //,
                   //  textColor: kBackgroundColor,
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
@@ -775,40 +937,94 @@ class _ManagerHomeState extends State<ManagerHome> {
                           createdBy: user.idUser,
                           nameCommand: nameController.text,
                           description:
-                              "${descriptionController.text}   $dropdownValue",
-                          poids:
-                              "${poidsController.text}   $dropdownValuePoids",
+                              "${descriptionController.text} $dropdownValue",
+                          poids: "${poidsController.text} $dropdownValuePoids",
                           statut: "en attente",
                           state: dropdownValue,
-                          startPoint:user.idPosition,
+                          startPoint: user.idPosition,
                           updatedAt: DateTime.now().toString(),
                           createdAt: DateTime.now().toString());
 
-                      await CommandService().addCommand(command).then((value) {
-
-                        print("commande commande commande commande commande commande commande");
-                                                  (Fluttertoast.showToast(
-                                  msg: "la commande a ete publier",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 5,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0));  Navigator.pop(context); })
-                              .catchError((onError) {
-                                Navigator.pop(context);
-                            Fluttertoast.showToast(
-                                msg: "Echec de publication, veuillez reesayer!",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 5,
-                                backgroundColor: Colors.red,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
-                          }) ;
-                      
+                      Navigator.pop(context);
+                      _ShowcreateDialog(context,command,deliver);
                     }
                   },
+                ),
+              ]);
+        });
+  }
+
+  void _ShowcreateDialog(
+      // BuildContext context, CommandModel command, void Function() fonction) {  _deleteAction()
+      BuildContext context,
+      CommandModel command,
+      UserModel deliver) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Colors.white,
+              content: Container(
+                  child: Text(
+                      "Etes vous sur de vouloir publier cette commande ?")),
+              actions: [
+                FlatButton(
+                  child: Text(
+                    "Non".toUpperCase(),
+                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
+                  ),
+                  padding: EdgeInsets.all(2),
+                  //  minWidth: MediaQuery.of(context).size.width,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color: Palette.primarySwatch.shade400, //,
+                  //  textColor: kBackgroundColor,
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                ),
+                FlatButton(
+                  child: Text("Oui".toUpperCase(),
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
+                  padding: EdgeInsets.all(2),
+                  // minWidth: MediaQuery.of(context).size.width,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color: Palette.primarySwatch
+                      .shade400, 
+                  onPressed: () async {
+                     Navigator.pop(context);
+                    await CommandService().addCommand(command).then((value) {
+                      print(
+                          "commande commande commande commande commande commande commande");
+                      (Fluttertoast.showToast(
+                          msg: "la commande a ete publier",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 5,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0));
+                    }).catchError((onError) {
+                        Navigator.pop(context);
+                      Fluttertoast.showToast(
+                          msg: "Echec de publication, veuillez reesayer!",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 5,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                    });
+                    sendPushMessage(command.description, command.nameCommand,
+                        deliver.token);
+                  }, // passing true
                 ),
               ]);
         });

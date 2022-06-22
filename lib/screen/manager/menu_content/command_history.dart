@@ -25,7 +25,7 @@ class _CommandListeState extends State<CommandListe> {
   List<CommandModel> enattente = [];
   UserModel deliver = new UserModel(name: 'fabiol');
   UserModel currentManager = new UserModel(name: 'fabiol');
-  // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt, createdAt: createdAt)
+  // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt,.updatedAt:.updatedAt)
 
   //UserModel? exampleModel = new UserModel(name: 'fabiol');
   CommandService ServiceCommand = new CommandService();
@@ -43,6 +43,9 @@ class _CommandListeState extends State<CommandListe> {
   void initState() {
     getCommandDeliver();
     getCurrentManager();
+    getcommandEnd() ;
+    getCommandeon();
+    getcommandsIN();
     dateinput.text = ""; //set the initial value of text field
     dateinputfinal.text = '';
     super.initState();
@@ -66,18 +69,43 @@ class _CommandListeState extends State<CommandListe> {
       setState(() {
         this.Commands = element;
       });
-      for (var i in this.Commands) {
-        if (i.statut == "en cours") {
-          encours.add(i);
-        } else if (i.statut == "termine") {
-          termine.add(i);
-        } else if (i.statut == "en attente") {
-          enattente.add(i);
-        }
-      }
     });
   }
 
+  getCommandeon() async {
+    await CommandService()
+        .getCommandsManagerstatut(widget.currentManagerID, "en attente")
+        .forEach((element) async {
+      print("eattnteteaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   $element");
+      setState(() {
+        this.enattente = element;
+      });
+    });
+  }
+
+  getcommandEnd() async {
+    await CommandService()
+        .getCommandsManagerstatut(widget.currentManagerID, "termine")
+        .forEach((element) async {
+      print("fffffffffffffffffffffffffffffffffffffffffffffff   $element");
+      setState(() {
+        termine = element;
+      });
+    });
+  }
+
+  getcommandsIN() async {
+    await CommandService()
+        .getCommandsManagerstatut(widget.currentManagerID, "en cours")
+        .forEach((element) async {
+      print("ccccccccccccccccccccccccccccccccccc   $element");
+      setState(() {
+        this.encours = element;
+      });
+    });
+  }
+
+//compare les dates afin de triet la liste de commandes par date
   int dateCompare(DateTime d1, DateTime d2) {
     var isrecent;
     if (d1.isBefore(d2)) {
@@ -85,26 +113,27 @@ class _CommandListeState extends State<CommandListe> {
     } else {
       isrecent = 1;
     }
+
     return isrecent;
   }
 
   @override
   Widget build(BuildContext context) {
-    List<CommandModel> sortedcommands = Commands
+    List<CommandModel> sortedcommands = (Commands)
       ..sort((item1, item2) => dateCompare(
-          DateTime.parse(item2.createdAt), DateTime.parse(item1.createdAt)));
+          DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));
 
     List<CommandModel> sortedenattente = enattente
       ..sort((item1, item2) => dateCompare(
-          DateTime.parse(item2.createdAt), DateTime.parse(item1.createdAt)));
+          DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));
 
     List<CommandModel> sortedencours = encours
       ..sort((item1, item2) => dateCompare(
-          DateTime.parse(item2.createdAt), DateTime.parse(item1.createdAt)));
+          DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));
 
     List<CommandModel> sortedtermine = termine
       ..sort((item1, item2) => dateCompare(
-          DateTime.parse(item2.createdAt), DateTime.parse(item1.createdAt)));
+          DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));
     return DefaultTabController(
         length: 4,
         child: Scaffold(
@@ -114,7 +143,7 @@ class _CommandListeState extends State<CommandListe> {
               children: [
                 ListCommand(
                   deliver: deliver,
-                  Commands: sortedcommands,
+                  Commands: (sortedcommands),
                   manager: currentManager,
                 ),
                 ListCommand(
@@ -128,10 +157,9 @@ class _CommandListeState extends State<CommandListe> {
                   manager: currentManager,
                 ),
                 ListCommand(
-                  deliver: deliver,
-                  Commands: sortedtermine,
-                  manager: currentManager,
-                ),
+                    deliver: deliver,
+                    Commands: sortedtermine,
+                    manager: currentManager),
               ],
             )));
   }

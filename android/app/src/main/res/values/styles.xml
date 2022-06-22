@@ -8,6 +8,10 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowFullscreen">false</item>
     </style>
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    
+   
+   
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
          Flutter UI initializes, as well as behind your Flutter UI while its

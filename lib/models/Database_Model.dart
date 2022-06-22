@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 class AppUser {
-  final String uid;
+  String uid;
 
   AppUser({required this.uid});
   //-------------
@@ -15,12 +15,21 @@ class AppUser {
 /******************************************************************************************************************/
 // class Position
 class PositionModel {
-  final String? idPosition;
-  final double longitude;
-  final double latitude;
+  String? idPosition;
+  double longitude;
+  double latitude;
 
   PositionModel(
       {this.idPosition, required this.longitude, required this.latitude});
+
+
+   void set Longitude(double long) {
+    this.longitude = long;
+  }
+
+  void set Latitude(double lat) {
+    this.latitude = lat;
+  }
 
   factory PositionModel.fromJson(Map<String, dynamic> json) {
     return PositionModel(
@@ -41,24 +50,47 @@ class PositionModel {
 /******************************************************************************************************************/
 // class Command
 class CommandModel {
-  final String? idCommand;
-  final String?createdBy;
-  final String nameCommand;
-  final String description;
-  final String poids;
-  final String statut;
-  final String state;
-  final String? deliveredBy;
-  final String? startPoint;
-  final String? endPoint;
-  /* final PositionModel startPoint;
-  final PositionModel? endPoint; */
-  final  String? updatedAt;
-  final  String createdAt;
+  String? idCommand;
+  String? createdBy;
+  String nameCommand;
+  String description;
+  String poids;
+  String statut;
+  String state;
+  String? deliveredBy;
+  String? startPoint;
+  String? endPoint;
+  String updatedAt;
+  String createdAt;
+ 
+
+  void set Description(String des) {
+    this.description = des;
+  }
+
+  void set NameCommand(String name) {
+    this.nameCommand = name;
+  }
+
+  void set Poids(String poids) {
+    this.poids = poids;
+  }
+
+  void set Statut(String statut) {
+    this.statut = statut;
+  }
+
+  void set State(String state) {
+    this.state = state;
+  }
+
+  void set UpdateDate(String date) {
+    this.updatedAt = date;
+  }
 
   CommandModel(
       {this.idCommand,
-       this.createdBy,
+      this.createdBy,
       required this.nameCommand,
       required this.description,
       required this.poids,
@@ -67,7 +99,7 @@ class CommandModel {
       this.deliveredBy,
       required this.startPoint,
       this.endPoint,
-       this.updatedAt,
+      required this.updatedAt,
       required this.createdAt});
 
   factory CommandModel.fromJson(Map<String, dynamic> json) {
@@ -82,7 +114,7 @@ class CommandModel {
         deliveredBy: json['deliveredBy'],
         startPoint: json['startPoint'],
         endPoint: json['endPoint'],
-      /*   startPoint: PositionModel.fromJson(json['startPoint']),
+        /*   startPoint: PositionModel.fromJson(json['startPoint']),
         endPoint: PositionModel.fromJson(json['endPoint']), */
         updatedAt: json['updatedAt'],
         createdAt: json['createdAt']);
@@ -93,7 +125,7 @@ class CommandModel {
       'createdBy': createdBy,
       'nameCommand': nameCommand,
       'description': description,
-      'poids':poids,
+      'poids': poids,
       'statut': statut,
       'state': state,
       'deliveredBy': deliveredBy,
@@ -121,12 +153,13 @@ class UserModel {
   int? phone;
   String? tool;
   String? picture;
-  // final PositionModel position;
+  //  PositionModel position;
   String? idPosition;
   bool isManager;
   bool isClient;
   bool isDeliver;
   String? createdAt;
+   String? token;
 
   UserModel({
     this.idDoc,
@@ -136,12 +169,13 @@ class UserModel {
     this.phone,
     this.tool,
     this.picture,
-    //this.position,
+  
     this.idPosition,
     this.isManager = true,
     this.isClient = false,
     this.isDeliver = false,
     this.createdAt,
+    this.token
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -158,11 +192,12 @@ class UserModel {
         isManager: json['isManager'],
         isClient: json['isClient'],
         isDeliver: json['isDeliver'],
-        createdAt: json['createdAt']);
+        createdAt: json['createdAt'],
+        token: json['token']);
   }
   Map<String, dynamic> toMap() {
     return {
-     // 'idDoc': id,
+      // 'idDoc': id,
       'idUser': idUser,
       'adress': adress,
       'name': name,
@@ -173,7 +208,8 @@ class UserModel {
       'isManager': isManager,
       'isClient': isClient,
       'isDeliver': isDeliver,
-      'createdAt': createdAt
+      'createdAt': createdAt,
+      'token': token,
     };
   }
 
@@ -188,9 +224,9 @@ class UserModel {
 /******************************************************************************************************************/
 // class Chat
 class ChatModel {
-  final String? roomId;
-  final String sendBy;
-  final String message;
+  String? roomId;
+  String sendBy;
+  String message;
 
   ChatModel({this.roomId, required this.sendBy, required this.message});
 
