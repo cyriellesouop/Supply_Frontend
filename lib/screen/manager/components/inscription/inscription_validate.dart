@@ -61,6 +61,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
   bool isLoading = false;
   var bouton = "VERIFIER";
 
+  var idExistant;
+
   // bool wait = false;
   late UserModel user;
   // creation d'une instance de firebaseauth
@@ -201,15 +203,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
       setState(() {
         allUsers = element;
       });
-
-      //  var n = -1;
-      //pour chaque livreur, on renvoie sa posion
-      /* for (var i in allUsers) {
-        //  n++;
-        setState(() {
-          allUsersid.add(i.idUser);
-        });
-      } */
     });
   }
 
@@ -374,7 +367,15 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               } else if (isExist(allUsers, userCreate)[0] ==
                                       true &&
                                   isExist(allUsers, userCreate)[1] == false) {
-                                await UserService().updateUser(userCreate);
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
+
+                                setState(() {
+                                  idExistant = prefs.getString('idDoc') ?? '';
+                                });
+
+                                await UserService()
+                                    .updateUser(userCreate, idExistant);
                               }
 
                               //   if (isExist(table, user))
@@ -649,17 +650,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
           print("code envoye");
           print(signcode);
         },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          /*  setState(() {
-            isLoading = false;
-          }); */
-          // Navigator.pop(context);
-          //   Navigator.pop(context);
-          /* setState(() {
-            verificationIDreceived = verificationID;
-           // isTimeExpired = true;
-          }); */
-        });
+        codeAutoRetrievalTimeout: (String verificationID) {});
   }
 }
 

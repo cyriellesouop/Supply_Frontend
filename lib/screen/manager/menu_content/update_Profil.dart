@@ -1,15 +1,19 @@
- // ignore_for_file: dead_code, sized_box_for_whitespace, prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, no_logic_in_create_state,, must_be_immutable, prefer_typing_uninitialized_variables
+// ignore_for_file: dead_code, sized_box_for_whitespace, prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, no_logic_in_create_state,, must_be_immutable, prefer_typing_uninitialized_variables
 
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:path_provider/path_provider.dart';
 
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supply_app/common/constants.dart';
+import 'package:supply_app/common/palette.dart';
 import 'package:supply_app/models/Database_Model.dart';
 import 'package:supply_app/services/storage_service.dart';
 import 'package:supply_app/services/user_service.dart';
@@ -25,6 +29,7 @@ class UpdateProfil extends StatefulWidget {
 class _UpdateProfilState extends State<UpdateProfil> {
   //_image contiendra le chemin d'acces a l'image prise depuis un telephone
   var _image;
+  var idExistant;
   File? image;
   File? avatarImageFile;
   bool? isLoading;
@@ -157,7 +162,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
                     child: TextFormField(
                       controller: adresseController,
                       style: GoogleFonts.poppins(fontSize: 15),
-                 /*      validator: (value) {
+                      /*      validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'veuillez saisir l adresse de votre entreprise';
                         }
@@ -176,9 +181,27 @@ class _UpdateProfilState extends State<UpdateProfil> {
                   ),
                   FlatButton(
                     onPressed: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+
+                      var pictureInit = prefs.getString('picture') ?? '';
+
                       print("le chemin d'acces a l'image est :$picture");
                       print(
                           "le deuxieme chemin d'acces a l'image est :$_image");
+                      UserModel userCreate = UserModel(
+                        //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                        adress: adresseController.text.isEmpty
+                            ? currentManager.adress
+                            : adresseController.text,
+                        name: nameController.text.isEmpty
+                            ? currentManager.name
+                            : nameController.text,
+                        picture: picture.isEmpty ? pictureInit : picture,
+                        //  updatedAt: DateTime.now().toString()
+                      );
+
+                      _ShowUpdateDialog(context, userCreate);
                     },
                     padding: EdgeInsets.all(15),
                     shape: RoundedRectangleBorder(
@@ -196,6 +219,86 @@ class _UpdateProfilState extends State<UpdateProfil> {
             ),
           )),
     );
+  }
+
+  void _ShowUpdateDialog(
+      // BuildContext context, CommandModel command, void Function() fonction) {  _deleteAction()
+      BuildContext context,
+      UserModel user) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Colors.white,
+              content: Container(
+                  child: Text(
+                      "Etes vous sur de vouloir modifier vos informations ?")),
+              actions: [
+                FlatButton(
+                  child: Text(
+                    "Non".toUpperCase(),
+                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
+                  ),
+                  padding: EdgeInsets.all(2),
+                  //  minWidth: MediaQuery.of(context).size.width,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color: Palette.primarySwatch.shade400, //,
+                  //  textColor: kBackgroundColor,
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                ),
+                FlatButton(
+                  child: Text("Oui".toUpperCase(),
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
+                  padding: EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color: Palette.primarySwatch.shade400,
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+
+                    setState(() {
+                      idExistant = prefs.getString('idDoc') ?? '';
+                    });
+                    await UserService()
+                        .UpdateProfil(user, idExistant)
+                        .then((value) {
+                           prefs.setString('name', user.name);
+                                  /* prefs.setString('adress', user.adress);
+                                  prefs.setString('picture', user.picture); */
+                      Navigator.pop(context);
+                      (Fluttertoast.showToast(
+                          msg: "Mise a jour reussie",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 5,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0));
+                    }).catchError((onError) {
+                      Navigator.pop(context);
+                      Fluttertoast.showToast(
+                          msg: "Echec de modification, veuillez reesayer!",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 5,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                    });
+                  }, // passing true
+                ),
+              ]);
+        });
   }
 
   Widget bottomSheet() {
@@ -311,4 +414,3 @@ AppBar buildAppBar() {
     centerTitle: true,
   );
 }
- 
