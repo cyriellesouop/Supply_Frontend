@@ -27,6 +27,7 @@ class IntroScreen extends StatelessWidget {
       back: const Icon(Icons.arrow_left),
       done: IconButton(
         icon: const Icon(Icons.check),
+       //child: Text("Commencer >>>"),
         onPressed: () async {
           final prefs = await SharedPreferences.getInstance();
           prefs.setBool('InscriptionName', true);

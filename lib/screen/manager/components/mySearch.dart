@@ -21,6 +21,8 @@ class MysearchDelegate extends SearchDelegate {
      
       required this.current_user,
       Key? key});
+
+      
 /* 
   List<String> added = [];
   String currentText = '';
@@ -126,9 +128,11 @@ class MysearchDelegate extends SearchDelegate {
                           subtitle: Text(
                               'Situé à ${getDistance(suggestion, this.tableauJsontrie)} km de vous'),
                           onTap: () {
-                            query = suggestion;
-                            _showcommandDialog(context, 
+                             _showcommandDialog(context, 
                                 this.current_user, ontapDeliver);
+                            print("suggestion est $suggestion");
+                            query = suggestion;
+                           
                           },
                         ),
                         SizedBox(
@@ -228,9 +232,10 @@ class MysearchDelegate extends SearchDelegate {
                         'situe a ${getDistance(result, this.tableauJsontrie)} km de vous'),
                     onTap: () {
                       print("suggestion est $result");
-                      query = result;
-                      _showcommandDialog(context, 
+                       _showcommandDialog(context, 
                           this.current_user, matchQuery[index]['Deliver']);
+                      query = result;
+                     
                     },
                   ),
                   const SizedBox(
@@ -256,7 +261,7 @@ class MysearchDelegate extends SearchDelegate {
       UserModel user, UserModel deliver) {
     String bouton = "Annuler";
     String dropdownValue = 'Fragile';
-    String dropdownValuePoids = 'Kg';
+    String dropdownValuePoids = 'kg';
     TextEditingController poidsController = TextEditingController();
     TextEditingController nameController = TextEditingController();
 
@@ -356,7 +361,7 @@ class MysearchDelegate extends SearchDelegate {
                               dropdownValuePoids = newValue!;
                               // });
                             },
-                            items: <String>['tonnes', 'Kg', 'g', 'mg']
+                            items: <String>['tonnes', 'kg', 'g', 'mg']
                                 .map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
@@ -422,9 +427,9 @@ class MysearchDelegate extends SearchDelegate {
                           createdBy: user.idUser,
                           nameCommand: nameController.text,
                           description:
-                              "${descriptionController.text}   $dropdownValue",
+                              "${descriptionController.text} $dropdownValue",
                           poids:
-                              "${poidsController.text}   $dropdownValuePoids",
+                              "${poidsController.text} $dropdownValuePoids",
                           statut: "en attente",
                           state: dropdownValue,
                           startPoint: user.idPosition,

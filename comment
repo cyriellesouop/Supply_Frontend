@@ -36,6 +36,110 @@ s'il ya deux voyelles consevutives, ca ajoute av avant la premiere voyelle. el l
 3.8667864!4d11.5006548
 
 
+
+
+void _showConfirmDialog(BuildContext context) {
+  
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Colors.white,
+              title: Container(
+                width: MediaQuery.of(context).size.width,
+                margin: EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                child: Center(
+                  child: Text(
+                    "Confirmation",
+                    style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        //  color: Colors.white
+
+                        //  backgroundColor: Colors.white
+                        ),
+                  ),
+                ),
+              ),
+              content: Container(
+                   child: Text( "Etes vous sur de vouloir supprimer ?")
+                  ),
+              actions: [
+                FlatButton(
+                    child: Text("Oui".toUpperCase(),
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 240, 229, 240))),
+                    padding: EdgeInsets.all(2),
+                    minWidth: MediaQuery.of(context).size.width,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    color: Palette.primarySwatch
+                        .shade400, //Color.fromARGB(255, 240, 229, 240),
+                    //  textColor: kBackgroundColor,
+                    onPressed: () async {
+                      await CommandService()
+                          .removeCommand(command.idCommand)
+                          .then((value) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Tracking(
+                                      Command: command,
+                                      deliver: widget.deliver,
+                                      manager: widget.manager,
+                                    )));
+
+                        //Navigator.pop(context);
+                        (Fluttertoast.showToast(
+                            msg: "suppression reussie",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 5,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0));
+                      }).catchError((onError) {
+                        Navigator.pop(context);
+                        (Fluttertoast.showToast(
+                            msg: "echec de suppression",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 5,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0));
+                      });
+                    } // passing true
+                    ),
+                SizedBox(height: 2 //MediaQuery.of(context).size.height * 0.1,
+                    ),
+                FlatButton(
+                  child: Text(
+                    "Non".toUpperCase(),
+                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
+                  ),
+                  padding: EdgeInsets.all(2),
+                  minWidth: MediaQuery.of(context).size.width,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  color: Palette.primarySwatch.shade400, //,
+                  //  textColor: kBackgroundColor,
+                  onPressed: () async {
+                  Navigator.pop(context);
+                  },
+                ),
+              ]);
+        });
+  }
+
+
+
+
+
+
 FirebaseAuth( 9470): [SmsRetrieverHelper] SMS verification code request failed: unknown status code: 17052 Exceeded per phone number quota for sending verification codes.
 
 

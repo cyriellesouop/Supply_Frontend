@@ -1,3 +1,7 @@
+import 'dart:core';
+import 'dart:core';
+import 'dart:core';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,17 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supply_app/models/Database_Model.dart';
 
-
-class Authclass extends ChangeNotifier{
+class Authclass extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   //user =  _auth.currentUser;
   //------------------------------------------------------------
-  
 
   //----------------------------------------------------------------
 
   var storage = const FlutterSecureStorage();
   bool otploginVisible = false;
+  var token;
+  List<String> liste = [];
 
   AppUser? _userFromFirebase(User? user) {
     if (user != null) {
@@ -29,19 +33,19 @@ class Authclass extends ChangeNotifier{
     return _auth.authStateChanges().map(_userFromFirebase);
   }
 
-  void storeTokenAndData(UserCredential userCredential) async {
+  /* void storeTokenAndData(UserCredential userCredential) async {
     print("enregistrement du token et des donnees");
     await storage.write(
         key: "token", value: userCredential.credential?.token.toString());
     await storage.write(
         key: "usercredential", value: userCredential.toString());
-  }
+  } */
 
-  Future<String?> getToken() async {
+  /*  Future<String?> getToken() async {
     return await storage.read(key: "token");
-  }
+  } */
 
-  Future<void> verifyPhoneNumber(
+/*   Future<void> verifyPhoneNumber(
       String phoneNumber, BuildContext context, Function setData) async {
     // ignore: prefer_function_declarations_over_variables
     PhoneVerificationCompleted verificationCompleted =
@@ -75,9 +79,9 @@ class Authclass extends ChangeNotifier{
     } catch (e) {
       //showSnackBar(context, e.toString());
     }
-  }
+  } */
 
-  Future<AppUser?> signInwithPhoneNumber(
+  Future<User?> signInwithPhoneNumber(
       String verificationId, String smsCode, BuildContext context) async {
     try {
       AuthCredential credential = PhoneAuthProvider.credential(
@@ -85,21 +89,25 @@ class Authclass extends ChangeNotifier{
 
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      storeTokenAndData(userCredential);
+      //  Future<String> users
 
-       User?  users = userCredential.user;
+      /* String id = userCredential.user!.uid;
+      liste[0]=id;
+
+      userCredential.user!.getIdToken().then((value) {
+        token = value.toString();
+        liste[1]=value.toString();
+      }); */
+      
+
       print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WAOU     ");
-       print('l identifiant est ${users!.uid}');
-      // otploginVisible=true;
-      // Navigator.pop(context,otploginVisible);
-      Navigator.pop(context);
+      //  print('l identifiant est ${users!.uid}');
 
-       return _userFromFirebase(users);
-     // return true;
+      Navigator.pop(context);
+      return userCredential.user;
     } catch (e) {
-      // showSnackBar(context, e.toString());
-        return null;
-     // return false;
+      print('error');
+      return null;
     }
   }
 
@@ -107,7 +115,7 @@ class Authclass extends ChangeNotifier{
   // String identifiant()=> (this.users. == null)? "":this.users!.uid.toString();
 
   bool isphonenumberok(String? actual_user) {
-    if (actual_user != '') {
+    if (actual_user?.length != null ) {
       return true;
       // final String uid= user.uid.toString();
     }
