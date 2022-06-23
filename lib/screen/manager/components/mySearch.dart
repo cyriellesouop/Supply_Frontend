@@ -124,9 +124,8 @@ class MysearchDelegate extends SearchDelegate {
                           ),
                           title: Text(suggestion),
                           subtitle: Text(
-                              'situe a ${getDistance(suggestion, this.tableauJsontrie)} km de vous'),
+                              'Situé à ${getDistance(suggestion, this.tableauJsontrie)} km de vous'),
                           onTap: () {
-                            print("suggestion est $suggestion");
                             query = suggestion;
                             _showcommandDialog(context, 
                                 this.current_user, ontapDeliver);

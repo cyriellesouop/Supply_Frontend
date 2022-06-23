@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
-import 'package:supply_app/components/services/command_service.dart';
-import 'package:supply_app/components/services/storage_service.dart';
-import 'package:supply_app/constants.dart';
+import '../../../common/constants.dart';
+import '../../../models/Database_Model.dart';
+import '../../../services/command_service.dart';
+import '../../../services/storage_service.dart';
 
 class SaveCommand extends StatefulWidget {
   String currentManagerID;

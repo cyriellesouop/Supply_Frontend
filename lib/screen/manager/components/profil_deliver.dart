@@ -1,8 +1,8 @@
 // ignore_for_file: must_be_immutable
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supply_app/components/models/Database_Model.dart';
-import '../../../../constants.dart';
+import '../../../common/constants.dart';
+import '../../../models/Database_Model.dart';
 //import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfilDeliver extends StatelessWidget {
