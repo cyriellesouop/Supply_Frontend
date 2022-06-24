@@ -26,9 +26,9 @@ class PhoneAuth extends StatefulWidget {
   final String picture;
   const PhoneAuth(
       {Key? key,
-      required this.nameField,
-      required this.adressField,
-      required this.picture})
+        required this.nameField,
+        required this.adressField,
+        required this.picture})
       : super(key: key);
 
   @override
@@ -133,7 +133,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   }
 
   UserModel? exampleModel =
-      new UserModel(name: 'audrey'); //,picture: "assets/images/profil.png"
+  new UserModel(name: 'audrey'); //,picture: "assets/images/profil.png"
 
   UserService ServiceUser = new UserService();
   PositionService ServicePosition = new PositionService();
@@ -177,7 +177,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   _DeliversPosition() async {
     //  print(' le nombre identifiant est ${this._listDeliver()}');
     await ServicePosition.getPosition('OCrk7Ov4pIZXabNqnyMU').then(
-      (value) {
+          (value) {
         setState(() {
           this.x = value;
           this.y = LatLng(x.latitude, x.longitude);
@@ -288,115 +288,115 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   ),
                   !isLoading
                       ? FlatButton(
-                          onPressed: () async {
-                            if (otploginVisible == false) {
-                              if (_formKey.currentState!.validate()) {
-                                setState(() {
-                                  isLoading = true;
-                                });
+                    onPressed: () async {
+                      if (otploginVisible == false) {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                                otpDialog
-                                    ? {
-                                        _showValidationDialog(context),
-                                      }
-                                    : {};
-                              }
-                            } else {
-                              print(
-                                  "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
+                          otpDialog
+                              ? {
+                            _showValidationDialog(context),
+                          }
+                              : {};
+                        }
+                      } else {
+                        print(
+                            "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
 
-                              print(
-                                  "le token est : ${auth.currentUser!.getIdToken()}");
+                        print(
+                            "le token est : ${auth.currentUser!.getIdToken()}");
 
-                              /**----------------------------------------------------------------------------------*/
-                              PositionModel pos =
-                                  PositionModel(longitude: long, latitude: lat);
-                              var identifiant = await PositionService().addPosition(
-                                  pos); // renvoie l'id de la position actuelle du manager
+                        /**----------------------------------------------------------------------------------*/
+                        PositionModel pos =
+                        PositionModel(longitude: long, latitude: lat);
+                        var identifiant = await PositionService().addPosition(
+                            pos); // renvoie l'id de la position actuelle du manager
 
-                              //stockage local with sharedprefs
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
+                        //stockage local with sharedprefs
+                        SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
 
-                              UserModel userCreate = UserModel(
-                                  //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                        UserModel userCreate = UserModel(
+                          //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
 
-                                  idUser: this.actual_user,
-                                  adress: widget.adressField,
-                                  name: widget.nameField,
-                                  idPosition: identifiant,
-                                  phone: int.parse(
-                                      "+237${phoneController.text}".trim()),
-                                  picture: widget.picture,
-                                  token: token,
-                                  createdAt: DateTime.now().toString());
+                            idUser: this.actual_user,
+                            adress: widget.adressField,
+                            name: widget.nameField,
+                            idPosition: identifiant,
+                            phone: int.parse(
+                                "+237${phoneController.text}".trim()),
+                            picture: widget.picture,
+                            token: token,
+                            createdAt: DateTime.now().toString());
 
-                              _timer?.cancel();
-                              setState(() {
-                                isLoading = true;
-                              });
+                        _timer?.cancel();
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                              if (isExist(allUsers, userCreate)[0] == false &&
-                                  isExist(allUsers, userCreate)[1] == false) {
-                                await UserService()
-                                    .addUser(userCreate)
-                                    .then((value) {
-                                  setState(() {
-                                    idDoc = value;
-                                  });
-                                  prefs.setString('id', this.actual_user);
-                                  prefs.setString('name', widget.nameField);
-                                  prefs.setString('adress', widget.adressField);
-                                  prefs.setString('picture', widget.picture);
-                                  prefs.setInt(
-                                      'phone',
-                                      int.parse("+237${phoneController.text}"
-                                          .trim()));
-                                  prefs.setString('idPosition', identifiant);
-                                  prefs.setBool('isAuthenticated', true);
-                                  prefs.setString('idDoc', idDoc);
-                                  (EasyLoading.showSuccess(
-                                      'compte cree avec succes'));
-                                }).catchError((onError) {
-                                  EasyLoading.showError('echec de connexion');
-                                });
-                              } else if (isExist(allUsers, userCreate)[0] ==
-                                      true &&
-                                  isExist(allUsers, userCreate)[1] == true) {
-                                _ShowDialog(context);
-                              } else if (isExist(allUsers, userCreate)[0] ==
-                                      true &&
-                                  isExist(allUsers, userCreate)[1] == false) {
-                                SharedPreferences prefs =
-                                    await SharedPreferences.getInstance();
+                        if (isExist(allUsers, userCreate)[0] == false &&
+                            isExist(allUsers, userCreate)[1] == false) {
+                          await UserService()
+                              .addUser(userCreate)
+                              .then((value) {
+                            setState(() {
+                              idDoc = value;
+                            });
+                            prefs.setString('id', this.actual_user);
+                            prefs.setString('name', widget.nameField);
+                            prefs.setString('adress', widget.adressField);
+                            prefs.setString('picture', widget.picture);
+                            prefs.setInt(
+                                'phone',
+                                int.parse("+237${phoneController.text}"
+                                    .trim()));
+                            prefs.setString('idPosition', identifiant);
+                            prefs.setBool('isAuthenticated', true);
+                            prefs.setString('idDoc', idDoc);
+                            (EasyLoading.showSuccess(
+                                'compte cree avec succes'));
+                          }).catchError((onError) {
+                            EasyLoading.showError('echec de connexion');
+                          });
+                        } else if (isExist(allUsers, userCreate)[0] ==
+                            true &&
+                            isExist(allUsers, userCreate)[1] == true) {
+                          _ShowDialog(context);
+                        } else if (isExist(allUsers, userCreate)[0] ==
+                            true &&
+                            isExist(allUsers, userCreate)[1] == false) {
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
 
-                                setState(() {
-                                  idExistant = prefs.getString('idDoc') ?? '';
-                                });
+                          setState(() {
+                            idExistant = prefs.getString('idDoc') ?? '';
+                          });
 
-                                await UserService()
-                                    .updateUser(userCreate, idExistant);
-                              }
+                          await UserService()
+                              .updateUser(userCreate, idExistant);
+                        }
 
-                              //   if (isExist(table, user))
+                        //   if (isExist(table, user))
 
-                              setState(() {
-                                phoneController.text = '';
-                              });
+                        setState(() {
+                          phoneController.text = '';
+                        });
 
-                              _timer?.cancel();
-                              EasyLoading.dismiss();
+                        _timer?.cancel();
+                        EasyLoading.dismiss();
 
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
 
-                                      //builder: (context) =>  ManagerHome( user: authClass.user)));
-                                      builder: (context) =>
-                                          //InscriptionName()
-                                          ManagerHome(
-                                              currentManagerID: actual_user)));
+                              //builder: (context) =>  ManagerHome( user: authClass.user)));
+                                builder: (context) =>
+                                //InscriptionName()
+                                ManagerHome(
+                                    currentManagerID: actual_user)));
 
-                              /*  Navigator.pushReplacement(
+                        /*  Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
 
@@ -405,32 +405,32 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                           //InscriptionName()
                                           ManagerHome(
                                               currentManagerID: actual_user))); */
-                              _timer?.cancel();
-                              await EasyLoading.dismiss();
-                            }
-                          },
-                          padding: EdgeInsets.all(15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          color: kPrimaryColor,
-                          textColor: kBackgroundColor,
-                          child: Text(
-                            otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
-                            style: GoogleFonts.poppins(fontSize: 15),
-                          ),
-                        )
+                        _timer?.cancel();
+                        await EasyLoading.dismiss();
+                      }
+                    },
+                    padding: EdgeInsets.all(15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    color: kPrimaryColor,
+                    textColor: kBackgroundColor,
+                    child: Text(
+                      otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
+                      style: GoogleFonts.poppins(fontSize: 15),
+                    ),
+                  )
                       : Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: size.width * 0.37),
-                          height: size.width * 0.12,
-                          width: size.width * 0.1,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 6.0,
-                            backgroundColor: Colors.grey,
-                            valueColor: AlwaysStoppedAnimation(kPrimaryColor),
-                          ),
-                        )
+                    margin: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.37),
+                    height: size.width * 0.12,
+                    width: size.width * 0.1,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 6.0,
+                      backgroundColor: Colors.grey,
+                      valueColor: AlwaysStoppedAnimation(kPrimaryColor),
+                    ),
+                  )
                 ],
               ),
             ),
@@ -488,7 +488,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                 FlatButton(
                   child: Text("OK".toUpperCase(),
                       style:
-                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
+                      TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
                   padding: EdgeInsets.all(2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -548,7 +548,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                     height: 100,
                     child: Column(
                       children: [ */
-                      PinFieldAutoFill(
+                  PinFieldAutoFill(
                     controller: otpCodeController,
                     keyboardType: TextInputType.number,
                     codeLength: 6,
@@ -598,7 +598,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
                           await authClass!
                               .signInwithPhoneNumber(verificationIDreceived,
-                                  otpCodeController.text, context)
+                              otpCodeController.text, context)
                               .then((value) {
                             setState(() {
                               actual_user = value!.uid;
@@ -619,7 +619,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
                             Fluttertoast.showToast(
                                 msg:
-                                    "le code saisi est incorrect , veuillez verifier a nouveau ",
+                                "le code saisi est incorrect , veuillez verifier a nouveau ",
                                 toastLength: Toast.LENGTH_SHORT,
                                 gravity: ToastGravity.BOTTOM,
                                 timeInSecForIosWeb: 10,
