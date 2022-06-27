@@ -47,6 +47,12 @@ class _InscriptionNameState extends State<InscriptionName> {
     super.dispose();
   }
 
+  bool isValidEmail(String email) {
+    return RegExp(
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
+        .hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
@@ -75,46 +81,46 @@ class _InscriptionNameState extends State<InscriptionName> {
             children: [
               Expanded(
                   child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  
-                  Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(30),
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            runSpacing: 0,
-                            children: [
-                              Container(
-                                height: size.height * 0.3,
-                                width: size.width * 0.6,
-                                child: Center(
-                                  child: Image.asset("assets/images/bro.png"),
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.symmetric(
-                                    vertical: kDefaultPadding),
-                                child: Text(
-                                  'Creer votre compte !',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.headline4?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(30),
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                runSpacing: 0,
+                                children: [
+                                  Container(
+                                    height: size.height * 0.3,
+                                    width: size.width * 0.6,
+                                    child: Center(
+                                      child: Image.asset("assets/images/bro.png"),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              /* Form(
+                                  Container(
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: kDefaultPadding),
+                                    child: Text(
+                                      'Créer votre compte !',
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.headline4?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  /* Form(
                                  key: _formKey,
                                 child: */
-                              Form(
-                                key: _formKey,
-                                child: Wrap(
-                                  runSpacing: 25,
-                                  children: [
-                                  /*   DropdownButtonFormField<String>(
+                                  Form(
+                                    key: _formKey,
+                                    child: Wrap(
+                                      runSpacing: 25,
+                                      children: [
+                                        /*   DropdownButtonFormField<String>(
 
                                       value: dropdownValueTools,
                                       onChanged: (String? newValue) {
@@ -137,81 +143,84 @@ class _InscriptionNameState extends State<InscriptionName> {
                                     ),
                                      */
 
-                                  
-                                    DTextField(
-                                      controller: nameController,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'veuillez saisir votre nom';
-                                        }
-                                        return null;
-                                      },
-                                      hint: 'votre nom d utilisateur',
-                                      prefix: Icons.person,
-                                    ),
-                                    DTextField(
-                                      controller: adresseController,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'veuillez saisir l adresse de votre entreprise';
-                                        }
-                                        return null;
-                                      },
-                                      hint: 'votre adresse',
-                                      prefix: Icons.local_activity,
-                                      isLast: true,
-                                    )
-                                  ],
-                                ),
-                              ),
 
-                              
-                              Container(
-                                margin:
-                                    EdgeInsets.only(top: kDefaultPadding * 2),
-                                child: Center(
-                                  // heightFactor: 3,
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      if (_formKey.currentState!.validate()) {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => PhoneAuth(
-                                                    nameField:
-                                                        nameController.text,
-                                                    adressField:
-                                                        adresseController.text,
-                                                    picture: picture)));
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      primary: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
+                                        DTextField(
+                                          controller: nameController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Veuillez saisir votre nom';
+                                            }
+                                            return null;
+                                          },
+                                          hint: "Votre nom d'utilisateur",
+                                          prefix: Icons.person,
+                                        ),
+                                        DTextField(
+                                          controller: adresseController,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "Veuillez saisir l'adresse email de votre entreprise";
+                                            }
+                                            if(!isValidEmail(value)){
+                                              return "Veuillez saisir une adresse email valide";
+                                            }
+                                            return null;
+                                          },
+                                          hint: 'Adresse email',
+                                          prefix: Icons.local_activity,
+                                          isLast: true,
+                                        )
+                                      ],
                                     ),
-                                    child: Padding(
-                                      padding: EdgeInsets.all(10),
-                                      child: Text(
-                                        'Suivant',
-                                        style: TextStyle(
-                                          color: Palette.primarySwatch.shade600,
-                                          fontSize: 24,
+                                  ),
+
+
+                                  Container(
+                                    margin:
+                                    EdgeInsets.only(top: kDefaultPadding * 2),
+                                    child: Center(
+                                      // heightFactor: 3,
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          if (_formKey.currentState!.validate()) {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => PhoneAuth(
+                                                        nameField:
+                                                        nameController.text,
+                                                        adressField:
+                                                        adresseController.text,
+                                                        picture: picture)));
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          primary: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: Text(
+                                            'Suivant',
+                                            style: TextStyle(
+                                              color: Palette.primarySwatch.shade600,
+                                              fontSize: 24,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              )
-                            ],
+                                  )
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ))
+                    ],
+                  ))
             ],
           ),
         ),
@@ -222,4 +231,5 @@ class _InscriptionNameState extends State<InscriptionName> {
   _onSignIn() {
     // Sign in logic here
   }
+
 }

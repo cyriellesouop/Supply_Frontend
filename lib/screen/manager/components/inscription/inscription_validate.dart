@@ -20,6 +20,8 @@ import 'package:supply_app/services/user_service.dart';
 import '../../../../models/Database_Model.dart';
 import '../manager_home.dart';
 
+
+
 class PhoneAuth extends StatefulWidget {
   final String nameField;
   final String adressField;
@@ -36,7 +38,7 @@ class PhoneAuth extends StatefulWidget {
 }
 
 class _PhoneAuthState extends State<PhoneAuth> {
-//controleur du champs de remplissage du numero de telephone et de l'Ot code
+//controleur du champs de remplissage du numero de telephone et de l'Otp code
   TextEditingController phoneController = TextEditingController();
   TextEditingController otpCodeController = TextEditingController();
 
@@ -60,7 +62,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
   //gerer l'etat du circular progress bar
   bool isLoading = false;
   var bouton = "VERIFIER";
-
   var idExistant;
 
   // bool wait = false;
@@ -88,6 +89,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
   late double lat;
   late double long;
 
+  // Variable contenant le code du pays sélectionné
+  String? pickedCountryCode = "+237";
 //fonction pour obtenir les coordonnees la position actuelle
 
 //obtenir la position actuelle
@@ -117,7 +120,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
     }
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low);
-    print(position);
     lat = position.latitude;
     long = position.longitude;
 
@@ -153,12 +155,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
     authClass = Authclass();
     //authClass = Authclass(this.auth.currentUser);
     _listDeliver();
-    _DeliversPosition();
+    _deliversPosition();
     getCurrentLocation();
     _listenOtp();
     getAlluser();
     EasyLoading.addStatusCallback((status) {
-      print('EasyLoading Status $status');
       if (status == EasyLoadingStatus.dismiss) {
         _timer?.cancel();
       }
@@ -174,13 +175,12 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   // getUserPosition(List<UserModel>  users) async {
 
-  _DeliversPosition() async {
-    //  print(' le nombre identifiant est ${this._listDeliver()}');
+  _deliversPosition() async {
     await ServicePosition.getPosition('OCrk7Ov4pIZXabNqnyMU').then(
           (value) {
         setState(() {
-          this.x = value;
-          this.y = LatLng(x.latitude, x.longitude);
+          x = value;
+          y = LatLng(x.latitude, x.longitude);
         });
       },
     );
@@ -191,9 +191,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
       setState(() {
         this.exampleModelDeliver = element;
       });
-
-      print(
-          "le nombre de livreur est exactement ${exampleModelDeliver.length}");
     });
   }
 
@@ -279,6 +276,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           initialSelection: 'CM',
                           favorite: ['+237', 'CM'],
                           hideMainText: true,
+                          onChanged: (CountryCode countryCode) async{
+                            setState(() {
+                              pickedCountryCode = countryCode.toString();
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -302,12 +304,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               : {};
                         }
                       } else {
-                        print(
-                            "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
-
-                        print(
-                            "le token est : ${auth.currentUser!.getIdToken()}");
-
                         /**----------------------------------------------------------------------------------*/
                         PositionModel pos =
                         PositionModel(longitude: long, latitude: lat);
@@ -326,7 +322,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             name: widget.nameField,
                             idPosition: identifiant,
                             phone: int.parse(
-                                "+237${phoneController.text}".trim()),
+                                "${pickedCountryCode!+phoneController.text}".trim()),
                             picture: widget.picture,
                             token: token,
                             createdAt: DateTime.now().toString());
@@ -350,7 +346,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             prefs.setString('picture', widget.picture);
                             prefs.setInt(
                                 'phone',
-                                int.parse("+237${phoneController.text}"
+                                int.parse("${pickedCountryCode!+phoneController.text}"
                                     .trim()));
                             prefs.setString('idPosition', identifiant);
                             prefs.setBool('isAuthenticated', true);
@@ -454,7 +450,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
     });
   } */
 
-/* 
+/*
 //verifier si le tmps de verification de code a expirer
   verificationCompleted(params) async {
 
@@ -507,16 +503,16 @@ class _PhoneAuthState extends State<PhoneAuth> {
     /* setState(() {
       start = 30;
     }); */
-    print("+237${phoneController.text}");
     await auth.verifyPhoneNumber(
-        phoneNumber: "+237${phoneController.text}".trim(),
-        verificationCompleted: (PhoneAuthCredential credential) {},
+        phoneNumber: "${pickedCountryCode!+phoneController.text}".trim(),
         timeout: const Duration(seconds: 60),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+         await auth.signInWithCredential(credential);
+        },
         verificationFailed: (FirebaseAuthException e) {
           if (e.code == 'invalid-phone-number') {
-            print('The provided phone number is not valid.');
             Fluttertoast.showToast(
-                msg: "le numero de telephone n'est pas valide  ",
+                msg: "Le numéro de téléphone n'est pas valide  ",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 5,
@@ -524,7 +520,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                 textColor: Colors.white,
                 fontSize: 16.0);
           }
-
           setState(() {
             isLoading = false;
           });
@@ -553,7 +548,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                     keyboardType: TextInputType.number,
                     codeLength: 6,
                     onCodeChanged: (val) {
-                      print(val);
                     },
                   ),
                   /*  SizedBox(
@@ -594,8 +588,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         color: Palette.primarySwatch.shade400,
                         onPressed: () async {
                           //  Navigator.pop(context);
-                          print(
-                              '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------formulaire valide');
                           await authClass!
                               .signInwithPhoneNumber(verificationIDreceived,
                               otpCodeController.text, context)
@@ -610,11 +602,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               verified =
                                   authClass!.isphonenumberok(actual_user);
                               otpDialog = false;
-                              print('verification est :$verified');
-                              print("actual $actual_user");
                             });
                           }).catchError((onError) {
-                            print("erreur du token est : $onError");
                             isLoading = false;
 
                             Fluttertoast.showToast(
@@ -631,7 +620,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           if (verified == true) {
                             //  otploginVisible = verified;
 
-                            print("le token token tonken est : $token ");
                             isLoading = false;
                             _timer?.cancel();
                             await EasyLoading.showSuccess(
@@ -646,9 +634,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                 );
               });
           final signcode = SmsAutoFill().getAppSignature;
-          print(resendtoken);
-          print("code envoye");
-          print(signcode);
         },
         codeAutoRetrievalTimeout: (String verificationID) {});
   }
