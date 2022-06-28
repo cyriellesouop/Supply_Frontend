@@ -56,7 +56,7 @@ class TriRapide {
 
 class TriRapidejson {
   List<Map<String, dynamic>> table;
-  UserModel deliver = new UserModel(name: 'fabiol');
+  UserModel deliver = new UserModel(name: 'fabiol',idDoc: "audrey");
 
   TriRapidejson({required this.table});
 

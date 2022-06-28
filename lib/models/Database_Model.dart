@@ -15,12 +15,13 @@ class AppUser {
 /******************************************************************************************************************/
 // class Position
 class PositionModel {
-  String? idPosition;
+  String idPosition;
   double longitude;
   double latitude;
+  String? updatedAt;
 
   PositionModel(
-      {this.idPosition, required this.longitude, required this.latitude});
+      {required this.idPosition, required this.longitude, required this.latitude,this.updatedAt});
 
 
    void set Longitude(double long) {
@@ -36,6 +37,7 @@ class PositionModel {
       idPosition: json['idPosition'],
       longitude: json['longitude'],
       latitude: json['latitude'],
+      updatedAt: json['updatedAt'],
     );
   }
   Map<String, dynamic> toMap() {
@@ -43,6 +45,7 @@ class PositionModel {
       'idPosition': idPosition,
       'longitude': longitude,
       'latitude': latitude,
+      'updatedAt':updatedAt
     };
   }
 }
@@ -146,11 +149,11 @@ class CommandModel {
 /******************************************************************************************************************/
 // class User
 class UserModel {
-  String? idDoc;
+  String idDoc;
   String? idUser;
   String? adress;
   String name;
-  int? phone;
+  String? phone;
   String? tool;
   String? picture;
   //  PositionModel position;
@@ -162,7 +165,7 @@ class UserModel {
    String? token;
 
   UserModel({
-    this.idDoc,
+   required this.idDoc,
     this.idUser,
     this.adress,
     required this.name,
@@ -177,6 +180,41 @@ class UserModel {
     this.createdAt,
     this.token
   });
+
+
+  void set Iduser(String? idUser) {
+    this.idUser = idUser;
+  }
+
+  void set Adress(String? adress) {
+    this.adress = adress;
+  }
+
+  void set Name(String name) {
+    this.name = name;
+  }
+
+  void set Phone(String? phone) {
+    this.phone = phone;
+  }
+
+  void set Tool(String? tool) {
+    this.tool = tool;
+  }
+
+  void set Picture(String? picture) {
+    this.picture = picture;
+  }
+
+void set IdPosition(String? idPosition) {
+    this.idPosition = idPosition;
+  }
+
+  void set Token(String? token) {
+    this.token = token;
+  }
+
+
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -197,7 +235,7 @@ class UserModel {
   }
   Map<String, dynamic> toMap() {
     return {
-      // 'idDoc': id,
+      'idDoc': idDoc,
       'idUser': idUser,
       'adress': adress,
       'name': name,

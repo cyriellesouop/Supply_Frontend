@@ -1,11 +1,15 @@
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/common/palette.dart';
 import 'package:supply_app/models/Database_Model.dart';
 import 'package:supply_app/screen/manager/components/tracking.dart';
+import 'package:supply_app/screen/manager/myMap.dart';
 import 'package:supply_app/services/command_service.dart';
+import 'package:supply_app/services/position_service.dart';
+import 'package:supply_app/services/user_service.dart';
 
 class ListCommand extends StatefulWidget {
   UserModel deliver;
@@ -22,6 +26,21 @@ class ListCommand extends StatefulWidget {
 }
 
 class _ListCommandState extends State<ListCommand> {
+  LatLng start = LatLng(0.0, 0.0);
+
+
+//la fonction initstate  la listenOtp et la currentlocation et le easyloading lors de rechargement de la page
+  @override
+  void initState() {
+    super.initState();
+    _getDeliver();    
+  }  
+  _getDeliver() async{
+    await UserService().getUserbyId("TRJkmCpe1Rh45KCVLvHqdVfkrnM2").then((value) {setState(() {
+      widget.deliver=value;
+    });});
+  }
+
   //supprime les doublons dans une liste
   List<CommandModel> tableauTrie(List<CommandModel> table) {
     int i, j, k;
@@ -156,7 +175,15 @@ class _ListCommandState extends State<ListCommand> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey),
                               ),
-                        onTap: () {
+                        onTap: ()  {
+                      /*     await PositionService()
+                              .getPosition(widget.deliver.idPosition)
+                              .then((value) async {
+                            // const startIn= LatLng(value.latitude, value.longitude);
+                            setState(() {
+                              start = LatLng(value.latitude, value.longitude);
+                            });
+                          }); */
                           (command.statut == 'en attente')
                               ? _showcommandDialog(context, widget.manager,
                                   widget.deliver, command)
@@ -166,11 +193,13 @@ class _ListCommandState extends State<ListCommand> {
                                       ? Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) => Tracking(
-                                                    Command: command,
+                                              builder: (context) => MyMap(
+                                                    start: start,
+                                                    command: command,
                                                     deliver: widget.deliver,
-                                                    manager: widget.manager,
-                                                  )))
+                                                  )
+
+                                              ))
                                       : ""; /* luttertoast.showToast(
                                   msg: command.nameCommand,
                                   toastLength: Toast.LENGTH_SHORT,

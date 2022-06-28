@@ -42,9 +42,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   bool isTimeExpired = false;
   //pour afficher la boite de dialogue de saisi de l'otp code
-
+//qui contient l'id du document cree
   var idDoc;
-
+  //qui contient l'id du document existant
+  String doc = "null";
+  late UserModel existUser;
   bool otpDialog = true;
   //pour renvoyer le code
   bool resend = false;
@@ -60,8 +62,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
   //gerer l'etat du circular progress bar
   bool isLoading = false;
   var bouton = "VERIFIER";
-
-  var idExistant;
 
   // bool wait = false;
   late UserModel user;
@@ -87,6 +87,18 @@ class _PhoneAuthState extends State<PhoneAuth> {
 // variables contenant les coordonees d'une position
   late double lat;
   late double long;
+
+  UserModel? exampleModel = new UserModel(
+      name: 'audrey', idDoc: 'audrey'); //,picture: "assets/images/profil.png"
+
+  UserService ServiceUser = new UserService();
+  PositionService ServicePosition = new PositionService();
+  PositionModel x = new PositionModel(idPosition: "", longitude: 0, latitude: 0);
+  LatLng y = new LatLng(0, 0);
+
+  List<LatLng> positions = [];
+
+  List<UserModel> exampleModelDeliver = [];
 
 //fonction pour obtenir les coordonnees la position actuelle
 
@@ -132,18 +144,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
     super.dispose();
   }
 
-  UserModel? exampleModel =
-      new UserModel(name: 'audrey'); //,picture: "assets/images/profil.png"
-
-  UserService ServiceUser = new UserService();
-  PositionService ServicePosition = new PositionService();
-  PositionModel x = new PositionModel(longitude: 0, latitude: 0);
-  LatLng y = new LatLng(0, 0);
-
-  List<LatLng> positions = [];
-
-  List<UserModel> exampleModelDeliver = [];
-
   //-----------------------------------------------------------------
 
 //la fonction initstate  la listenOtp et la currentlocation et le easyloading lors de rechargement de la page
@@ -153,7 +153,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
     authClass = Authclass();
     //authClass = Authclass(this.auth.currentUser);
     _listDeliver();
-    _DeliversPosition();
+    //_DeliversPosition();
     getCurrentLocation();
     _listenOtp();
     getAlluser();
@@ -174,18 +174,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   // getUserPosition(List<UserModel>  users) async {
 
-  _DeliversPosition() async {
-    //  print(' le nombre identifiant est ${this._listDeliver()}');
-    await ServicePosition.getPosition('OCrk7Ov4pIZXabNqnyMU').then(
-      (value) {
-        setState(() {
-          this.x = value;
-          this.y = LatLng(x.latitude, x.longitude);
-        });
-      },
-    );
-  }
-
   _listDeliver() async {
     await ServiceUser.getDelivers().forEach((element) {
       setState(() {
@@ -199,10 +187,22 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   //tous les id existant dans la bd
   getAlluser() async {
+    UserModel userr =
+        UserModel(name: 'aaaa', phone: '237676843017', idDoc: 'audrey');
     await ServiceUser.getAlluser().forEach((element) {
       setState(() {
         allUsers = element;
+        print("test is exit ${isExist(allUsers, userr)}");
       });
+
+      //  var n = -1;
+      //pour chaque livreur, on renvoie sa posion
+      /* for (var i in allUsers) {
+        //  n++;
+        setState(() {
+          allUsersid.add(i.idUser);
+        });
+      } */
     });
   }
 
@@ -214,10 +214,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
         setState(() {
           isexist = true;
           alreadyDeliver = false;
+          doc = i!.idDoc;
         });
 
         break;
-      } else if (i?.phone == user.phone && i?.isDeliver == true) {
+      } else if (i?.phone == user.phone && i?.isManager == false) {
         setState(() {
           isexist = true;
           alreadyDeliver = true;
@@ -286,151 +287,172 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   SizedBox(
                     height: 60,
                   ),
-                  !isLoading
-                      ? FlatButton(
-                          onPressed: () async {
-                            if (otploginVisible == false) {
-                              if (_formKey.currentState!.validate()) {
-                                setState(() {
-                                  isLoading = true;
-                                });
+                  if (!isLoading)
+                    FlatButton(
+                      onPressed: () async {
+                        if (otploginVisible == false) {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() {
+                              isLoading = true;
+                            });
 
-                                otpDialog
-                                    ? {
-                                        _showValidationDialog(context),
-                                      }
-                                    : {};
-                              }
-                            } else {
-                              print(
-                                  "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
+                            otpDialog
+                                ? {
+                                    _showValidationDialog(context),
+                                  }
+                                : {};
+                          }
+                        } else {
+                          print(
+                              "la latitude est : $lat et la longitude est : $long et le formulaire ${widget.nameField}");
 
-                              print(
-                                  "le token est : ${auth.currentUser!.getIdToken()}");
+                          print(
+                              "le token est : ${auth.currentUser!.getIdToken()}");
 
-                              /**----------------------------------------------------------------------------------*/
-                              PositionModel pos =
-                                  PositionModel(longitude: long, latitude: lat);
-                              var identifiant = await PositionService().addPosition(
-                                  pos); // renvoie l'id de la position actuelle du manager
+                          /**----------------------------------------------------------------------------------*/
+                          PositionModel pos =
+                              PositionModel(idPosition: "",  longitude: long, latitude: lat);
+                          var identifiant = await PositionService().addPosition(
+                              pos); // renvoie l'id de la position actuelle du manager
 
-                              //stockage local with sharedprefs
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
+                          //stockage local with sharedprefs
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
 
-                              UserModel userCreate = UserModel(
-                                  //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                          UserModel userCreate = UserModel(
+                              //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
+                              idDoc: "",
+                              idUser: this.actual_user,
+                              adress: widget.adressField,
+                              name: widget.nameField,
+                              idPosition: identifiant,
+                              phone: "237${phoneController.text}".trim(),
+                              picture: widget.picture,
+                              token: token,
+                              createdAt: DateTime.now().toString());
 
-                                  idUser: this.actual_user,
-                                  adress: widget.adressField,
-                                  name: widget.nameField,
-                                  idPosition: identifiant,
-                                  phone: int.parse(
-                                      "+237${phoneController.text}".trim()),
-                                  picture: widget.picture,
-                                  token: token,
-                                  createdAt: DateTime.now().toString());
+                          _timer?.cancel();
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                              _timer?.cancel();
+                          if (isExist(allUsers, userCreate)[0] == true &&
+                              isExist(allUsers, userCreate)[1] == true) {
+                            print(
+                                'is exit is exist ${isExist(allUsers, userCreate).toString()}');
+                            _ShowDialog(context);
+                            setState(() {
+                              isLoading = false;
+                            });
+
+                            _timer?.cancel();
+                            EasyLoading.dismiss();
+                          } else if (isExist(allUsers, userCreate)[0] == true &&
+                              isExist(allUsers, userCreate)[1] == false) {
+                            print(
+                                'is exit is exist ${isExist(allUsers, userCreate).toString()}, le doc id est : $doc');
+                            //  var userservice= new UserService();
+
+                            await UserService().getUserbyId(actual_user).then(
+                                  (value) => existUser = value,
+                                );
+
+                            existUser.Adress = widget.adressField;
+                            existUser.Iduser = this.actual_user;
+
+                            existUser.Name = widget.nameField;
+                            existUser.IdPosition = identifiant;
+                            existUser.Phone =
+                                "237${phoneController.text}".trim();
+                            existUser.Picture = widget.picture;
+                            existUser.Token = token;
+
+                            await UserService()
+                                .updateUser(existUser, doc)
+                                .then((value) {
+                              prefs.setString('id', this.actual_user);
+                              prefs.setString('name', widget.nameField);
+                              prefs.setString('adress', widget.adressField);
+                              prefs.setString('picture', widget.picture);
+                              prefs.setString('phone',
+                                  ("+237${phoneController.text}".trim()));
+                              prefs.setString('idPosition', identifiant);
+                              prefs.setBool('isAuthenticated', true);
+                              prefs.setString('idDoc', doc);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ManagerHome(
+                                          currentManagerID: actual_user)));
+                            }).catchError((onError) {
+                              EasyLoading.showError('echec de connexion');
                               setState(() {
-                                isLoading = true;
+                                isLoading = false;
                               });
+                            });
 
-                              if (isExist(allUsers, userCreate)[0] == false &&
-                                  isExist(allUsers, userCreate)[1] == false) {
-                                await UserService()
-                                    .addUser(userCreate)
-                                    .then((value) {
-                                  setState(() {
-                                    idDoc = value;
-                                  });
-                                  prefs.setString('id', this.actual_user);
-                                  prefs.setString('name', widget.nameField);
-                                  prefs.setString('adress', widget.adressField);
-                                  prefs.setString('picture', widget.picture);
-                                  prefs.setInt(
-                                      'phone',
-                                      int.parse("+237${phoneController.text}"
-                                          .trim()));
-                                  prefs.setString('idPosition', identifiant);
-                                  prefs.setBool('isAuthenticated', true);
-                                  prefs.setString('idDoc', idDoc);
-                                  (EasyLoading.showSuccess(
-                                      'compte cree avec succes'));
-                                }).catchError((onError) {
-                                  EasyLoading.showError('echec de connexion');
-                                });
-                              } else if (isExist(allUsers, userCreate)[0] ==
-                                      true &&
-                                  isExist(allUsers, userCreate)[1] == true) {
-                                _ShowDialog(context);
-                              } else if (isExist(allUsers, userCreate)[0] ==
-                                      true &&
-                                  isExist(allUsers, userCreate)[1] == false) {
-                                SharedPreferences prefs =
-                                    await SharedPreferences.getInstance();
-
+                            // }
+                          } else {
+                            await UserService().addUser(userCreate).then(
+                              (value) {
                                 setState(() {
-                                  idExistant = prefs.getString('idDoc') ?? '';
+                                  idDoc = value;
                                 });
-
-                                await UserService()
-                                    .updateUser(userCreate, idExistant);
-                              }
-
-                              //   if (isExist(table, user))
-
+                                prefs.setString('id', this.actual_user);
+                                prefs.setString('name', widget.nameField);
+                                prefs.setString('adress', widget.adressField);
+                                prefs.setString('picture', widget.picture);
+                                prefs.setString('phone',
+                                    "+237${phoneController.text}".trim());
+                                prefs.setString('idPosition', identifiant);
+                                prefs.setBool('isAuthenticated', true);
+                                prefs.setString('idDoc', idDoc);
+                                (EasyLoading.showSuccess(
+                                    'compte cree avec succes'));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ManagerHome(
+                                            currentManagerID: actual_user)));
+                              },
+                            ).catchError((onError) {
+                              EasyLoading.showError('echec de connexion');
                               setState(() {
-                                phoneController.text = '';
+                                isLoading = false;
                               });
 
                               _timer?.cancel();
                               EasyLoading.dismiss();
-
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-
-                                      //builder: (context) =>  ManagerHome( user: authClass.user)));
-                                      builder: (context) =>
-                                          //InscriptionName()
-                                          ManagerHome(
-                                              currentManagerID: actual_user)));
-
-                              /*  Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-
-                                      //builder: (context) =>  ManagerHome( user: authClass.user)));
-                                      builder: (context) =>
-                                          //InscriptionName()
-                                          ManagerHome(
-                                              currentManagerID: actual_user))); */
-                              _timer?.cancel();
-                              await EasyLoading.dismiss();
-                            }
-                          },
-                          padding: EdgeInsets.all(15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          color: kPrimaryColor,
-                          textColor: kBackgroundColor,
-                          child: Text(
-                            otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
-                            style: GoogleFonts.poppins(fontSize: 15),
-                          ),
-                        )
-                      : Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: size.width * 0.37),
-                          height: size.width * 0.12,
-                          width: size.width * 0.1,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 6.0,
-                            backgroundColor: Colors.grey,
-                            valueColor: AlwaysStoppedAnimation(kPrimaryColor),
-                          ),
-                        )
+                            });
+                          }
+                          setState(() {
+                            phoneController.text = '';
+                          });
+                        }
+                      },
+                      padding: EdgeInsets.all(15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      color: kPrimaryColor,
+                      textColor: kBackgroundColor,
+                      child: Text(
+                        otploginVisible ? "CREER UN COMPTE" : "VERIFIER",
+                        style: GoogleFonts.poppins(fontSize: 15),
+                      ),
+                    )
+                  else
+                    Container(
+                      margin:
+                          EdgeInsets.symmetric(horizontal: size.width * 0.37),
+                      height: size.width * 0.12,
+                      width: size.width * 0.1,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 6.0,
+                        backgroundColor: Colors.grey,
+                        valueColor: AlwaysStoppedAnimation(kPrimaryColor),
+                      ),
+                    )
                 ],
               ),
             ),
@@ -650,7 +672,17 @@ class _PhoneAuthState extends State<PhoneAuth> {
           print("code envoye");
           print(signcode);
         },
-        codeAutoRetrievalTimeout: (String verificationID) {});
+        codeAutoRetrievalTimeout: (String verificationID) {
+          /*  setState(() {
+            isLoading = false;
+          }); */
+          // Navigator.pop(context);
+          //   Navigator.pop(context);
+          /* setState(() {
+            verificationIDreceived = verificationID;
+           // isTimeExpired = true;
+          }); */
+        });
   }
 }
 

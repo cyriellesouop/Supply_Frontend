@@ -65,6 +65,7 @@ dependencies:
   uuid: ^3.0.6
   provider: ^6.0.2
   path: ^1.8.0
+  #permission_handler: ^10.0.0
   #cached_network_image: ^2.5.0
   connectivity_plus: ^2.3.0
   flutter_offline: ^2.1.0
@@ -73,6 +74,8 @@ dependencies:
   flutter_local_notifications: ^9.4.0
   overlay_support: ^2.0.1
   http: ^0.13.4
+  geocoding: ^2.0.4
+  location: ^4.4.0
   
   #firebase_crashlytics: ^2.8.0
 

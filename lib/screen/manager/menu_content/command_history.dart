@@ -23,8 +23,8 @@ class _CommandListeState extends State<CommandListe> {
   List<CommandModel> termine = [];
   List<CommandModel> encours = [];
   List<CommandModel> enattente = [];
-  UserModel deliver = new UserModel(name: 'fabiol');
-  UserModel currentManager = new UserModel(name: 'fabiol');
+  UserModel deliver = new UserModel(name: 'fabiol',idDoc: "audrey");
+  UserModel currentManager = new UserModel(name: 'fabiol',idDoc: "audrey");
   // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt,.updatedAt:.updatedAt)
 
   //UserModel? exampleModel = new UserModel(name: 'fabiol');
