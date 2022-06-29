@@ -89,7 +89,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   late double long;
 
   UserModel? exampleModel = new UserModel(
-      name: 'audrey', idDoc: 'audrey'); //,picture: "assets/images/profil.png"
+      name: 'audrey', idDoc: 'audrey',idPosition: ""); //,picture: "assets/images/profil.png"
 
   UserService ServiceUser = new UserService();
   PositionService ServicePosition = new PositionService();
@@ -124,9 +124,13 @@ class _PhoneAuthState extends State<PhoneAuth> {
     }
 
     if (permission == LocationPermission.deniedForever) {
+       getCurrentLocation();
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+
+     //if (permission == LocationPermission.) {}
+    
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low);
     print(position);
@@ -188,7 +192,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   //tous les id existant dans la bd
   getAlluser() async {
     UserModel userr =
-        UserModel(name: 'aaaa', phone: '237676843017', idDoc: 'audrey');
+        UserModel(name: 'aaaa', phone: '237676843017', idDoc: 'audrey',idPosition: "");
     await ServiceUser.getAlluser().forEach((element) {
       setState(() {
         allUsers = element;

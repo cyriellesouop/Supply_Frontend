@@ -34,7 +34,7 @@ class _UpdateProfilState extends State<UpdateProfil> {
   TextEditingController nameController = TextEditingController();
   TextEditingController adresseController = TextEditingController();
   UserService ServiceUser = new UserService();
-  UserModel currentManager = new UserModel(name: 'fabiol',idDoc: "audrey");
+  UserModel currentManager = new UserModel(name: 'fabiol',idDoc: "audrey",idPosition: "");
   String picture = "assets/images/profil.png";
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final Storage storage = Storage();

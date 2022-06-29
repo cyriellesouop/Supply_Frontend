@@ -157,7 +157,7 @@ class UserModel {
   String? tool;
   String? picture;
   //  PositionModel position;
-  String? idPosition;
+  String idPosition;
   bool isManager;
   bool isClient;
   bool isDeliver;
@@ -173,7 +173,7 @@ class UserModel {
     this.tool,
     this.picture,
   
-    this.idPosition,
+    required this.idPosition,
     this.isManager = true,
     this.isClient = false,
     this.isDeliver = false,
@@ -206,12 +206,16 @@ class UserModel {
     this.picture = picture;
   }
 
-void set IdPosition(String? idPosition) {
+void set IdPosition(String idPosition) {
     this.idPosition = idPosition;
   }
 
   void set Token(String? token) {
     this.token = token;
+  }
+
+  void set IdDoc(String idDoc){
+    this.idDoc=idDoc;
   }
 
 

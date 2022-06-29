@@ -75,7 +75,7 @@ class UserService {
               idUser: doc.get('idUser'),
               // adress: doc.get('adress'),
               name: doc.get('name'),
-               phone: (doc.get('phone')),
+               phone:doc.get('phone'),
               tool: doc.get('tool'),
               picture: doc.get('picture'),
               idPosition: doc.get('idPosition'),

@@ -5,7 +5,7 @@ import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/screen/manager/components/tracking.dart';
 import 'package:supply_app/screen/manager/menu_content/command_history.dart';
 import 'package:supply_app/screen/manager/menu_content/update_Profil.dart';
-import 'package:supply_app/screen/manager/myMap.dart';
+import 'package:supply_app/screen/manager/components/myMap.dart';
 
 import '../../../models/Database_Model.dart';
 import '../../../services/user_service.dart';
@@ -30,7 +30,7 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   UserService ServiceUser = new UserService();
-  UserModel currentManager = new UserModel(name: '',idDoc: "audrey");
+  UserModel currentManager = new UserModel(name: '',idDoc: "audrey",idPosition: "");
   var picture;
   var currentManagerID;
   var name;
