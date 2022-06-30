@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/common/palette.dart';
+import 'package:supply_app/screen/manager/components/inscription/inscription_name.dart';
 import 'package:supply_app/services/auth_service.dart';
 import 'package:supply_app/services/position_service.dart';
 import 'package:supply_app/services/user_service.dart';
@@ -210,27 +211,27 @@ class _PhoneAuthState extends State<PhoneAuth> {
     });
   }
 
-  List<bool> isExist(List<UserModel?> table, UserModel user) {
-    var isexist = false;
-    var alreadyDeliver = false;
+  List<String> isExist(List<UserModel?> table, UserModel user) {
+    var isexist = "false";
+    var alreadyDeliver = "false";
     for (var i in table) {
       if (i?.phone == user.phone && i?.isManager == true) {
         setState(() {
-          isexist = true;
-          alreadyDeliver = false;
+          isexist = "true";
+          alreadyDeliver = "false";
           doc = i!.idDoc;
         });
 
         break;
       } else if (i?.phone == user.phone && i?.isManager == false) {
         setState(() {
-          isexist = true;
-          alreadyDeliver = true;
+          isexist = "true";
+          alreadyDeliver = "true";
         });
         break;
       }
     }
-    return [isexist, alreadyDeliver];
+    return [isexist, alreadyDeliver,doc];
   }
 
   @override
@@ -340,19 +341,23 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             isLoading = true;
                           });
 
-                          if (isExist(allUsers, userCreate)[0] == true &&
-                              isExist(allUsers, userCreate)[1] == true) {
+                          if (isExist(allUsers, userCreate)[0] == "true" &&
+                              isExist(allUsers, userCreate)[1] == "true") {
                             print(
                                 'is exit is exist ${isExist(allUsers, userCreate).toString()}');
                             _ShowDialog(context);
+                             Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const InscriptionName() ));
                             setState(() {
                               isLoading = false;
                             });
 
                             _timer?.cancel();
                             EasyLoading.dismiss();
-                          } else if (isExist(allUsers, userCreate)[0] == true &&
-                              isExist(allUsers, userCreate)[1] == false) {
+                          } else if (isExist(allUsers, userCreate)[0] == "true" &&
+                              isExist(allUsers, userCreate)[1] == "false") {
                             print(
                                 'is exit is exist ${isExist(allUsers, userCreate).toString()}, le doc id est : $doc');
                             //  var userservice= new UserService();
@@ -363,6 +368,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
                             existUser.Adress = widget.adressField;
                             existUser.Iduser = this.actual_user;
+                            
 
                             existUser.Name = widget.nameField;
                             existUser.IdPosition = identifiant;
@@ -372,7 +378,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             existUser.Token = token;
 
                             await UserService()
-                                .updateUser(existUser, doc)
+                                .updateUser(existUser,isExist(allUsers, userCreate)[2])
                                 .then((value) {
                               prefs.setString('id', this.actual_user);
                               prefs.setString('name', widget.nameField);
@@ -382,7 +388,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                   ("+237${phoneController.text}".trim()));
                               prefs.setString('idPosition', identifiant);
                               prefs.setBool('isAuthenticated', true);
-                              prefs.setString('idDoc', doc);
+                              prefs.setString('idDoc',  isExist(allUsers, userCreate)[2]);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
