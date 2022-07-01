@@ -224,11 +224,13 @@ class UserModel {
 /******************************************************************************************************************/
 // class Chat
 class ChatModel {
-  String? roomId;
-  String sendBy;
+  String roomId;
+  String uid;
+  String name;
   String message;
+  String timestamp;
 
-  ChatModel({this.roomId, required this.sendBy, required this.message});
+  ChatModel({required this.roomId, required this.uid, required this.name, required this.message, required this.timestamp});
 
   /*constucteur d'usine utlisee pour modifier le type d'objet qui sera cree(format json) lorsqu'on instanciant la classe ChatModel
       gérera la réception des données de Firestore et la construction d'un objet Dart à partir des données.
@@ -236,16 +238,19 @@ class ChatModel {
   factory ChatModel.fromJson(Map<String, dynamic> json) {
     return ChatModel(
       roomId: json['roomId'],
-      sendBy: json['sendBy'],
+      uid: json['uid'],
+      name: json['name'],
       message: json['message'],
+      timestamp: json['timestamp']
     );
   }
   //toMap() est chargée de renvoyer une carte lorsqu'elle est présentée avec un objet Dart
   Map<String, dynamic> toMap() {
     return {
-      'roomId': roomId,
-      'sendBy': sendBy,
+      'uid': uid,
+      'name': name,
       'message': message,
+      'timestamp': timestamp
     };
   }
 }

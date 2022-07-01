@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supply_app/screen/accueil/splash.dart';
+import 'package:supply_app/screen/manager/components/chatter/chatterScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,6 +68,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
       builder: EasyLoading.init(),
+        routes: {
+          '/chat': (context) => ChatterScreen(),
+        }
     );
   }
 }

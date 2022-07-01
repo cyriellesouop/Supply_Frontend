@@ -1,40 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/Database_Model.dart';
 
+final FirebaseFirestore dbFirestore = FirebaseFirestore.instance;
+
+
 class ChatService {
   CollectionReference<Map<String, dynamic>> chatCollection =
-      FirebaseFirestore.instance.collection("chat");
+      FirebaseFirestore.instance.collection("rooms");
 
   ChatModel _chatFromSnapshot(DocumentSnapshot<Map<String, dynamic>> json) {
     var data = json.data();
     if (data == null) throw Exception("chat introuvable");
     return ChatModel(
-      
       roomId: data['roomId'],
-      sendBy: data['sendBy'],
+      uid: data['uid'],
+      name: data['name'],
       message: data['message'],
+      timestamp: data['timestamp']
     );
   }
 
-  //Get chats
-  Stream<List<ChatModel>> getchats() {
-    return chatCollection.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => ChatModel.fromJson(doc.data())).toList());
+  //Get room by id
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMessageFromRoom(String roomId) {
+    return dbFirestore
+        .collection("rooms")
+        .doc(roomId)
+        .collection('messages').orderBy('timestamp').snapshots();
   }
 
-  //Get chat by id
-  Stream<ChatModel> getchat(String roomId) {
-    return chatCollection.doc(roomId).snapshots().map(_chatFromSnapshot);
-  }
+  // Set message to particular room
 
-   Future<String> addchat(ChatModel chat) async {
-      var documentRef = await chatCollection.add(chat.toMap());
-      var createdId = documentRef.id;
-      chatCollection.doc(createdId).update(
-        {'roomId': createdId},
-      );
-
-      return documentRef.id;
+   Future<void> addMessageToRoom(String roomId, String username, String messageText, String userId) async {
+     dbFirestore
+         .collection("rooms")
+         .doc(roomId)
+         .collection('messages')
+         .add({
+       'uid': userId,
+       'name': username,
+       'message': messageText,
+       'timestamp': FieldValue.serverTimestamp()
+     });
 
     }
 

@@ -17,7 +17,6 @@ import 'package:supply_app/common/palette.dart';
 import 'package:supply_app/main.dart';
 import 'package:supply_app/models/Database_Model.dart';
 import 'package:supply_app/screen/manager/components/mySearch.dart';
-import 'package:supply_app/screen/manager/tri_rapide.dart';
 import 'package:supply_app/services/command_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:supply_app/services/user_service.dart';
@@ -44,7 +43,7 @@ class ManagerHome extends StatefulWidget {
 
 class _ManagerHomeState extends State<ManagerHome> {
   // initialisation du manager courant
-  UserModel currentManager = new UserModel(name: 'fabiol');
+  UserModel currentManager = UserModel(name: 'fabiol');
   //var Deliver = Map<UserModel, double>();
   // var deliver = null;
   bool isdeliver = false;
@@ -78,17 +77,17 @@ class _ManagerHomeState extends State<ManagerHome> {
       "AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU"; //"AIzaSyDma7ThRPGokuU_cJ2Q_qFvowIpK35RAPs"; //google api
   //Marker est un tableau qui contient toutes les positions representees sur la map
 
-  final Set<Marker> markers = new Set(); //markers for google map
+  final Set<Marker> markers = {}; //markers for google map
   // Map<PolylineId, Polyline> polylines = {}; //polylines to show direction
 
-  UserModel? exampleModel = new UserModel(name: 'fabiol');
+  UserModel? exampleModel = UserModel(name: 'fabiol');
 
-  UserService ServiceUser = new UserService();
-  PositionService ServicePosition = new PositionService();
+  UserService ServiceUser = UserService();
+  PositionService ServicePosition = PositionService();
   //PositionModel x = new PositionModel(longitude: 0, latitude: 0);
-  LatLng currentManagerPosition = new LatLng(0, 0);
-  PositionModel myPosition = new PositionModel(longitude: 0, latitude: 0);
-  LatLng ydeliver = new LatLng(0, 0);
+  LatLng currentManagerPosition = const LatLng(0, 0);
+  PositionModel myPosition = PositionModel(longitude: 0, latitude: 0);
+  LatLng ydeliver = const LatLng(0, 0);
 
   //tableau des identifiants des position de tous les livreurs
   List<UserModel> exampleModelDeliver = [];
@@ -933,7 +932,8 @@ class _ManagerHomeState extends State<ManagerHome> {
                   //  textColor: kBackgroundColor,
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      CommandModel command = CommandModel(
+                      Navigator.pushNamed(context, '/chat');
+                      /*CommandModel command = CommandModel(
                           createdBy: user.idUser,
                           nameCommand: nameController.text,
                           description:
@@ -946,7 +946,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                           createdAt: DateTime.now().toString());
 
                       Navigator.pop(context);
-                      _ShowcreateDialog(context,command,deliver);
+                      _ShowcreateDialog(context,command,deliver);*/
                     }
                   },
                 ),
@@ -1003,14 +1003,14 @@ class _ManagerHomeState extends State<ManagerHome> {
                     await CommandService().addCommand(command).then((value) {
                       print(
                           "commande commande commande commande commande commande commande");
-                      (Fluttertoast.showToast(
+                      Fluttertoast.showToast(
                           msg: "la commande a ete publier",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 5,
                           backgroundColor: Colors.red,
                           textColor: Colors.white,
-                          fontSize: 16.0));
+                          fontSize: 16.0);
                     }).catchError((onError) {
                         Navigator.pop(context);
                       Fluttertoast.showToast(

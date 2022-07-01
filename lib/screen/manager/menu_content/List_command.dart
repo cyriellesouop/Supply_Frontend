@@ -62,24 +62,21 @@ class _ListCommandState extends State<ListCommand> {
                         width: 100,),
                         ),  */
                         title: Text(
-                          '${command.nameCommand}'.toUpperCase(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          command.nameCommand.toUpperCase(),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: (command.statut == "en attente")
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(''),
-                                  Container(
-                                    //  padding: EdgeInsets.only(left: kDefaultPadding),
-                                    child: Text(
-                                        '${command.statut}'.toLowerCase(),
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            fontStyle: FontStyle.italic,
-                                            color: Palette
-                                                .primarySwatch.shade400)),
-                                  )
+                                  const Text(''),
+                                  Text(
+                                      command.statut.toLowerCase(),
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          color: Palette
+                                              .primarySwatch.shade400))
                                 ],
                               )
                             : (command.statut == "en cours")
@@ -89,16 +86,13 @@ class _ListCommandState extends State<ListCommand> {
                                     children: [
                                       Text(
                                           'En cours de livraison par ${command.deliveredBy}'),
-                                      Container(
-                                        //  padding: EdgeInsets.only(left: kDefaultPadding),
-                                        child: Text(
-                                            '${command.statut}'.toLowerCase(),
-                                            style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                fontStyle: FontStyle.italic,
-                                                color: Palette
-                                                    .primarySwatch.shade400)),
-                                      ),
+                                      Text(
+                                          command.statut.toLowerCase(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: Palette
+                                                  .primarySwatch.shade400)),
                                     ],
                                   )
                                 : Column(
@@ -106,16 +100,13 @@ class _ListCommandState extends State<ListCommand> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text('Livree par ${command.deliveredBy}'),
-                                      Container(
-                                        //  padding: EdgeInsets.only(left: kDefaultPadding),
-                                        child: Text(
-                                            '${command.statut}'.toLowerCase(),
-                                            style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                fontStyle: FontStyle.italic,
-                                                color: Palette
-                                                    .primarySwatch.shade400)),
-                                      )
+                                      Text(
+                                          command.statut.toLowerCase(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: Palette
+                                                  .primarySwatch.shade400))
                                     ],
                                   ),
                         trailing: command.statut == "en attente"
@@ -128,9 +119,9 @@ class _ListCommandState extends State<ListCommand> {
                                     //  crossAxisAlignment: CrossAxisAlignment.baseline,
                                     children: [
                                       Text(
-                                        '${_dateShow(command.updatedAt)}'
+                                        _dateShow(command.updatedAt)
                                             .toUpperCase(),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey),
                                       ),
@@ -151,8 +142,8 @@ class _ListCommandState extends State<ListCommand> {
                                 ],
                               )
                             : Text(
-                                '${_dateShow(command.updatedAt)}'.toUpperCase(),
-                                style: TextStyle(
+                                _dateShow(command.updatedAt).toUpperCase(),
+                                style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey),
                               ),
@@ -195,7 +186,7 @@ class _ListCommandState extends State<ListCommand> {
                 children: [
                   Expanded(
                     child: Container(
-                        margin: EdgeInsets.only(
+                        margin: const EdgeInsets.only(
                             left: kDefaultPadding * 2,
                             right: kDefaultPadding * 2,
                             top: kDefaultPadding * 6),
