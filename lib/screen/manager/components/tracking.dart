@@ -42,8 +42,9 @@ class _TrackingState extends State<Tracking> {
   // variables contenant les coordonees d'une position
   late double lat;
   late double long;
-  PositionModel deliverPosition = new PositionModel(longitude: 0, latitude: 0);
-  PositionModel myPosition = new PositionModel(longitude: 0, latitude: 0);
+  PositionModel deliverPosition = new PositionModel(
+   idPosition: "", longitude: 0, latitude: 0);
+  PositionModel myPosition = new PositionModel( idPosition: "",longitude: 0, latitude: 0);
   PolylinePoints polylinePoints = PolylinePoints();
   Set<Polyline> _polylines = Set<Polyline>();
   LatLng currentManagerPosition = new LatLng(0, 0);

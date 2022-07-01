@@ -59,18 +59,19 @@ class PositionService {
         .set(Position.toMap(), options);
   }
 
-  Future<void> updatePosition(PositionModel Position) async {
+  Future<void> updatePosition(
+      String? idPosition, double latitude, double longitude) async {
     print(
         'supressionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn');
-    return PositionCollection.doc(Position.idPosition).set({
-      'latitude': Position.latitude,
-      'longitude': Position.longitude,
+    return PositionCollection.doc(idPosition).set({
+      'latitude': latitude,
+      'longitude': longitude,
       'updatedAt': DateTime.now().toString(),
     }, SetOptions(merge: true));
   }
 
+  
   // add a position
-
   Future<String> addPosition(PositionModel Position) async {
     var documentRef = await PositionCollection.add(Position.toMap());
     var createdId = documentRef.id;

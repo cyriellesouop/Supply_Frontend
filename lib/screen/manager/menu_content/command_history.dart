@@ -23,8 +23,8 @@ class _CommandListeState extends State<CommandListe> {
   List<CommandModel> termine = [];
   List<CommandModel> encours = [];
   List<CommandModel> enattente = [];
-  UserModel deliver = new UserModel(name: 'fabiol');
-  UserModel currentManager = new UserModel(name: 'fabiol');
+  UserModel deliver = new UserModel(name: 'fabiol',idDoc: "audrey",idPosition: "");
+  UserModel currentManager = new UserModel(name: 'fabiol',idDoc: "audrey",idPosition: "");
   // CommandModel co = CommandModel(createdBy: createdBy, nameCommand: nameCommand, description: description, statut: statut, state: state, startPoint: startPoint, updatedAt: updatedAt,.updatedAt:.updatedAt)
 
   //UserModel? exampleModel = new UserModel(name: 'fabiol');
@@ -50,6 +50,7 @@ class _CommandListeState extends State<CommandListe> {
     dateinputfinal.text = '';
     super.initState();
   }
+ 
 
   getCurrentManager() async {
     await UserService().getUserbyId(widget.currentManagerID).then((value) {
@@ -119,6 +120,7 @@ class _CommandListeState extends State<CommandListe> {
 
   @override
   Widget build(BuildContext context) {
+    print("9999999999999999999999999999999999999999999999999999999999 $deliver");
     List<CommandModel> sortedcommands = (Commands)
       ..sort((item1, item2) => dateCompare(
           DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));

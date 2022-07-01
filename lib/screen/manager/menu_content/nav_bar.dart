@@ -5,6 +5,7 @@ import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/screen/manager/components/tracking.dart';
 import 'package:supply_app/screen/manager/menu_content/command_history.dart';
 import 'package:supply_app/screen/manager/menu_content/update_Profil.dart';
+import 'package:supply_app/screen/manager/components/myMap.dart';
 
 import '../../../models/Database_Model.dart';
 import '../../../services/user_service.dart';
@@ -29,11 +30,12 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   UserService ServiceUser = new UserService();
-  UserModel currentManager = new UserModel(name: '');
+  UserModel currentManager = new UserModel(name: '',idDoc: "audrey",idPosition: "");
   var picture;
   var currentManagerID;
   var name;
   var phone;
+  var idposiition;
   var adress;
 
   @override
@@ -51,8 +53,9 @@ class _NavBarState extends State<NavBar> {
       picture = prefs.getString('picture') ?? '';
       currentManagerID = prefs.getString('id') ?? '';
       name = prefs.getString('name') ?? '';
-      phone = prefs.getInt('phone') ?? 0;
+      phone = prefs.getString('phone') ?? '';
       adress = prefs.getString('adress') ?? '';
+      idposiition = prefs.getString("idPosition")??'';
     });
   }
 /* 
@@ -131,7 +134,7 @@ class _NavBarState extends State<NavBar> {
         ListTile(
           leading: Icon(Icons.favorite),
           title: Text('Suivi de livraison'),
-          onTap: () {},
+         //onTap: () {MyMap(idposiition);},
         ),
         ListTile(
           leading: Icon(Icons.save),

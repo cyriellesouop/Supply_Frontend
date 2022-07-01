@@ -106,6 +106,7 @@ class MysearchDelegate extends SearchDelegate {
                     final suggestion = item['Deliver']['name'];
 
                     UserModel ontapDeliver = UserModel(
+                      idDoc: item['Deliver']['idDoc'],
                       idUser: item['Deliver']['idUser'],
                       adress: item['Deliver']['adress'],
                       name: item['Deliver']['name'],
