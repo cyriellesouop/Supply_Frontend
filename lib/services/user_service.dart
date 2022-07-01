@@ -11,7 +11,6 @@ class UserService {
 
   //Get users
   Stream<List<UserModel>> getUsers() {
-    print("moguem souop audrey");
     return userCollection.snapshots().map(
       (snapshot) {     
         return snapshot.docs.map((doc) {
@@ -39,7 +38,6 @@ class UserService {
 //liste de livreurs correcte
 
   Stream<List<UserModel>> getDelivers() {
-    print("moguem souop audrey");
     return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
       (snapshot) {
         return snapshot.docs.map((doc) {
@@ -65,7 +63,6 @@ class UserService {
 
   //liste des managers correctes
   Stream<List<UserModel>> getManagers() {
-    print("moguem souop audrey");
     return userCollection.where('isManager', isEqualTo: true).snapshots().map(
       (snapshot) {
         return snapshot.docs.map((doc) {
@@ -90,7 +87,6 @@ class UserService {
   }
 //liste de tous les utilisateurs 
   Stream<List<UserModel>> getAlluser() {
-    print("tous les livreurs");
     return userCollection.snapshots().map(
       (snapshot) {
         return snapshot.docs.map((doc) {
@@ -146,7 +142,6 @@ class UserService {
   ////////////////////////////////////////////////////////////////////////
   Future<Stream<List<UserModel>>> getDeliverss() async {
     // int x = 0;
-    print("moguem souop audrey");
     return userCollection.where('isDeliver', isEqualTo: true).snapshots().map(
       (snapshot) {
         return snapshot.docs.map((doc) {
