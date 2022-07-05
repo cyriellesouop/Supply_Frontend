@@ -977,8 +977,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                   //  textColor: kBackgroundColor,
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      Navigator.pushNamed(context, '/chat');
-                      /*CommandModel command = CommandModel(
+                      CommandModel command = CommandModel(
                           createdBy: user.idUser,
                           nameCommand: nameController.text,
                           description:
@@ -991,7 +990,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                           createdAt: DateTime.now().toString());
 
                       Navigator.pop(context);
-                      _ShowcreateDialog(context, command, deliver);*/
+                      _ShowcreateDialog(context, command, deliver);
                     }
                   },
                 ),

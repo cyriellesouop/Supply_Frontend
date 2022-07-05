@@ -27,11 +27,6 @@ class UserService {
 
   //Get users
   Stream<List<UserModel>> getUsers() {
-<<<<<<< HEAD
-=======
-    // int x = 0;
-    print("moguem souop audrey");
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
     return userCollection.snapshots().map(
       (snapshot) {
         //  x = snapshot.docs.length;
@@ -49,11 +44,7 @@ class UserService {
               idUser: doc.get('idUser'),
               adress: doc.get('adress'),
               name: doc.get('name'),
-<<<<<<< HEAD
-              phone: int.parse('${doc.get('phone')}'),
-=======
               phone: doc.get('phone'),
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
               tool: doc.get('tool'),
               picture: doc.get('picture'),
               idPosition: doc.get('idPosition'),
@@ -101,11 +92,6 @@ class UserService {
 
   //liste des managers correctes
   Stream<List<UserModel>> getManagers() {
-<<<<<<< HEAD
-=======
-    // int x = 0;
-    print("moguem souop audrey");
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
     return userCollection.where('isManager', isEqualTo: true).snapshots().map(
       (snapshot) {
         //  x = snapshot.docs.length;
@@ -122,11 +108,7 @@ class UserService {
               idUser: doc.get('idUser'),
               adress: doc.get('adress'),
               name: doc.get('name'),
-<<<<<<< HEAD
-              phone: int.parse('${doc.get('phone')}'),
-=======
               phone: doc.get('phone'),
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
               tool: doc.get('tool'),
               picture: doc.get('picture'),
               idPosition: doc.get('idPosition'),
@@ -144,11 +126,6 @@ class UserService {
 
 //liste de tous les utilisateurs 
   Stream<List<UserModel>> getAlluser() {
-<<<<<<< HEAD
-=======
-
-    print("tous les livreurs");
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
     return userCollection.snapshots().map(
       (snapshot) {
         return snapshot.docs.map((doc) {
@@ -157,11 +134,7 @@ class UserService {
             idUser: doc.get('idUser'),
             adress: doc.get('adress'),
             name: doc.get('name'),
-<<<<<<< HEAD
-            phone: int.parse('${doc.get('phone')}'),
-=======
             phone: doc.get('phone'),
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
             tool: doc.get('tool'),
             picture: doc.get('picture'),
             idPosition: doc.get('idPosition'),
@@ -238,11 +211,7 @@ class UserService {
               idUser: doc.get('idUser'),
               adress: doc.get('adress'),
               name: doc.get('name'),
-<<<<<<< HEAD
-              phone: int.parse('${doc.get('phone')}'),
-=======
               phone: doc.get('phone'),
->>>>>>> 2e2473074ab52c31e343adf1448c4fc01777e2c0
               tool: doc.get('tool'),
               picture: doc.get('picture'),
               idPosition: doc.get('idPosition'),
@@ -279,7 +248,7 @@ class UserService {
           idUser: resmap['idUser'],
           adress: resmap['adress'],
           name: resmap['name'],
-          phone: int.parse('${resmap['phone']}'),
+          phone: '${resmap['phone']}',
           // phone: resmap['phone'],
           tool: resmap['tool'],
           picture: resmap['picture'],

@@ -38,9 +38,6 @@ class _MyMapState extends State<MyMap> {
 
   @override
   void initState() {
-    print(
-        'sequence , sequence, sequence, sequence,sequence sequence sequence sequence sequence sequence sequence sequence ');
-    print("position position et id ${""}");
     location.changeSettings(interval: 30, accuracy: loc.LocationAccuracy.high);
     location.enableBackgroundMode(enable: true);
     Timer.periodic(const Duration(seconds: 3), (timer) async {
@@ -120,20 +117,19 @@ class _MyMapState extends State<MyMap> {
     }); */
     result = await PolylinePoints().getRouteBetweenCoordinates(
       "AIzaSyDMvPHsbM0l51gW4shfWTHMUD-8Df-2UKU",
-      PointLatLng(3.9950251, 9.753057),
-      PointLatLng(3.9947403, 9.7623602),
+      const PointLatLng(3.9950251, 9.753057),
+      const PointLatLng(3.9947403, 9.7623602),
       travelMode: TravelMode.driving,
     );
     if (result.status == 'OK' || resultDo.status == 'OK') {
       //  polylineCoordinates.clear();
-      print("object $polylineCoordinates ");
-      result.points.forEach((PointLatLng point) {
+      for (var point in result.points) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-      });
+      }
       final String polylineIdVal = 'polyline_id_$polyId';
       polyId++;
       final PolylineId polylineId = PolylineId(polylineIdVal);
-      _polylines = new Set<Polyline>();
+      _polylines = <Polyline>{};
     //  setState(() {
         _polylines.add(Polyline(
             width: 6,
@@ -149,9 +145,6 @@ class _MyMapState extends State<MyMap> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "widdddddddddddddddddddddddddddddddddddddddget ${widget.start.latitude}");
-    print("del del del ${widget.deliver}");
     return Scaffold(
         body: StreamBuilder(
       stream: FirebaseFirestore.instance.collection('position').snapshots(),
@@ -160,16 +153,16 @@ class _MyMapState extends State<MyMap> {
           mymap(snapshot);
         }
         if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         return GoogleMap(
           mapType: MapType.normal,
-          markers: (!(getDistance( LatLng(3.9950251, 9.753057), end) == 0.001)) //position start LatLng(3.9950251, 9.753057)
+          markers: (!(getDistance( const LatLng(3.9950251, 9.753057), end) == 0.001)) //position start LatLng(3.9950251, 9.753057)
               ? {
                   Marker(
                     //position start
-                      position: LatLng(3.9950251, 9.753057),
-                      markerId: MarkerId('start'),
+                      position: const LatLng(3.9950251, 9.753057),
+                      markerId: const MarkerId('start'),
                       infoWindow: InfoWindow(
                           title: 'position Initial ',
                           snippet: '$lat et $long '),
@@ -182,7 +175,7 @@ class _MyMapState extends State<MyMap> {
                         long = snapshot.data!.docs.singleWhere((element) =>
                             element.id == "WEEl08mc4fIo0WoVKtEI")['longitude'],//widget.deliver.idPosition
                       ),
-                      markerId: MarkerId('start'),
+                      markerId: const MarkerId('start'),
                       infoWindow: InfoWindow(
                           title: '${widget.deliver.name} ',
                           snippet: '$lat et $long '),
@@ -190,7 +183,7 @@ class _MyMapState extends State<MyMap> {
                           BitmapDescriptor.hueMagenta)),
                   Marker(
                       //add distination location marker
-                      markerId: MarkerId("End"),
+                      markerId: const MarkerId("End"),
                       position: end,
                       infoWindow: InfoWindow(
                         //popup info
@@ -204,7 +197,7 @@ class _MyMapState extends State<MyMap> {
               : {
                   Marker(
                       //add distination location marker
-                      markerId: MarkerId("End"),
+                      markerId: const MarkerId("End"),
                       position: end,
                       infoWindow: InfoWindow(
                         //popup info
@@ -269,7 +262,7 @@ class _MyMapState extends State<MyMap> {
 
   double getDistance(
       LatLng currentManagerPosition, LatLng positionDeliverList) {
-    var dist;
+    double dist;
     dist = calculateDistance(
         currentManagerPosition.latitude,
         currentManagerPosition.longitude,
@@ -281,9 +274,7 @@ class _MyMapState extends State<MyMap> {
   //calcul de la distance entre deux positions
   double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
-    var a = 0.5 -
-        cos((lat2 - lat1) * p) / 2 +
-        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    var a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     var x = 12742 * asin(sqrt(a));
     return roundDouble(x, 3);
   }

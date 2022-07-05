@@ -64,9 +64,6 @@ class _CommandListeState extends State<CommandListe> {
   getCommandDeliver() async {
     await ServiceCommand.getCommandsManager(widget.currentManagerID)
         .forEach((element) async {
-      print('currrent manager Id${widget.currentManagerID}');
-
-      print("elementttttttttttttttttttttttttttttt   $element");
       setState(() {
         this.Commands = element;
       });
@@ -77,9 +74,8 @@ class _CommandListeState extends State<CommandListe> {
     await CommandService()
         .getCommandsManagerstatut(widget.currentManagerID, "en attente")
         .forEach((element) async {
-      print("eattnteteaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   $element");
       setState(() {
-        this.enattente = element;
+        enattente = element;
       });
     });
   }
@@ -88,7 +84,7 @@ class _CommandListeState extends State<CommandListe> {
     await CommandService()
         .getCommandsManagerstatut(widget.currentManagerID, "termine")
         .forEach((element) async {
-      print("fffffffffffffffffffffffffffffffffffffffffffffff   $element");
+
       setState(() {
         termine = element;
       });
@@ -99,9 +95,8 @@ class _CommandListeState extends State<CommandListe> {
     await CommandService()
         .getCommandsManagerstatut(widget.currentManagerID, "en cours")
         .forEach((element) async {
-      print("ccccccccccccccccccccccccccccccccccc   $element");
       setState(() {
-        this.encours = element;
+        encours = element;
       });
     });
   }
@@ -120,7 +115,6 @@ class _CommandListeState extends State<CommandListe> {
 
   @override
   Widget build(BuildContext context) {
-    print("9999999999999999999999999999999999999999999999999999999999 $deliver");
     List<CommandModel> sortedcommands = (Commands)
       ..sort((item1, item2) => dateCompare(
           DateTime.parse(item2.updatedAt), DateTime.parse(item1.updatedAt)));

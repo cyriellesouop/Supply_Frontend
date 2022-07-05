@@ -94,13 +94,13 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   // Variable contenant le code du pays sélectionné
   String? pickedCountryCode = "+237";
-  UserModel? exampleModel = new UserModel(
+  UserModel? exampleModel = UserModel(
       name: 'audrey', idDoc: 'audrey',idPosition: ""); //,picture: "assets/images/profil.png"
 
-  UserService ServiceUser = new UserService();
-  PositionService ServicePosition = new PositionService();
-  PositionModel x = new PositionModel(idPosition: "", longitude: 0, latitude: 0);
-  LatLng y = new LatLng(0, 0);
+  UserService ServiceUser = UserService();
+  PositionService ServicePosition = PositionService();
+  PositionModel x = PositionModel(idPosition: "", longitude: 0, latitude: 0);
+  LatLng y = const LatLng(0, 0);
 
   List<LatLng> positions = [];
 
@@ -283,7 +283,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         hintStyle: TextStyle(color: Colors.grey[800]),
                         prefixIcon: CountryCodePicker(
                           initialSelection: 'CM',
-                          favorite: ['+237', 'CM'],
+                          favorite: const ['+237', 'CM'],
                           hideMainText: true,
                           onChanged: (CountryCode countryCode) async{
                             setState(() {
@@ -332,7 +332,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           UserModel userCreate = UserModel(
                               //ajouter l'identifiant du nouvel utilisateur , le meme qui s'est cree lors de l'authentification
                               idDoc: "",
-                              idUser: this.actual_user,
+                              idUser: actual_user,
                               adress: widget.adressField,
                               name: widget.nameField,
                               idPosition: identifiant,
@@ -373,14 +373,12 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 );
 
                             existUser.Adress = widget.adressField;
-                            existUser.Iduser = this.actual_user;
+                            existUser.Iduser = actual_user;
                             
 
                             existUser.Name = widget.nameField;
                             existUser.IdPosition = identifiant;
-                            existUser.Phone =
-                                ((pickedCountryCode!+phoneController.text)
-                                    .trim());
+                            existUser.Phone = (pickedCountryCode!+phoneController.text).trim();
                             existUser.Picture = widget.picture;
                             existUser.Token = token;
 
@@ -391,9 +389,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               prefs.setString('name', widget.nameField);
                               prefs.setString('adress', widget.adressField);
                               prefs.setString('picture', widget.picture);
-                              prefs.setString('phone',
-                                  ((pickedCountryCode!+phoneController.text)
-                                    .trim()));
+                              prefs.setString('phone', (pickedCountryCode!+phoneController.text).trim());
                               prefs.setString('idPosition', identifiant);
                               prefs.setBool('isAuthenticated', true);
                               prefs.setString('idDoc',  isExist(allUsers, userCreate)[2]);
@@ -549,7 +545,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
       start = 30;
     }); */
     await auth.verifyPhoneNumber(
-        phoneNumber: "${pickedCountryCode!+phoneController.text}".trim(),
+        phoneNumber: (pickedCountryCode!+phoneController.text).trim(),
         timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
          await auth.signInWithCredential(credential);
@@ -623,10 +619,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                   ), */
                   actions: <Widget>[
                     FlatButton(
-                        child: Text("valider",
-                            style: TextStyle(
-                                color: Color.fromARGB(255, 240, 229, 240))),
-                        padding: EdgeInsets.all(2),
+                        padding: const EdgeInsets.all(2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
@@ -674,7 +667,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             isphonenumberNotFill = !verified;
                             otploginVisible = verified;
                           });
-                        })
+                        },
+                        child: const Text("valider",
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 240, 229, 240))))
                   ],
                 );
               });
