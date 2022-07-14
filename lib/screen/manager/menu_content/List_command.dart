@@ -183,15 +183,15 @@ class _ListCommandState extends State<ListCommand> {
                         ? _showDetailDialog(context, command)
                         : (command.statut == 'en cours')
                         ?
-                    Navigator.pushNamed(context, '/chat')
-/*Navigator.push(
+                  /*  Navigator.pushNamed(context, '/chat')*/
+Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => MyMap(
                                                     start: start,
                                                     command: command,
                                                     deliver: widget.deliver,
-                                                  )))*/
+                                                  )))
                         : ""; /* luttertoast.showToast(
                                   msg: command.nameCommand,
                                   toastLength: Toast.LENGTH_SHORT,

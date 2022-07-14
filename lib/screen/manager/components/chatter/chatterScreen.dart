@@ -49,8 +49,8 @@ class _ChatterScreenState extends State<ChatterScreen> {
         username = "Nakeva";
         userId = "nakeva@gmail.com";
       });*/
-      chatModel.name = "Aurelie";
-      chatModel.uid = "aurelie@gmail.com";
+      chatModel.name = "Entreprise";
+      chatModel.uid = "entreprise@gmail.com";
     } catch (e) {
       Fluttertoast.showToast(
           msg: "Une erreur est survenue",
@@ -112,7 +112,7 @@ class _ChatterScreenState extends State<ChatterScreen> {
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
-                const Text('Deliverer',
+                const Text('Livraison',
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 8,
@@ -228,7 +228,7 @@ class ChatStream extends StatelessWidget {
 
             // final msgSenderEmail = message.data['senderemail'];
             // final currentUser = loggedInUser.displayName;
-            const currentUser = "Aurelie";
+            const currentUser = "Entreprise";
 
             // print('MSG'+msgSender + '  CURR'+currentUser);
             final msgBubble = MessageBubble(

@@ -357,7 +357,8 @@ class _ManagerHomeState extends State<ManagerHome> {
       drawer: NavBar(),
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
-        title: Text('Mon application'),
+        title: const Text('Accueil',
+        textAlign: TextAlign.center,),
         actions: [
           IconButton(
             onPressed: () {
@@ -470,10 +471,10 @@ class _ManagerHomeState extends State<ManagerHome> {
                         const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
                       children: <Widget>[
-                        Text(
+                        const Text(
                           'contacter un livreur ',
-                          style: GoogleFonts.philosopher(
-                              fontSize: 17, fontWeight: FontWeight.w600),
+                          /*style: GoogleFonts.philosopher(
+                              fontSize: 17, fontWeight: FontWeight.w600),*/
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(

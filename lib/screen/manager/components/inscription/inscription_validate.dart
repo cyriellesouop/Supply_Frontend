@@ -694,7 +694,7 @@ AppBar buildAppBar() {
   return AppBar(
     backgroundColor: kPrimaryColor,
     title: Text(
-      'Mon application',
+      'Authentification',
       style: GoogleFonts.philosopher(fontSize: 20),
     ),
     centerTitle: true,
