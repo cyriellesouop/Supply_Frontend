@@ -171,7 +171,10 @@ class UserService {
   Future<void> setToken(String uid, token) async{
     userCollection
         .doc(uid)
-        .set({'tokenNotification': token}, SetOptions(merge: true));
+        .set({'oneSignalToken': token}, SetOptions(merge: true))
+    .then((value) =>
+      print("value token")
+    );
   }
 
 /*   A tester

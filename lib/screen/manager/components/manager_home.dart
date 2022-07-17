@@ -1,10 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:core';
 import 'dart:ui';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,16 +21,35 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:supply_app/common/constants.dart';
 import 'package:supply_app/common/palette.dart';
+import 'package:supply_app/constants/constants.dart';
 import 'package:supply_app/main.dart';
 import 'package:supply_app/models/Database_Model.dart';
 import 'package:supply_app/screen/manager/components/mySearch.dart';
 import 'package:supply_app/services/command_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:supply_app/services/local_push_notification.dart';
+import 'package:supply_app/services/notification_service.dart';
 import 'package:supply_app/services/user_service.dart';
 
 import '../../../services/position_service.dart';
 import '../menu_content/nav_bar.dart';
 import '../tri_rapide.dart';
+
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel', //id
+    'High Importance Notifications', //name
+
+    description: 'This channel is used for important notifications.',
+    importance: Importance.high,
+    playSound: true,
+    enableVibration: true);
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
 
 class ManagerHome extends StatefulWidget {
   //UserModel currentManager;
@@ -47,7 +70,7 @@ class ManagerHome extends StatefulWidget {
 
 class _ManagerHomeState extends State<ManagerHome> {
   // initialisation du manager courant
-  UserModel currentManager = new UserModel(name: 'fabiol', idDoc: 'audrey',idPosition: "");
+  UserModel currentManager = UserModel(name: 'fabiol', idDoc: 'audrey',idPosition: "");
   //var Deliver = Map<UserModel, double>();
   // var deliver = null;
   bool isdeliver = false;
@@ -89,15 +112,15 @@ class _ManagerHomeState extends State<ManagerHome> {
   final Set<Marker> markers = {}; //markers for google map
   // Map<PolylineId, Polyline> polylines = {}; //polylines to show direction
 
-  UserModel? exampleModel = new UserModel(name: 'fabiol', idDoc: 'audrey',idPosition: "");
+  UserModel? exampleModel = UserModel(name: 'fabiol', idDoc: 'audrey',idPosition: "");
 
   UserService ServiceUser = UserService();
   PositionService ServicePosition = PositionService();
   //PositionModel x = new PositionModel(longitude: 0, latitude: 0);
-  LatLng currentManagerPosition = new LatLng(0, 0);
+  LatLng currentManagerPosition = const LatLng(0, 0);
   PositionModel myPosition =
-      new PositionModel(idPosition: '', longitude: 0, latitude: 0);
-  LatLng ydeliver = new LatLng(0, 0);
+      PositionModel(idPosition: '', longitude: 0, latitude: 0);
+  LatLng ydeliver = const LatLng(0, 0);
 
   //tableau des identifiants des position de tous les livreurs
   List<UserModel> exampleModelDeliver = [];
@@ -106,56 +129,119 @@ class _ManagerHomeState extends State<ManagerHome> {
   List<double> Distances = [];
   List<double> DistanceInter = [];
 
+  var signalToken;
+
   @override
   void initState() {
-    getUserPosition();
-    //requestPermission();
-    //loadFCM();
-    //listenFCM();
-    listenOpenFCM();
-    //   storedNotificationToken();
-    // display();
-    //  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackground);
-    //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
     super.initState();
+    getUserPosition();
+    initOneSignal();
+
+   /* display();
+    loadFCM();
+    listenFCM();
+
+    requestPermission();
+    storedNotificationToken();*/
+
+
+    // listenOpenFCM();
+    //  getDirections(); //fetch direction polylines from Google API/Draw polyline direction routes in Google Map
   }
 
-/*   Future<void> _firebaseMessagingBackground(RemoteMessage message) async {
-    await Firebase.initializeApp();
-    print("message just show :${message.messageId}");
-  } */
 
-/*   void showNotification() {
-    setState(() {
-      NotificationCounter++;
-    });
-    flutterLocalNotificationsPlugin.show(
-        0,
-        "testing $NotificationCounter",
-        "is it going well ?",
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            channel.id,
-            channel.name,
-            channelDescription: channel.description,
-            importance: Importance.high,
-            playSound: true,
-          ),
-        ));
-  } */
+  Future<void> initOneSignal() async {
+    /// Set App Id.
+    /// Already done into main.dart
+    // await OneSignal.shared.setAppId(kAppId);
 
-//
-
-  /*  storedNotificationToken() async {
+    /// Get the Onesignal userId and update that into the firebase.
+    /// So, that it can be used to send Notifications to users later.̥
+    final status = await OneSignal.shared.getDeviceState();
+    final String? osUserID = status?.userId;
+    // We will update this once he logged in and goes to dashboard.
+    ////updateUserProfile(osUserID);
+    // Store it into shared prefs, So that later we can use it.
+    // Preferences.setOnesignalUserId(osUserID);
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      signalToken = prefs.setString("signalToken", osUserID!);
+    });
+
+    UserService().setToken(idDoc, osUserID);
+
+    // OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.none);
+
+    /// Calls when foreground notification arrives.
+    OneSignal.shared.setNotificationWillShowInForegroundHandler(
+      handleForegroundNotifications,
+    );
+
+    /// Calls when the notification opens the app.
+    OneSignal.shared.setNotificationOpenedHandler(handleBackgroundNotification);
+  }
+
+  handleForegroundNotifications(OSNotificationReceivedEvent osNotificationReceivedEvent){
+    print(osNotificationReceivedEvent);
+    osNotificationReceivedEvent.complete(osNotificationReceivedEvent.notification);
+  }
+
+  handleBackgroundNotification(OSNotificationOpenedResult openedResult){
+    print(openedResult);
+    Navigator.pushNamed(context, '/chat');
+  }
+  storedNotificationToken() async {
+/*    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       idDoc = prefs.getString('idDoc') ?? '';
     });
     String? token = await FirebaseMessaging.instance.getToken();
-    UserService().setToken(idDoc, token);
-  } */
+    UserService().setToken(idDoc, token);*/
 
-  //liste de posiition des livreur
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      idDoc = prefs.getString('idDoc') ?? '';
+    });
+
+  // var status = await OneSignal.shared.getPermissionSubscriptionState();
+  // String tokenId = status.subscriptionStatus.userId;
+  //   await  UserService().setToken(idDoc, tokenId);
+  /*  OneSignal.shared.setSubscriptionObserver((OSSubscriptionStateChanges changes) async {
+      String? tokenId = changes.to.userId;
+    await  UserService().setToken(idDoc, tokenId);
+    });*/
+
+  }
+
+  Future<Response> sendNotificationWithOneSignal(List<String> tokenIdList, String contents, String heading) async{
+    
+    return await post(
+      Uri.parse('https://onesignal.com/api/v1/notifications'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>
+      {
+        "app_id": kAppId,//kAppId is the App Id that one get from the OneSignal When the application is registered.
+
+        "include_player_ids": tokenIdList,//tokenIdList Is the List of All the Token Id to to Whom notification must be sent.
+
+        // android_accent_color represent the color of the heading text in the notification
+        "android_accent_color":"FF9976D2",
+
+        //"small_icon":"ic_stat_onesignal_default",
+
+        "large_icon":"https://www.filepicker.io/api/file/zPloHSmnQsix82nlj9Aj?filename=name.jpg",
+
+        "headings": {"en": heading},
+
+        "contents": {"en": contents},
+
+      }),
+    );
+  }
+
+  //liste des positions des livreurs
   getUserPosition() async {
     //obtenir l'identifiant du document
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -164,7 +250,7 @@ class _ManagerHomeState extends State<ManagerHome> {
     });
 
     //print('identifiant est : $id et le home est $showHome');
-    LatLng coordonnees = new LatLng(0, 0);
+    LatLng coordonnees = const LatLng(0, 0);
 
     //get current manager and current manager position
     await ServiceUser.getUserbyId(widget.currentManagerID).then((value) {
@@ -224,16 +310,151 @@ class _ManagerHomeState extends State<ManagerHome> {
     }
   } */
 
-  /*  display() async {
+
+  Future<void> listenFCM() async {
+
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    // FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message){
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? androidNotification = message.notification?.android;
+
+      if (notification != null && androidNotification != null && !kIsWeb) {
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              icon: androidNotification.smallIcon,
+              // other properties...
+            ),
+          ),
+        );
+      }
+
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      if (notification != null && android != null) {
+        showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                title: Text("${notification.title}"),
+                content: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(" ${notification.body}")
+                      ],
+                    )
+                ),
+              );
+            });
+      }
+    });
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    if (message.data['type'] == 'chat') {
+      Navigator.pushNamed(context, '/chat');
+    }
+  }
+
+  void sendPushMessage(String body, String title, String? token) async {
+
+    try {
+      http.Response response =  await http.post(
+        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+          'key=AAAALOR35JE:APA91bHzS-FNsPRD-UmapTvVLGxo3-uneI7xnuk1yZdWJqZjqLH-F65UoLc3VYtkcl13NmVgkYqxg4tlzVqg78CWmWMnNhm5ziF7nv8ekaIKpl6nb5onU76eeIgq1nU3oH03l1wfCc6F',
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': body,
+              'title': title,
+            },
+            'priority': 'high',
+            'data': {
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'id': '1',
+              'status': 'done',
+              'message': title,
+            },
+            "to": '$token',
+          },
+        ),
+      );
+
+      if(response.statusCode == 200){
+        print("notification is send");
+
+      }else{
+        print("error push notification");
+
+      }
+    } catch (e) {
+      print("cach error push notification");
+    }
+  }
+
+  void listenOpenFCM()  {
+    FirebaseMessaging.instance.getInitialMessage();
+
+    // FCM.setNotifications();
+    //Called when the app is in the foreground and we receive a push notification
+    FirebaseMessaging.onMessage.listen((event) {
+      // LocalNotificationService.display(event);
+
+      // LocalNotificationService.serialiseAndNavigate(event);
+    });
+
+
+    // Called when the app has been closed completely and it's opened from the push notification
+    /*FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      // LocalNotificationService.display(event);
+      showNotification();
+
+      // LocalNotificationService.serialiseAndNavigate(event);
+    });*/
+
+    // Called when the app is in the background and it's opened from the push notification
+    // FirebaseMessaging.onBackgroundMessage(LocalNotificationService.onBackgroundMessage);
+
+  }
+
+  void display() async {
     print('channel channel channel');
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-            alert: true, badge: true, sound: true);
+        alert: true, badge: true, sound: true);
   }
 
   void loadFCM() async {
@@ -248,7 +469,7 @@ class _ManagerHomeState extends State<ManagerHome> {
           enableVibration: true);
 
       FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-          FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
       /// Create an Android Notification Channel.
       ///
@@ -256,7 +477,7 @@ class _ManagerHomeState extends State<ManagerHome> {
       /// default FCM channel to enable heads up notifications.
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
 
       /// Update the iOS foreground notification presentation options to allow
@@ -270,84 +491,7 @@ class _ManagerHomeState extends State<ManagerHome> {
     }
   }
 
-  void listenFCM() async {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      if (notification != null && android != null && !kIsWeb) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              // TODO add a proper drawable resource to android, for now using
-              //      one that already exists in example app.
-              icon: 'launch_background',
-            ),
-          ),
-        );
-      }
-    });
-  }
- */
-  void listenOpenFCM() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessage eevent was published');
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      if (notification != null && android != null) {
-        showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text(" ${notification.title}"),
-                content: SingleChildScrollView(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(" ${notification.body}")],
-                )),
-              );
-            });
-      }
-    });
-  }
 
-  void sendPushMessage(String body, String title, String? token) async {
-    print(
-        "envoie des notionsaticioooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-    try {
-      await http.post(
-        Uri.parse('https://fcm.googleapis.com/fcm/send'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'Authorization':
-              'key=AAAALOR35JE:APA91bHzS-FNsPRD-UmapTvVLGxo3-uneI7xnuk1yZdWJqZjqLH-F65UoLc3VYtkcl13NmVgkYqxg4tlzVqg78CWmWMnNhm5ziF7nv8ekaIKpl6nb5onU76eeIgq1nU3oH03l1wfCc6F',
-        },
-        body: jsonEncode(
-          <String, dynamic>{
-            'notification': <String, dynamic>{
-              'body': body,
-              'title': title,
-            },
-            'priority': 'high',
-            'data': <String, dynamic>{
-              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-              'id': '1',
-              'status': 'done'
-            },
-            "to": token,
-          },
-        ),
-      );
-
-      print("notification is send");
-    } catch (e) {
-      print("error push notification");
-    }
-  }
 
 //widget final
   @override
@@ -366,7 +510,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                 context: context,
                 delegate: MysearchDelegate(
                     tableauJsontrie: tableauJson, //tableauJsontrie
-                    hintText: " rechercher un livreur",
+                    hintText: " Rechercher un transporteur",
                     current_user: currentManager),
               );
             },
@@ -377,7 +521,7 @@ class _ManagerHomeState extends State<ManagerHome> {
 
       body: Column(
         children: <Widget>[
-          Container(
+          SizedBox(
               height: size.height * 0.42,
               //height: size.height,
               child: StreamBuilder<Future<Set<Marker>>>(
@@ -423,7 +567,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                               infoWindow: InfoWindow(
                                 //popup info
                                 title:
-                                    'Livreur ${Adeliver.name} A ${getDistance(pos, coordonnees)} km de vous',
+                                    'Transporteur ${Adeliver.name} à ${getDistance(pos, coordonnees)} km de vous',
                                 //le user name envoye depuis la page de validation
                                 snippet:
                                     '${first.locality}, ${first.street}, ${first.name}',
@@ -449,7 +593,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                       mapType: MapType.normal,
                       myLocationEnabled: true,
                       initialCameraPosition: CameraPosition(
-                        target: this.currentManagerPosition,
+                        target: currentManagerPosition,
                         zoom: 10,
                       ),
                       markers: markers, //markers to show on map
@@ -472,7 +616,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                     child: Column(
                       children: <Widget>[
                         const Text(
-                          'contacter un livreur ',
+                          'Contacter un transporteur ',
                           /*style: GoogleFonts.philosopher(
                               fontSize: 17, fontWeight: FontWeight.w600),*/
                           textAlign: TextAlign.center,
@@ -494,202 +638,193 @@ class _ManagerHomeState extends State<ManagerHome> {
                     top: 42,
                     bottom: 0,
                     right: 0,
-                    child: Container(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            // flex: 2,
-                            child: StreamBuilder<
-                                    Future<List<Map<String, dynamic>>>>(
-                                stream: userCollection
-                                    .where('isDeliver', isEqualTo: true)
-                                    .snapshots()
-                                    .map((event) async {
-                                  print(
-                                      "doc doc doc doc      $event $event, $event , $event , $event       doc doc doc doc             doc doc doc doc ");
-                                  var liste = [];
-                                  var users = event.docs;
-                                  for (var i in users) {
-                                    final user = i.data();
+                    child: Column(
+                      children: <Widget>[
+                        Expanded(
+                          // flex: 2,
+                          child: StreamBuilder<
+                                  Future<List<Map<String, dynamic>>>>(
+                              stream: userCollection
+                                  .where('isDeliver', isEqualTo: true)
+                                  .snapshots()
+                                  .map((event) async {
 
-                                    print(
-                                        "charline charline charline charline     $user , $user, $user, $user         charline charline charline             charline charline charline ");
+                                var liste = [];
+                                var users = event.docs;
+                                for (var i in users) {
+                                  final user = i.data();
 
-                                    final UserModel Adeliver = UserModel(
-                                        idDoc: user['idDoc'],
-                                        idUser: user['idUser'],
-                                        adress: user['adress'],
-                                        name: user['name'],
-                                        phone: user['phone'],
-                                        tool: user['tool'],
-                                        picture: user['picture'],
-                                        idPosition: user['idPosition'],
-                                        isManager: user['isManager'],
-                                        isClient: user['isClient'],
-                                        isDeliver: user['isDeliver'],
-                                        token: user['token']);
+                                  final UserModel Adeliver = UserModel(
+                                      idDoc: user['idDoc'],
+                                      idUser: user['idUser'],
+                                      adress: user['adress'],
+                                      name: user['name'],
+                                      phone: user['phone'],
+                                      tool: user['tool'],
+                                      picture: user['picture'],
+                                      idPosition: user['idPosition'],
+                                      isManager: user['isManager'],
+                                      isClient: user['isClient'],
+                                      isDeliver: user['isDeliver'],
+                                      token: user['token']);
 
-                                    await PositionService()
-                                        .getPosition(Adeliver.idPosition)
-                                        .then((value) {
-                                      LatLng coordonnees = LatLng(
-                                          value.latitude, value.longitude);
-                                      /*  var dis = getDistance(
-                                          currentManagerPosition, coordonnees); */
-                                      print(
-                                          "coordonnees cooordonneeees   $coordonnees $coordonnees $coordonnees  coordonnees cooordonneeees  coordonnees cooordonneeees  coordonnees cooordonneeees  coordonnees cooordonneeees  ");
+                                  await PositionService()
+                                      .getPosition(Adeliver.idPosition)
+                                      .then((value) {
+                                    LatLng coordonnees = LatLng(
+                                        value.latitude, value.longitude);
+                                    /*  var dis = getDistance(
+                                        currentManagerPosition, coordonnees); */
 
-                                      setState(() {
-                                        print("charles  ");
-                                        print(
-                                            "currentManagerPosition currentManagerPosition  $currentManagerPosition   $currentManagerPosition $currentManager  currentManagerPosition currentManagerPosition currentManagerPosition currentManagerPosition currentManagerPosition ");
-                                        final LatLng pos =
-                                            currentManagerPosition;
-                                        tableauJson.add({
-                                          "Deliver": Adeliver.toMap(),
-                                          "Distance":
-                                              getDistance(pos, coordonnees)
-                                        });
-                                        tableauJsontrie = tableauTrie(
-                                            TriRapidejson(table: tableauJson)
-                                                .QSort(
-                                                    0, tableauJson.length - 1));
+                                    setState(() {
+
+                                      final LatLng pos =
+                                          currentManagerPosition;
+                                      tableauJson.add({
+                                        "Deliver": Adeliver.toMap(),
+                                        "Distance":
+                                            getDistance(pos, coordonnees)
                                       });
+                                      tableauJsontrie = tableauTrie(
+                                          TriRapidejson(table: tableauJson)
+                                              .QSort(
+                                                  0, tableauJson.length - 1));
                                     });
-                                    print(
-                                        "longitude  longitude longitude longitude  $tableauJson, $tableauJson   longitude longitude longitude longitude ");
-                                  }
-                                  setState(() {});
+                                  });
 
-                                  print(
-                                      "tableau json tableau json tableau json $tableauJsontrie, $tableauJsontrie  tableau json tableau json tableau json tableau json tableau json");
-                                  return tableauJsontrie;
-                                }),
-                                builder: (context,
-                                    AsyncSnapshot<
-                                            Future<List<Map<String, dynamic>>>>
-                                        snapshot) {
-                                  if (!snapshot.hasData) {
-                                    // ignore: prefer_const_constructors
-                                    return Center(
-                                      child: const CircularProgressIndicator(),
-                                    );
-                                  }
-                                  //   var snap = snapshot.data.docs;
+                                }
+                                setState(() {});
 
-                                  return ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    //  this.tableauJsontrie.length,
-                                    itemCount: tableauJsontrie.length,
-                                    // tableauTrie(this.tableauJson).length,
-                                    //  itemCount: this.exampleModelDeliver.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return InkWell(
-                                          child: Container(
-                                            child:
-                                                GetItem(tableauJsontrie[index]),
-                                          ),
-                                          onTap: () {
-                                            setState(() {
-                                              isdeliver = false;
-                                              deliver = tableauJsontrie[index]
-                                                  ['Deliver'];
-                                              tab = tableauJsontrie[index];
-                                            });
-
-                                            deliver !=
-                                                    UserModel(idPosition: "",
-                                                            name: 'audrey',
-                                                            idDoc: 'audrey')
-                                                        .toMap()
-                                                ? isdeliver = true
-                                                : isdeliver = false;
-                                          });
-                                    },
+                           /*     deliver = tableauJsontrie[0]
+                                ['Deliver'];
+                                tab = tableauJsontrie[0];*/
+                                return tableauJsontrie;
+                              }),
+                              builder: (context,
+                                  AsyncSnapshot<
+                                          Future<List<Map<String, dynamic>>>>
+                                      snapshot) {
+                                if (!snapshot.hasData) {
+                                  // ignore: prefer_const_constructors
+                                  return Center(
+                                    child: const CircularProgressIndicator(),
                                   );
-                                }),
-                          ),
-                          Visibility(
-                              visible: (isdeliver || isDev),
-                              child: Column(
-                                children: <Widget>[
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Container(
-                                      margin: EdgeInsets.only(left: 10),
-                                      padding: EdgeInsets.all(5),
-                                      height: 40,
-                                      width: size.width * 0.68,
-                                      color: Color.fromARGB(255, 248, 246, 248),
-                                      child: Text(
-                                        'situe a ${tab["Distance"]} km de vous',
-                                        // Text('${tableauJsontrie[index]['Deliver']['name']}',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
+                                }
+                                //   var snap = snapshot.data.docs;
+
+                                return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  //  this.tableauJsontrie.length,
+                                  itemCount: tableauJsontrie.length,
+                                  // tableauTrie(this.tableauJson).length,
+                                  //  itemCount: this.exampleModelDeliver.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return InkWell(
+                                        child: Container(
+                                          child:
+                                              GetItem(tableauJsontrie[index]),
                                         ),
+                                        onTap: () {
+                                          setState(() {
+                                            isdeliver = false;
+                                            deliver = tableauJsontrie[index]
+                                                ['Deliver'];
+                                            tab = tableauJsontrie[index];
+                                          });
+
+                                          deliver !=
+                                                  UserModel(idPosition: "",
+                                                          name: 'audrey',
+                                                          idDoc: 'audrey')
+                                                      .toMap()
+                                              ? isdeliver = true
+                                              : isdeliver = false;
+                                        });
+                                  },
+                                );
+                              }),
+                        ),
+                        Visibility(
+                            visible: (isdeliver || isDev),
+                            child: Column(
+                              children: <Widget>[
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    margin: EdgeInsets.only(left: 10),
+                                    padding: EdgeInsets.all(5),
+                                    height: 40,
+                                    width: size.width * 0.68,
+                                    color: Color.fromARGB(255, 248, 246, 248),
+                                    child: Text(
+                                      'situe a ${tab["Distance"]} km de vous',
+                                      // Text('${tableauJsontrie[index]['Deliver']['name']}',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
                                       ),
                                     ),
                                   ),
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        FlatButton(
-                                          minWidth: size.width * 0.7,
-                                          onPressed: () {
-                                            UserModel ontapDeliver = UserModel(
-                                              idUser: tab['Deliver']['idUser'],
-                                              adress: tab['Deliver']['adress'],
-                                              name: tab['Deliver']['name'],
-                                              idPosition: tab['Deliver']
-                                                  ['idPosition'],
-                                              phone: tab['Deliver']['phone'],
-                                              picture: tab['Deliver']
-                                                  ['picture'],
-                                              createdAt: tab['Deliver']
-                                                  ['createdAt'],
-                                              idDoc: tab['Deliver']['idDoc'],
-                                            );
-                                            _showcommandDialog(
-                                                context,
-                                                myPosition,
-                                                currentManager,
-                                                ontapDeliver);
-                                          },
-                                          padding: EdgeInsets.all(5),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                          ),
-                                          color: kPrimaryColor,
-                                          textColor: kBackgroundColor,
-                                          child: Text(
-                                            'CONFIRMER ${deliver["name"]} '
-                                                .toUpperCase(),
-                                            style: GoogleFonts.poppins(
-                                                fontSize: 15),
-                                          ),
+                                ),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      FlatButton(
+                                        minWidth: size.width * 0.7,
+                                        onPressed: () {
+                                          UserModel ontapDeliver = UserModel(
+                                            idUser: tab['Deliver']['idUser'],
+                                            adress: tab['Deliver']['adress'],
+                                            name: tab['Deliver']['name'],
+                                            idPosition: tab['Deliver']
+                                                ['idPosition'],
+                                            phone: tab['Deliver']['phone'],
+                                            picture: tab['Deliver']
+                                                ['picture'],
+                                            createdAt: tab['Deliver']
+                                                ['createdAt'],
+                                            idDoc: tab['Deliver']['idDoc'],
+                                            oneSignalToken: tab['Deliver']['oneSignalToken']
+                                          );
+                                          _showcommandDialog(
+                                              context,
+                                              myPosition,
+                                              currentManager,
+                                              ontapDeliver);
+                                        },
+                                        padding: EdgeInsets.all(5),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
                                         ),
-                                        Container(
-                                          width: size.width * 0.25,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.white70),
-                                              shape: BoxShape.circle,
-                                              image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: AssetImage(
-                                                      "assets/images/profil.png"))),
+                                        color: kPrimaryColor,
+                                        textColor: kBackgroundColor,
+                                        child: Text(
+                                          'CONFIRMER ${deliver["name"]} '
+                                              .toUpperCase(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 15),
                                         ),
-                                      ]),
-                                ],
-                              ))
-                        ],
-                      ),
+                                      ),
+                                      Container(
+                                        width: size.width * 0.25,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                width: 1,
+                                                color: Colors.white70),
+                                            shape: BoxShape.circle,
+                                            image: const DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: AssetImage(
+                                                    "assets/images/profil.png"))),
+                                      ),
+                                    ]),
+                              ],
+                            ))
+                      ],
                     ),
                   ),
                 ],
@@ -707,7 +842,7 @@ class _ManagerHomeState extends State<ManagerHome> {
       children: <Widget>[
         Stack(children: <Widget>[
           Container(
-            margin: EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
+            margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
             width: size.width * 0.25,
             height: size.width * 0.25,
             decoration: BoxDecoration(
@@ -719,9 +854,9 @@ class _ManagerHomeState extends State<ManagerHome> {
                       color: Colors.black.withOpacity(0.1))
                 ],
                 shape: BoxShape.circle,
-                image: DecorationImage(
+                image: const DecorationImage(
                     fit: BoxFit.cover,
-                    image: const AssetImage("assets/images/profil.png"))),
+                    image: AssetImage("assets/images/profil.png"))),
           ),
           Positioned(
             bottom: size.width * 0.14,
@@ -734,7 +869,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                   border: Border.all(width: 0, color: Colors.transparent),
                   //color: Colors.white),
                   color: kPrimaryColor,
-                  image: DecorationImage(
+                  image: const DecorationImage(
                       fit: BoxFit.cover,
                       image: AssetImage('assets/images/profil.png')
                       //  image: AssetImage("${user.tool}")
@@ -854,7 +989,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                             style: GoogleFonts.poppins(fontSize: 15),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'veuillez nommer cette commande';
+                                return 'Veuillez nommer cette commande';
                               }
                               return null;
                             },
@@ -886,13 +1021,13 @@ class _ManagerHomeState extends State<ManagerHome> {
                               );
                             }).toList(),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 15,
                           ),
                           TextFormField(
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
-                                labelText: 'Estimer le poids',
+                                labelText: 'Poids',
                                 filled: true,
                                 fillColor: Color.fromARGB(255, 240, 229, 240),
                                 hintStyle: TextStyle(color: Colors.grey[800]),
@@ -902,12 +1037,12 @@ class _ManagerHomeState extends State<ManagerHome> {
                                 if (value == null ||
                                     value.isEmpty ||
                                     value.length > 4) {
-                                  return 'veuillez estimer le poids du colis';
+                                  return 'Veuillez renseigner le poids du colis';
                                 }
                                 return null;
                               }),
                           DropdownButtonFormField<String>(
-                            dropdownColor: Color.fromARGB(255, 240, 229, 240),
+                            dropdownColor: const Color.fromARGB(255, 240, 229, 240),
                             value: dropdownValuePoids,
                             onChanged: (String? newValue) {
                               // setState(() {
@@ -929,7 +1064,7 @@ class _ManagerHomeState extends State<ManagerHome> {
                             controller: descriptionController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'veuillez decrire la commande';
+                                return 'Veuillez décrire la commande';
                               }
                               return null;
                             },
@@ -941,8 +1076,8 @@ class _ManagerHomeState extends State<ManagerHome> {
                                 filled: true,
                                 hintStyle: TextStyle(color: Colors.grey[800]),
                                 // prefixIcon: const Icon(Icons.write),
-                                hintText: "Description de la commande ici",
-                                fillColor: Color.fromARGB(255, 240, 229, 240)),
+                                hintText: "Description de la commande",
+                                fillColor: const Color.fromARGB(255, 240, 229, 240)),
                           ),
                         ],
                       ),
@@ -950,9 +1085,6 @@ class _ManagerHomeState extends State<ManagerHome> {
                   )),
               actions: [
                 FlatButton(
-                  child: Text("Quitter",
-                      style:
-                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
                   padding: EdgeInsets.all(2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -960,16 +1092,15 @@ class _ManagerHomeState extends State<ManagerHome> {
                   color: Palette.primarySwatch
                       .shade400, //Color.fromARGB(255, 240, 229, 240),
                   //  textColor: kBackgroundColor,
-                  onPressed: () => Navigator.pop(context), // passing true
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Quitter",
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))), // passing true
                 ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.1,
                 ),
                 FlatButton(
-                  child: const Text(
-                    "Publier",
-                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
-                  ),
                   padding: const EdgeInsets.all(2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -994,6 +1125,10 @@ class _ManagerHomeState extends State<ManagerHome> {
                       _ShowcreateDialog(context, command, deliver);
                     }
                   },
+                  child: const Text(
+                    "Publier",
+                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
+                  ),
                 ),
               ]);
         });
@@ -1021,14 +1156,10 @@ class _ManagerHomeState extends State<ManagerHome> {
           return AlertDialog(
               backgroundColor: Colors.white,
               content: Container(
-                  child: Text(
-                      "Etes vous sur de vouloir publier cette commande ?")),
+                  child: const Text(
+                      "Etes vous sûr de vouloir publier cette commande ?")),
               actions: [
                 FlatButton(
-                  child: Text(
-                    "Non".toUpperCase(),
-                    style: TextStyle(color: Color.fromARGB(255, 240, 229, 240)),
-                  ),
                   padding: EdgeInsets.all(2),
                   //  minWidth: MediaQuery.of(context).size.width,
                   shape: RoundedRectangleBorder(
@@ -1039,14 +1170,15 @@ class _ManagerHomeState extends State<ManagerHome> {
                   onPressed: () async {
                     Navigator.pop(context);
                   },
+                  child: Text(
+                    "Non".toUpperCase(),
+                    style: TextStyle(color: const Color.fromARGB(255, 240, 229, 240)),
+                  ),
                 ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.1,
                 ),
                 FlatButton(
-                  child: Text("Oui".toUpperCase(),
-                      style:
-                          TextStyle(color: Color.fromARGB(255, 240, 229, 240))),
                   padding: EdgeInsets.all(2),
                   // minWidth: MediaQuery.of(context).size.width,
                   shape: RoundedRectangleBorder(
@@ -1056,10 +1188,9 @@ class _ManagerHomeState extends State<ManagerHome> {
                   onPressed: () async {
                     Navigator.pop(context);
                     await CommandService().addCommand(command).then((value) {
-                      print(
-                          "commande commande commande commande commande commande commande");
+
                       Fluttertoast.showToast(
-                          msg: "la commande a ete publier",
+                          msg: "la commande a été publié",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 5,
@@ -1077,9 +1208,19 @@ class _ManagerHomeState extends State<ManagerHome> {
                           textColor: Colors.white,
                           fontSize: 16.0);
                     });
-                    sendPushMessage(command.description, command.nameCommand,
-                        deliver.token);
-                  }, // passing true
+                   /* sendPushMessage(command.description, command.nameCommand,
+                        deliver.token);*/
+                    
+                    // sendNotificationWithOneSignal([deliver.oneSignalToken??''],command.description, command.nameCommand);
+                    sendNotificationWithOneSignal(['9f416329-585b-46b2-87b1-5f0364d9210e'],command.description, "Nouvelle livraison");
+
+                    /*sendPushMessage(command.description, command.nameCommand,
+                        "dQ1VPW3xRzqD6pdKoNFgK7:APA91bFsUoBVKlDScalPbMZnAZlFkKt4CsWadAGnJxE4XCdlopPIIvYytwISENgCesowv0l-DueXL0Hf16D_Urxoht4SJ23iBoGenV09ctrJJYDoXl2NqsQxky_yE1ARljwnUtpfVtgW");
+*/
+                  },
+                  child: Text("Oui".toUpperCase(),
+                      style:
+                          const TextStyle(color: Color.fromARGB(255, 240, 229, 240))), // passing true
                 ),
               ]);
         });

@@ -163,6 +163,7 @@ class UserModel {
   bool isDeliver;
   String? createdAt;
    String? token;
+   String? oneSignalToken;
 
   UserModel({
    required this.idDoc,
@@ -178,7 +179,8 @@ class UserModel {
     this.isClient = false,
     this.isDeliver = false,
     this.createdAt,
-    this.token
+    this.token,
+    this.oneSignalToken,
   });
 
 

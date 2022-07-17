@@ -19,13 +19,13 @@ Future<void> onBackgroundMessage(RemoteMessage message) async {
 }
 
 class FCM {
-  final _firebaseMessaging = FirebaseMessaging.instance;
+  static final _firebaseMessaging = FirebaseMessaging.instance;
 
-  final streamCtlr = StreamController<String>.broadcast();
-  final titleCtlr = StreamController<String>.broadcast();
-  final bodyCtlr = StreamController<String>.broadcast();
+  static final streamCtlr = StreamController<String>.broadcast();
+  static final titleCtlr = StreamController<String>.broadcast();
+  static final bodyCtlr = StreamController<String>.broadcast();
 
-  setNotifications() {
+  static void setNotifications() {
     FirebaseMessaging.onBackgroundMessage(onBackgroundMessage);
 
     // handle when app in active state
@@ -42,7 +42,7 @@ class FCM {
         _firebaseMessaging.getToken().then((value) => print('Token: $value'));
   }
 
-  forgroundNotification() {
+  static void forgroundNotification() {
     FirebaseMessaging.onMessage.listen(
       (message) async {
         if (message.data.containsKey('data')) {
@@ -60,7 +60,7 @@ class FCM {
     );
   }
 
-  backgroundNotification() {
+  static backgroundNotification() {
     FirebaseMessaging.onMessageOpenedApp.listen(
       (message) async {
         if (message.data.containsKey('data')) {
@@ -78,7 +78,7 @@ class FCM {
     );
   }
 
-  terminateNotification() async {
+  static terminateNotification() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
